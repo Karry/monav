@@ -113,14 +113,17 @@ unix:!symbian {
 		target.path = /opt/usr/bin
 	} else {
 		target.path = /usr/local/bin
+		DEFINES += NOQTMOBILE
 	}
 	INSTALLS += target
 }
 
 macx {
 	ICON = ../images/AppIcons.icns
+	DEFINES += NOQTMOBILE
 }
 
 win32 {
 	RC_FILE = ../images/WindowsResources.rc
+	DEFINES += NOQTMOBILE
 }

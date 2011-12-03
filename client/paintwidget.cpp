@@ -320,7 +320,7 @@ void PaintWidget::paintEvent( QPaintEvent* )
 	QPainter painter( this );
 	Timer time;
 	renderer->Paint( &painter, m_request );
-	qDebug() << "Rendering:" << time.elapsed() << "ms";
+	// qDebug() << "Rendering:" << time.elapsed() << "ms";
 }
 
 void PaintWidget::contextMenuEvent(QContextMenuEvent *event )

@@ -143,7 +143,7 @@ void AddressDialog::cityTextChanged( QString text )
 
 	Timer time;
 	bool found = addressLookup->GetPlaceSuggestions( text, 10, &suggestions, &characters );
-	qDebug() << "City Lookup:" << time.elapsed() << "ms";
+	// qDebug() << "City Lookup:" << time.elapsed() << "ms";
 
 	if ( !found )
 		return;
@@ -168,7 +168,7 @@ void AddressDialog::streetTextChanged( QString text)
 
 	Timer time;
 	bool found = addressLookup->GetStreetSuggestions( m_placeID, text, 10, &suggestions, &characters );
-	qDebug() << "Street Lookup:" << time.elapsed() << "ms";
+	// qDebug() << "Street Lookup:" << time.elapsed() << "ms";
 
 	if ( !found )
 		return;

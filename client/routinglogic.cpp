@@ -328,7 +328,7 @@ void RoutingLogic::computeRoute()
 		Timer time;
 		IGPSLookup::Result result;
 		bool found = gpsLookup->GetNearestEdge( &result, waypoints[i], 1000 );
-		qDebug() << "GPS Lookup:" << time.elapsed() << "ms";
+		// qDebug() << "GPS Lookup:" << time.elapsed() << "ms";
 
 		if ( !found ) {
 			clearRoute();
@@ -348,7 +348,7 @@ void RoutingLogic::computeRoute()
 
 		Timer time;
 		bool found = router->GetRoute( &travelTime, &nodes, &edges, gps[i - 1], gps[i] );
-		qDebug() << "Routing:" << time.elapsed() << "ms";
+		// qDebug() << "Routing:" << time.elapsed() << "ms";
 
 		if ( found ) {
 			if ( i == 1 ) {
@@ -434,7 +434,7 @@ void RoutingLogic::computeRoundtrip()
 		gps.push_back( result );
 	}
 
-	qDebug() << "GPS Mass Lookup:" << time.restart() << "ms";
+	// qDebug() << "GPS Mass Lookup:" << time.restart() << "ms";
 
 	// compute all pair shortest paths
 	QVector< int > distMatrix( num * num, 0 );
