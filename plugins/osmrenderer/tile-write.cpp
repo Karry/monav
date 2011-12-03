@@ -144,7 +144,7 @@ bool Way::draw(ImgWriter &img, DrawingRules & rules,
     bool polygon;
     bool use_roadname=false;
 
-    if(pass==0 && zoom >= 17 && type() >= HW_RESIDENTIAL && type() < HW_MOTORWAY) use_roadname = true;
+    if(pass==0 && zoom >= 16 && type() >= HW_RESIDENTIAL && type() < HW_MOTORWAY) use_roadname = true;
     roadname road;
     if(!rules.get_rule(_type, zoom, pass, &r, &g, &b, &width, &polygon)) return false;
     img.SetPen(r, g, b, width * magnification);
@@ -622,7 +622,7 @@ bool TileWriter::draw_image(QString _imgname, int x, int y, int zoom, int magnif
 	Roadnames roadnames;
     TIMELOGINIT("Draw_image");
     //FILE *fp = fopen(filename.c_str(), "rb");
-    int current_db = zoom>12 ? 0 : 1;
+    int current_db = zoom>11 ? 0 : 1;
 	 Log(LOG_DEBUG, "Write %s, %d, %d, %d\n", _imgname.toUtf8().constData(), x, y, zoom);
 
     int nways;
