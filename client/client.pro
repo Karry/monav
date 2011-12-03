@@ -2,10 +2,24 @@
 # Project created by QtCreator 2010-06-15T15:30:10
 # -------------------------------------------------
 
-TARGET = MoNavClient
 TEMPLATE = app
-
 QT += svg xml
+DESTDIR = ../bin
+TARGET = monav
+
+# Enable this to compile on desktop machines without QtMobility installed
+# DEFINES += NOQTMOBILE
+
+TRANSLATIONS += ../translations/de_DE.ts
+RESOURCES += translations.qrc
+RESOURCES += images.qrc
+
+# Required by osmrendererclient
+QT += network
+CONFIG += mobility
+MOBILITY += location
+# Required to get a non-debug build (at least on Windows)
+# CONFIG += release
 
 INCLUDEPATH += ..
 
@@ -81,12 +95,7 @@ FORMS += \
 	streetchooser.ui \
 	tripinfodialog.ui
 
-DESTDIR = ../bin
-
-TARGET = monav
-
-# Enable this to compile on desktop machines without QtMobility installed
-# DEFINES += NOQTMOBILE
+LIBS += -L../bin/plugins_client -lmapnikrendererclient -lcontractionhierarchiesclient -lgpsgridclient -losmrendererclient -lunicodetournamenttrieclient -lqtilerendererclient
 
 unix {
 	QMAKE_CXXFLAGS_RELEASE -= -O2
@@ -94,36 +103,24 @@ unix {
 		-Wno-unused-function
 	QMAKE_CXXFLAGS_DEBUG += -Wno-unused-function
 }
+
 maemo5 {
 	QT += maemo5
 }
 
-TRANSLATIONS += ../translations/de_DE.ts
-RESOURCES += translations.qrc
-RESOURCES += images.qrc
-
-win32 {
-    RC_FILE = ../images/WindowsResources.rc
+unix:!symbian {
+	maemo5 {
+		target.path = /opt/usr/bin
+	} else {
+		target.path = /usr/local/bin
+	}
+	INSTALLS += target
 }
 
 macx {
-    ICON = ../images/AppIcons.icns
+	ICON = ../images/AppIcons.icns
 }
 
-LIBS += -L../bin/plugins_client -lmapnikrendererclient -lcontractionhierarchiesclient -lgpsgridclient -losmrendererclient -lunicodetournamenttrieclient -lqtilerendererclient
-
-# Required by osmrendererclient
-QT += network
-CONFIG += mobility
-MOBILITY += location
-# Required to get a non-debug build (at least on Windows)
-# CONFIG += release
-
-unix:!symbian {
-    maemo5 {
-        target.path = /opt/usr/bin
-    } else {
-        target.path = /usr/local/bin
-    }
-    INSTALLS += target
+win32 {
+	RC_FILE = ../images/WindowsResources.rc
 }
