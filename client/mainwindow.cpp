@@ -30,6 +30,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include "bookmarksdialog.h"
 
 #include "routinglogic.h"
+#include "instructiongenerator.h"
 #include "routedescriptiondialog.h"
 #include "gpsdialog.h"
 #include "globalsettings.h"
@@ -231,7 +232,7 @@ void MainWindow::connectSlots()
 
 	connect( mapData, SIGNAL(informationChanged()), this, SLOT(informationLoaded()) );
 	connect( mapData, SIGNAL(dataLoaded()), this, SLOT(dataLoaded()) );
-	connect( RoutingLogic::instance(), SIGNAL(instructionsChanged()), this, SLOT(instructionsChanged()) );
+	// connect( RoutingLogic::instance(), SIGNAL(instructionsChanged()), this, SLOT(instructionsChanged()) );
 	// connect( RoutingLogic::instance(), SIGNAL(waypointsChanged()), this, SLOT(waypointsChanged()) );
 }
 

@@ -21,8 +21,13 @@ along with MoNav. If not, see <http://www.gnu.org/licenses/>.
 #define INSTRUCTIONGENERATOR_H
 
 #include <iostream>
+#include "interfaces/irouter.h"
+#include "mapdata.h"
+
 #include <QObject>
 #include <QDebug>
+#include <QVector>
+#include <QStringList>
 
 class InstructionGenerator : public QObject
 {
@@ -33,16 +38,38 @@ public:
 
 	static InstructionGenerator* instance();
 	~InstructionGenerator();
+	InstructionGenerator();
 
 public slots:
 
 	// destroys the object
 	// void cleanup();
+	void generateInstructions();
 
 signals:
 
 protected:
 
+	void generate( QVector< IRouter::Node > pathNodes, QVector< IRouter::Edge > pathEdges );
+	void newDescription( IRouter* router, const IRouter::Edge& edge );
+	// Ported from descriptiongenerator.h
+	int angle( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third );
+	// void InstructionGenerator::describe( QStringList* icons, QStringList* labels );
+	void describe();
+
+	QStringList m_icons;
+	QStringList m_labels;
+	QStringList m_audioSnippets;
+	
+	// Ported from descriptiongenerator.h
+	unsigned m_lastNameID;
+	unsigned m_lastTypeID;
+	QString m_lastName;
+	QString m_lastType;
+	bool m_branchingPossible;
+	double m_distance;
+	int m_direction;
+	int m_exitNumber;
 };
 
 #endif // INSTRUCTIONGENERATOR_H

@@ -219,7 +219,7 @@ bool RendererBase::Paint( QPainter* painter, const PaintRequest& request )
 
 					long long minCacheSize = 2 * scaledTileSize * scaledTileSize * tile->depth() / 8 * ( maxX - minX ) * ( maxY - minY );
 					if ( m_cache.maxCost() < minCacheSize ) {
-						qDebug() << "had to increase cache size to accommodate all tiles for at least two images: " << minCacheSize / 1024 / 1024 << " MB";
+						// qDebug() << "had to increase cache size to accommodate all tiles for at least two images: " << minCacheSize / 1024 / 1024 << " MB";
 						m_cache.setMaxCost( minCacheSize );
 					}
 

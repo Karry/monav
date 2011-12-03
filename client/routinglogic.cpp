@@ -19,6 +19,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "routinglogic.h"
 #include "descriptiongenerator.h"
+#include "instructiongenerator.h"
 #include "mapdata.h"
 #include "utils/qthelpers.h"
 #include "logger.h"
@@ -40,6 +41,7 @@ struct RoutingLogic::PrivateImplementation {
 	QVector< IRouter::Edge > pathEdges;
 	double distance;
 	double travelTime;
+	// TODO: The following three items are obsolete since descriptiongenerator exists
 	DescriptionGenerator descriptionGenerator;
 	QStringList labels;
 	QStringList icons;
@@ -101,7 +103,7 @@ RoutingLogic::RoutingLogic() :
 
 	connect( this, SIGNAL(gpsInfoChanged()), Logger::instance(), SLOT(positionChanged()) );
 	connect( MapData::instance(), SIGNAL(dataLoaded()), this, SLOT(dataLoaded()) );
-
+	connect( this, SIGNAL(generateInstructions()), InstructionGenerator::instance(), SLOT(generateInstructions()) );
 	computeRoute();
 	emit waypointsChanged();
 }
@@ -224,6 +226,19 @@ void RoutingLogic::clear()
 	d->waypoints.clear();
 	computeRoute();
 }
+
+
+QVector< IRouter::Node > RoutingLogic::nodes()
+{
+	return d->pathNodes;
+}
+
+
+QVector< IRouter::Edge > RoutingLogic::edges()
+{
+	return d->pathEdges;
+}
+
 
 void RoutingLogic::instructions( QStringList* labels, QStringList* icons, int maxSeconds )
 {
@@ -369,10 +384,11 @@ void RoutingLogic::computeRoute()
 
 	d->distance = waypoints.first().ToGPSCoordinate().ApproximateDistance( waypoints.last().ToGPSCoordinate() );
 
+	emit generateInstructions();
 	emit routeChanged();
-	emit instructionsChanged();
-	emit distanceChanged( d->distance );
-	emit travelTimeChanged( d->travelTime );
+	// emit instructionsChanged();
+	// emit distanceChanged( d->distance );
+	// emit travelTimeChanged( d->travelTime );
 }
 
 void RoutingLogic::clearRoute()
@@ -383,10 +399,11 @@ void RoutingLogic::clearRoute()
 	d->pathNodes.clear();
 	d->icons.clear();
 	d->labels.clear();
+	emit generateInstructions();
 	emit routeChanged();
-	emit instructionsChanged();
-	emit distanceChanged( d->distance );
-	emit travelTimeChanged( d->travelTime );
+	// emit instructionsChanged();
+	// emit distanceChanged( d->distance );
+	// emit travelTimeChanged( d->travelTime );
 }
 
 void RoutingLogic::dataLoaded()

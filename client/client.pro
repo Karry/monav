@@ -21,6 +21,9 @@ MOBILITY += location
 # Required to get a non-debug build (at least on Windows)
 # CONFIG += release
 
+# Required to get qDebug() output on the Mac
+CONFIG += console
+
 INCLUDEPATH += ..
 
 SOURCES += main.cpp \

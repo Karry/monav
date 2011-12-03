@@ -74,14 +74,20 @@ public:
 	// clears the waypoints/ target / route
 	void clear();
 	// driving instruction for the current route
+	// TODO: Obsolete since the introduction of InstructionGenerator
 	void instructions( QStringList* labels, QStringList* icons, int maxSeconds = std::numeric_limits< int >::max() );
+	// Used by the InstructionGenerator
+	QVector< IRouter::Node > nodes();
+	QVector< IRouter::Edge > edges();
+
 
 signals:
 
-	void instructionsChanged();
+	// void instructionsChanged();
 	void routeChanged();
-	void distanceChanged( double meter );
-	void travelTimeChanged( double seconds );
+	void generateInstructions();
+	// void distanceChanged( double meter );
+	// void travelTimeChanged( double seconds );
 	void waypointReached( int id );
 	void waypointsChanged();
 	void gpsInfoChanged();
