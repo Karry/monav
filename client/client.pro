@@ -30,6 +30,7 @@ SOURCES += main.cpp \
 	routedescriptiondialog.cpp \
 	mapdata.cpp \
 	routinglogic.cpp \
+	instructiongenerator.cpp \
 	overlaywidget.cpp \
 	scrollarea.cpp \
 	gpsdialog.cpp \
@@ -62,6 +63,7 @@ HEADERS += \
 	descriptiongenerator.h \
 	mapdata.h \
 	routinglogic.h \
+	instructiongenerator.h \
 	fullscreenexitbutton.h \
 	overlaywidget.h \
 	scrollarea.h \
