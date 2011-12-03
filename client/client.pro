@@ -21,17 +21,18 @@ SOURCES += main.cpp \
 	gpsdialog.cpp \
 	generalsettingsdialog.cpp \
 	logger.cpp \
-    ../utils/directoryunpacker.cpp \
-    ../utils/lzma/LzmaDec.c \
-    mappackageswidget.cpp \
-    mainwindow.cpp \
-    mapmoduleswidget.cpp \
-    placechooser.cpp \
-    globalsettings.cpp \
-    streetchooser.cpp \
+	../utils/directoryunpacker.cpp \
+	../utils/lzma/LzmaDec.c \
+	mappackageswidget.cpp \
+	mainwindow.cpp \
+	mapmoduleswidget.cpp \
+	placechooser.cpp \
+	globalsettings.cpp \
+	streetchooser.cpp \
 	 gpsdpositioninfosource.cpp \
 	 json.cpp \
-    worldmapchooser.cpp
+	tripinfodialog.cpp \
+	worldmapchooser.cpp
 
 HEADERS += \
 	paintwidget.h \
@@ -53,17 +54,18 @@ HEADERS += \
 	gpsdialog.h \
 	generalsettingsdialog.h \
 	logger.h \
-    ../utils/directoryunpacker.h \
-    ../utils/lzma/LzmaDec.h \
-    mappackageswidget.h \
-    mainwindow.h \
-    mapmoduleswidget.h \
-    placechooser.h \
-    globalsettings.h \
-    streetchooser.h \
-	 json.h \
-	 gpsdpositioninfosource.h \
-    worldmapchooser.h
+	../utils/directoryunpacker.h \
+	../utils/lzma/LzmaDec.h \
+	mappackageswidget.h \
+	mainwindow.h \
+	mapmoduleswidget.h \
+	placechooser.h \
+	globalsettings.h \
+	streetchooser.h \
+	json.h \
+	gpsdpositioninfosource.h \
+	tripinfodialog.h \
+	worldmapchooser.h
 
 FORMS += \
 	paintwidget.ui \
@@ -72,15 +74,20 @@ FORMS += \
 	routedescriptiondialog.ui \
 	gpsdialog.ui \
 	generalsettingsdialog.ui \
-    mappackageswidget.ui \
-    mainwindow.ui \
-    mapmoduleswidget.ui \
-    placechooser.ui \
-    streetchooser.ui
+	mappackageswidget.ui \
+	mainwindow.ui \
+	mapmoduleswidget.ui \
+	placechooser.ui \
+	streetchooser.ui \
+	tripinfodialog.ui
 
 DESTDIR = ../bin
 
 TARGET = monav
+
+# Enable this to compile on desktop machines without QtMobility installed
+# DEFINES += NOQTMOBILE
+
 unix {
 	QMAKE_CXXFLAGS_RELEASE -= -O2
 	QMAKE_CXXFLAGS_RELEASE += -O3 \
@@ -91,6 +98,8 @@ maemo5 {
 	QT += maemo5
 }
 
+TRANSLATIONS += ../translations/de_DE.ts
+RESOURCES += translations.qrc
 RESOURCES += images.qrc
 
 win32 {

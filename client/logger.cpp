@@ -17,9 +17,14 @@ You should have received a copy of the GNU General Public License
 along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// Also see tripinfodialog.cpp which contains the same value.
+// Due to a circular dependency, it was not possible to provide a getter method.
+#define INVALIDELEVATIONVALUE -20000.0
+
 #include "logger.h"
 #include "routinglogic.h"
 #include "utils/qthelpers.h"
+#include <QXmlStreamReader>
 
 Logger* Logger::instance()
 {
@@ -51,13 +56,23 @@ void Logger::initialize()
 
 	QSettings settings( "MoNavClient" );
 	m_loggingEnabled = settings.value( "LoggingEnabled", false ).toBool();
+	// TODO: Use QDesktop Services
 	m_tracklogPath = settings.value( "LogFilePath", QDir::homePath() ).toString();
+	m_trackSegments.clear();
+	m_segmentLenghts.clear();
+	m_segmentMinElevations.clear();
+	m_segmentMaxElevations.clear();
+	m_trackSegments.append( QVector< RoutingLogic::GPSInfo >() );
+	m_segmentLenghts.append( 0.0 );
+	m_segmentMinElevations.append( INVALIDELEVATIONVALUE );
+	m_segmentMaxElevations.append( INVALIDELEVATIONVALUE );
+	m_maxSpeed = 0.0;
 
-	m_tracklogPrefix = tr( "MoNav Track" );
+	m_tracklogPrefix = tr( "MoNavTrack" );
 	QString tracklogFilename = m_tracklogPrefix;
 
 	QDateTime currentDateTime = QDateTime::currentDateTime();
-	tracklogFilename.append( currentDateTime.toString( " yyyy-MM-dd" ) );
+	tracklogFilename.append( currentDateTime.toString( "-yyyy-MM-dd" ) );
 	tracklogFilename.append( ".gpx" );
 	m_logFile.setFileName( fileInDirectory( m_tracklogPath, tracklogFilename ) );
 }
@@ -65,38 +80,24 @@ void Logger::initialize()
 
 QVector< int > Logger::polygonEndpointsTracklog()
 {
+	int endpoint = 0;
 	QVector<int> endpoints;
-	bool append = false;
-	int invalidElements = 0;
-	for (int i = 0; i < m_gpsInfoBuffer.size(); i++)
-	{
-		if( !m_gpsInfoBuffer.at(i).position.IsValid() )
-		{
-			invalidElements++;
-			append = true;
-			continue;
-		}
-		if (append == true || endpoints.size() == 0)
-		{
-			endpoints.append(i+1-invalidElements);
-			append = false;
-			continue;
-		}
-		endpoints.pop_back();
-		endpoints.append(i+1-invalidElements);
+	for( int i = 0; i < m_trackSegments.size(); i++ ){
+		endpoint += m_trackSegments[i].size();
+		endpoints.append( endpoint );
 	}
-
 	return endpoints;
 }
 
 
+// TODO: Why copy tons of data?!? This method possibly is called at each Gps-Update.
 QVector< UnsignedCoordinate > Logger::polygonCoordsTracklog()
 {
 	QVector<UnsignedCoordinate> coordinates;
-	for (int i = 0; i < m_gpsInfoBuffer.size(); i++)
-	{
-		if( m_gpsInfoBuffer.at(i).position.IsValid() )
-			coordinates.append(m_gpsInfoBuffer.at(i).position);
+	for( int i = 0; i < m_trackSegments.size(); i++ ){
+		for( int j = 0; j < m_trackSegments[i].size(); j++ ){
+			coordinates.append( m_trackSegments[i][j].position );
+		}
 	}
 	return coordinates;
 }
@@ -108,9 +109,9 @@ void Logger::positionChanged()
 		return;
 
 	const RoutingLogic::GPSInfo& gpsInfo = RoutingLogic::instance()->gpsInfo();
-	if ( !gpsInfo.position.IsValid() )
-		return;
-	m_gpsInfoBuffer.append(gpsInfo);
+	// TODO: Call by reference, not value?
+	processGpsInfo( gpsInfo );
+
 	int flushSecondsPassed = m_lastFlushTime.secsTo( QDateTime::currentDateTime() );
 	if ( flushSecondsPassed >= 300 )
 		writeGpxLog();
@@ -118,151 +119,89 @@ void Logger::positionChanged()
 }
 
 
-bool Logger::writeGpxLog()
-{
-
-	QString backupFilename = m_logFile.fileName().remove( m_logFile.fileName().size() -4, 4 ).append( "-bck.gpx" );
-	if ( m_logFile.exists() && m_logFile.exists(backupFilename))
-		m_logFile.remove( backupFilename );
-
-	if ( !m_logFile.open( QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate ) ){
-		m_loggingEnabled = false;
-		qDebug() << "Logger: Cannot write " << m_logFile.fileName() << ". Logging disabled.";
-		return false;
-	}
-
-	QString trackName = m_tracklogPrefix;
-	QDateTime currentDateTime = QDateTime::currentDateTime();
-	trackName.append( currentDateTime.toString( " yyyy-MM-dd" ) );
-	trackName.prepend("  <name>");
-	trackName.append("</name>\n");
-
-	QTextStream gpxStream(&m_logFile);
-	gpxStream << QString("<?xml version=\"1.0\"?>\n").toUtf8();
-	gpxStream << QString("<gpx version=\"1.0\" creator=\"MoNav Tracklogger\" xmlns=\"http://www.topografix.com/GPX/1/0\">\n").toUtf8();
-	gpxStream << QString("  <trk>\n").toUtf8();
-	gpxStream << trackName;
-
-	bool insideTracksegment = false;
-	for (int i = 0; i < m_gpsInfoBuffer.size(); i++)
-	{
-			if (!m_gpsInfoBuffer.at(i).position.IsValid() && insideTracksegment)
-		{
-			gpxStream << "    </trkseg>\n";
-			insideTracksegment = false;
-			continue;
-		}
-		if (!m_gpsInfoBuffer.at(i).position.IsValid() && !insideTracksegment)
-		{
-			continue;
-		}
-		if (m_gpsInfoBuffer.at(i).position.IsValid() && !insideTracksegment)
-		{
-			gpxStream << "    <trkseg>\n";
-			insideTracksegment = true;
-		}
-		if (m_gpsInfoBuffer.at(i).position.IsValid() && insideTracksegment)
-		{
-			QString lat = QString::number(m_gpsInfoBuffer.at(i).position.ToGPSCoordinate().latitude).prepend("      <trkpt lat=\"").append("\"");
-			QString lon = QString::number(m_gpsInfoBuffer.at(i).position.ToGPSCoordinate().longitude).prepend(" lon=\"").append("\">\n");
-			QString ele = QString::number(m_gpsInfoBuffer.at(i).altitude).prepend("        <ele>").append("</ele>\n");
-			QString time = m_gpsInfoBuffer.at(i).timestamp.toString( "yyyy-MM-ddThh:mm:ss" ).prepend("        <time>").append("</time>\n");
-			gpxStream << lat.toUtf8();
-			gpxStream << lon.toUtf8();
-			if (!ele.contains("nan"))
-				gpxStream << ele.toUtf8();
-			gpxStream << time.toUtf8();
-			gpxStream << QString("      </trkpt>\n").toUtf8();
-		}
-	}
-	if (insideTracksegment)
-	{
-		gpxStream << QString("    </trkseg>\n").toUtf8();
-	}
-	gpxStream << QString("  </trk>\n").toUtf8();
-	gpxStream << QString("</gpx>\n").toUtf8();
-	m_logFile.close();
-	m_lastFlushTime = QDateTime::currentDateTime();
-	return true;
-}
-
-
 bool Logger::readGpxLog()
 {
-	m_gpsInfoBuffer.clear();
-
-	if ( !m_logFile.open( QIODevice::ReadOnly | QIODevice::Text ) )
-	{
+	if ( !m_logFile.open( QIODevice::ReadOnly | QIODevice::Text ) ){
 		return false;
 	}
 
-	QString lineBuffer;
-	QString latString;
-	QString lonString;
-	QString eleString;
-	QString timeString;
-	QStringList tempList;
-	bool insideTrackpoint = false;
-	while ( !m_logFile.atEnd() )
+	QXmlStreamReader gpxReader( &m_logFile );
+	QXmlStreamAttributes currentAttributes;
+	QXmlStreamAttribute currentAttribute;
+	double lat = 200.0;
+	double lon = 200.0;
+	RoutingLogic::GPSInfo gpsInfo;
+	gpsInfo.altitude = INVALIDELEVATIONVALUE;
+	GPSCoordinate gpsCoordinate;
+
+	enum FileStatus{ insideFile = 0, insideGpx = 1, insideTrack = 2, insideTracksegment = 3, insideTrackpoint = 4, insideWaypoint = 5 };
+	FileStatus fileStatus = insideFile;
+
+	// Reading the file "line by line"
+	while ( !gpxReader.atEnd() )
 	{
-		lineBuffer = m_logFile.readLine();
-		lineBuffer = lineBuffer.simplified();
-		if (!insideTrackpoint)
+		gpxReader.readNext();
+		if( gpxReader.hasError() )
 		{
-			latString = "";
-			lonString = "";
-			eleString = "";
-			timeString = "";
+			qCritical() << tr( "Error while reading\n%1\n%2" ).arg( m_logFile.fileName() ).arg( gpxReader.errorString() );
+			m_logFile.close();
+			return false;
 		}
-		if (lineBuffer.contains("<trkpt"))
+
+		if ( gpxReader.isStartElement() && gpxReader.name().toString() == "trkseg" )
 		{
-			insideTrackpoint = true;
-			tempList = lineBuffer.split("\"");
-			latString = tempList.at(1);
-			lonString = tempList.at(3);
+			if( m_trackSegments[0].size() > 0 ){
+				m_trackSegments.append( QVector< RoutingLogic::GPSInfo >() );
+				m_segmentLenghts.append( 0.0 );
+				m_segmentMinElevations.append( INVALIDELEVATIONVALUE );
+				m_segmentMaxElevations.append( INVALIDELEVATIONVALUE );
+			}
+			fileStatus = insideTracksegment;
+			continue;
 		}
-		if (lineBuffer.contains("<ele>"))
+		else if ( gpxReader.isEndElement() && gpxReader.name().toString() == "trkseg" )
 		{
-			lineBuffer = lineBuffer.remove("<ele>");
-			lineBuffer = lineBuffer.remove("</ele>");
-			eleString = lineBuffer;
+			fileStatus = insideTrack;
+			continue;
 		}
-		if (lineBuffer.contains("<time>"))
+
+		else if ( gpxReader.isStartElement() && gpxReader.name().toString() == "trkpt" )
 		{
-			lineBuffer = lineBuffer.remove("<time>");
-			lineBuffer = lineBuffer.remove("</time>");
-			timeString = lineBuffer;
+			fileStatus = insideTrackpoint;
+			currentAttributes = gpxReader.attributes();
+			for( int i = 0; i < currentAttributes.size(); i++ ){
+				if( currentAttributes[i].name() == "lat" )
+					lat = currentAttributes[i].value().toString().toDouble();
+				if( currentAttributes[i].name() == "lon" )
+					lon = currentAttributes[i].value().toString().toDouble();
+			}
+			gpsCoordinate.latitude = lat;
+			gpsCoordinate.longitude = lon;
+			gpsInfo.position = UnsignedCoordinate( gpsCoordinate );
+			gpsInfo.horizontalAccuracy = 0;
+			continue;
 		}
-		if (lineBuffer.contains("</trkpt>"))
+		else if ( gpxReader.isStartElement() && fileStatus == insideTrackpoint && gpxReader.name().toString() == "ele")
 		{
-			RoutingLogic::GPSInfo gpsInfo;
-			gpsInfo.position = UnsignedCoordinate( GPSCoordinate() );
-			gpsInfo.altitude = -1;
-			gpsInfo.groundSpeed = -1;
-			gpsInfo.verticalSpeed = -1;
-			gpsInfo.heading = -1;
-			gpsInfo.horizontalAccuracy = -1;
-			gpsInfo.verticalAccuracy = -1;
-			QDateTime invalidTime;
-			gpsInfo.timestamp = invalidTime;
-			gpsInfo.position = UnsignedCoordinate( GPSCoordinate( latString.toDouble(), lonString.toDouble() ) );
-			gpsInfo.altitude = eleString.toDouble();
-			gpsInfo.timestamp = QDateTime::fromString( timeString, "yyyy-MM-ddTHH:mm:ss" );
-			m_gpsInfoBuffer.append(gpsInfo);
+			gpsInfo.altitude = gpxReader.readElementText().toDouble();
+			gpsInfo.verticalAccuracy = 0;
+			continue;
 		}
-		if (lineBuffer.contains("</trkseg>"))
+		else if ( gpxReader.isStartElement() && fileStatus == insideTrackpoint && gpxReader.name().toString() == "time")
 		{
-			RoutingLogic::GPSInfo gpsInfo;
-			gpsInfo.position = UnsignedCoordinate( GPSCoordinate() );
-			gpsInfo.altitude = -1;
-			gpsInfo.groundSpeed = -1;
-			gpsInfo.verticalSpeed = -1;
-			gpsInfo.heading = -1;
-			gpsInfo.horizontalAccuracy = -1;
-			gpsInfo.verticalAccuracy = -1;
-			QDateTime invalidTime;
-			gpsInfo.timestamp = invalidTime;
-			m_gpsInfoBuffer.append(gpsInfo);
+			// TODO: See the writer, there are several time formats.
+			// Currently when using a tracklog from a Garmin eTrex, the timestamp gets lost
+			gpsInfo.timestamp = QDateTime::fromString( gpxReader.readElementText(), Qt::ISODate ); // 2011-05-07T15:37:42
+			continue;
+		}
+		else if ( gpxReader.isEndElement() && gpxReader.name().toString() == "trkpt" )
+		{
+			fileStatus = insideTracksegment;
+			processGpsInfo( gpsInfo );
+			// Reinitialize the object to make it invalid.
+			gpsInfo = RoutingLogic::GPSInfo();
+			gpsInfo.altitude = INVALIDELEVATIONVALUE;
+			continue;
 		}
 	}
 	m_logFile.close();
@@ -271,12 +210,232 @@ bool Logger::readGpxLog()
 }
 
 
+void Logger::processGpsInfo( RoutingLogic::GPSInfo gpsInfo )
+{
+	if( !gpsInfo.position.IsValid() ){
+		return;
+	}
+	// As a tracklog does not provide accuracy, it gets set to 0 while reading the tracklog.
+	// Indoor results: Horizontal accuracy: 652.64 , Vertical accuracy: 32767.5
+	// Outdoor results: Horizontal accuracy: Between 27 and 37 , Vertical accuracy: Between 35 and 50
+	if ( gpsInfo.horizontalAccuracy > 40 )
+		return;
+	if ( gpsInfo.verticalAccuracy > 40 )
+		gpsInfo.altitude = INVALIDELEVATIONVALUE;
+	// TODO: Replace this ugly string comparison by something more elegant.
+	// Unfortunately a quick search brought up that such checks depend on the compiler and platform used.
+	QString checkValue = QString::number( gpsInfo.altitude );
+	if( checkValue == "nan" || checkValue == "inf" )
+		gpsInfo.altitude = INVALIDELEVATIONVALUE;
+
+	// TODO: Maybe filter inaccurate data:
+	// Position and/or timestamp equal the last received event (which actually happens with AGPS)
+	// Probably the initial accuracy check already is sufficient?
+
+	// Filling cache variables
+	if( m_trackSegments.last().size() > 0 ){
+		double speed = 0.0;
+		double distance = 0.0;
+		QDateTime startTime = m_trackSegments.last().last().timestamp;
+		QDateTime endTime = gpsInfo.timestamp;
+		double seconds = 	startTime.secsTo( endTime );
+		distance = gpsInfo.position.ToGPSCoordinate().Distance( m_trackSegments.last().last().position.ToGPSCoordinate() );
+		m_segmentLenghts.last() += distance;
+		if( seconds > 0 )
+			speed = (distance * 36) / (seconds * 10);
+
+		if( speed > m_maxSpeed ){
+			m_maxSpeed = speed;
+		}
+	}
+
+	// At this point, all elevations should have been set to something meaningful
+	if( m_segmentMinElevations.last() == INVALIDELEVATIONVALUE || gpsInfo.altitude < m_segmentMinElevations.last() ){
+		m_segmentMinElevations.last() = gpsInfo.altitude;
+	}
+	if( m_segmentMaxElevations.last() == INVALIDELEVATIONVALUE || gpsInfo.altitude > m_segmentMaxElevations.last() ){
+		m_segmentMaxElevations.last() = gpsInfo.altitude;
+	}
+	m_trackSegments.last().append( gpsInfo );
+}
+
+
+bool Logger::writeGpxLog()
+{
+	QDateTime currentDateTime = QDateTime::currentDateTime();
+	// Create a backup while writing to avoid data loss in case the battery drained etc.
+	QString backupFilename;
+	backupFilename = m_logFile.fileName().remove( m_logFile.fileName().size() -4, 4 );
+	backupFilename.append( currentDateTime.toString( "-hhmmss" ) );
+	backupFilename = backupFilename.append( tr( "-bck" ) );
+	backupFilename = backupFilename.append( ".gpx" );
+	// Always do this before opening the logfile, as the logfile got closed otherwise.
+	m_logFile.copy( backupFilename );
+
+	if ( !m_logFile.open( QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate ) ){
+		m_loggingEnabled = false;
+		qCritical() << "Logger: Cannot write " << m_logFile.fileName() << ". Logging disabled.";
+		return false;
+	}
+
+	QString trackName = m_tracklogPrefix;
+	trackName.append( currentDateTime.toString( " yyyy-MM-dd" ) );
+
+	enum FileStatus{ insideFile = 0, insideGpx = 1, insideTrack = 2, insideTracksegment = 3, insideTrackpoint = 4, insideWaypoint = 5 };
+	FileStatus fileStatus = insideFile;
+
+	QXmlStreamWriter gpxWriter(&m_logFile);
+	gpxWriter.setAutoFormatting(true);
+	gpxWriter.setAutoFormattingIndent( 2 );
+	gpxWriter.writeStartDocument();
+	gpxWriter.writeStartElement( "gpx" );
+	gpxWriter.writeAttribute( "creator", "MoNav Tracklogger" );
+	gpxWriter.writeAttribute( "version", "1.0" );
+	gpxWriter.writeNamespace( "http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd","schemaLocation" );
+	// fileStatus = insideGpx;
+	gpxWriter.writeStartElement( "trk" );
+	gpxWriter.writeTextElement( "name", trackName );
+	fileStatus = insideTrack;
+
+	QVector< RoutingLogic::GPSInfo > currentSegment;
+	for( int h = 0; h < m_trackSegments.size(); h++ )
+	{
+		currentSegment = m_trackSegments[h];
+		for( int i = 0; i < currentSegment.size(); i++ )
+		{
+			if( currentSegment[i].position.IsValid() && fileStatus == insideTrack ){
+				gpxWriter.writeStartElement( "trkseg" );
+				fileStatus = insideTracksegment;
+			}
+			if( currentSegment[i].position.IsValid() && fileStatus == insideTracksegment ){
+				gpxWriter.writeStartElement( "trkpt" );
+				gpxWriter.writeAttribute( "lat", QString::number( currentSegment[i].position.ToGPSCoordinate().latitude, 'f', 6 ) );
+				gpxWriter.writeAttribute( "lon", QString::number( currentSegment[i].position.ToGPSCoordinate().longitude, 'f', 6 ) );
+				// TODO: See processGpsInfo(). An invalid altitude should not appear in the lists. Remove this section.
+				if( currentSegment[i].altitude != INVALIDELEVATIONVALUE )
+					gpxWriter.writeTextElement( "ele", QString::number( currentSegment[i].altitude, 'f', 0 ) );
+				// TODO: There are several flavours of the timestamp format, which describe UTC, local time, UTC+[hours] and the like
+				// See the reader method also. I recommend to write UTC.
+				// http://www.routeconverter.de/forum/archive/index.php/thread-519.html
+				if( currentSegment[i].timestamp.isValid() )
+					gpxWriter.writeTextElement( "time", currentSegment[i].timestamp.toString( Qt::ISODate ) );
+				gpxWriter.writeEndElement();
+			}
+			if( i == currentSegment.size()-1 && fileStatus == insideTracksegment ){
+				gpxWriter.writeEndElement();
+				fileStatus = insideTrack;
+			}
+		}
+	}
+
+	gpxWriter.writeEndDocument();
+	m_logFile.close();
+	// Remove the backup copy in case everything seems to be ok
+	if( QFile::exists ( backupFilename ) )
+		m_logFile.remove( backupFilename );
+	m_lastFlushTime = QDateTime::currentDateTime();
+	return true;
+}
+
+
 void Logger::clearTracklog()
 {
-	m_gpsInfoBuffer.clear();
-	writeGpxLog();
 	initialize();
+	writeGpxLog();
 	readGpxLog();
+}
+
+
+double Logger::trackDistance()
+{
+	double distance = 0.0;
+	for( int i = 0; i < m_segmentLenghts.size(); i++ )
+		distance += m_segmentLenghts[i];
+	return distance;
+}
+
+
+double Logger::trackMinElevation()
+{
+	double elevation = INVALIDELEVATIONVALUE;
+	for( int i = 0; i < m_segmentMinElevations.size(); i++ ){
+		if( elevation == INVALIDELEVATIONVALUE || m_segmentMinElevations[i] < elevation )
+			elevation = m_segmentMinElevations[i];
+	}
+	return elevation;
+}
+
+
+double Logger::trackMaxElevation()
+{
+	double elevation = INVALIDELEVATIONVALUE;
+	for( int i = 0; i < m_segmentMaxElevations.size(); i++ ){
+		if( m_segmentMaxElevations[i] > elevation )
+			elevation = m_segmentMaxElevations[i];
+	}
+	return elevation;
+}
+
+
+double Logger::maxSpeed()
+{
+	return m_maxSpeed;
+}
+
+
+double Logger::averageSpeed()
+{
+	QDateTime startTime;
+	QDateTime endTime;
+	double seconds = 0;
+	double distance = 0.0;
+	double speed = 0.0;
+	for( int i = 0; i < m_trackSegments.size(); i++ ){
+		if( m_trackSegments[i].size() < 2 )
+			continue;
+
+		startTime = m_trackSegments[i].first().timestamp;
+		endTime = m_trackSegments[i].last().timestamp;
+		seconds = startTime.secsTo( endTime );
+		distance = m_segmentLenghts[i];
+		if( seconds > 0 ){
+			speed += (distance * 36) / (seconds * 10);
+		}
+	}
+	return speed / m_trackSegments.size();
+}
+
+
+QDateTime Logger::trackStartTime()
+{
+	QDateTime startTime;
+	if( m_trackSegments[0].size() > 0 )
+		startTime = m_trackSegments[0][0].timestamp;
+	return startTime;
+}
+
+
+int Logger::trackDuration()
+{
+	QDateTime startTime;
+	QDateTime endTime;
+	int seconds = 0;
+
+	for( int i = 0; i < m_trackSegments.size(); i++ ){
+		if( m_trackSegments[i].size() < 1 )
+			continue;
+
+		startTime = m_trackSegments[i].first().timestamp;
+		endTime = m_trackSegments[i].last().timestamp;
+		seconds += startTime.secsTo( endTime );
+	}
+	return seconds;
+}
+
+
+const QVector< QVector< RoutingLogic::GPSInfo > >& Logger::currentTrack()
+{
+	return m_trackSegments;
 }
 
 
@@ -289,10 +448,10 @@ bool Logger::loggingEnabled()
 void Logger::setLoggingEnabled(bool enable)
 {
 	// Avoid a new logfile is created in case nothing changed.
-	if (m_loggingEnabled == enable)
+	if ( m_loggingEnabled == enable )
 		return;
 	QSettings settings( "MoNavClient" );
-	settings.setValue("LoggingEnabled", enable);
+	settings.setValue( "LoggingEnabled", enable );
 	writeGpxLog();
 	initialize();
 	readGpxLog();
@@ -305,13 +464,13 @@ QString Logger::directory()
 }
 
 
-void Logger::setDirectory(QString directory)
+void Logger::setDirectory( QString directory )
 {
 	// Avoid a new logfile is created in case nothing changed.
-	if (m_tracklogPath == directory)
+	if ( m_tracklogPath == directory )
 		return;
 	QSettings settings( "MoNavClient" );
-	settings.setValue("LogFilePath", directory);
+	settings.setValue( "LogFilePath", directory );
 	writeGpxLog();
 	initialize();
 	readGpxLog();

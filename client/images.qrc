@@ -4,17 +4,23 @@
         <file>../images/directions/forward.png</file>
         <file>../images/directions/left.png</file>
         <file>../images/directions/right.png</file>
+        <file>../images/about.png</file>
+        <file>../images/home.png</file>
         <file>../images/map.png</file>
         <file>../images/route.png</file>
         <file>../images/source.png</file>
         <file>../images/target.png</file>
         <file>../images/address.png</file>
         <file>../images/bookmark.png</file>
+        <file>../images/tripinfo.png</file>
+        <file>../images/remove.png</file>
+        <file>../images/satellite.png</file>
         <file>../images/oxygen/configure.png</file>
         <file>../images/oxygen/network-wireless.png</file>
         <file>../images/oxygen/preferences-system.png</file>
         <file>../images/oxygen/folder-tar.png</file>
         <file>../images/oxygen/hwinfo.png</file>
+        <file>../images/oxygen/map-modules.png</file>
         <file>../images/directions/roundabout.png</file>
         <file>../images/directions/roundabout_exit1.png</file>
         <file>../images/directions/roundabout_exit2.png</file>

@@ -25,6 +25,8 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMessageBox>
 #include <QtPlugin>
 #include <QThread>
+#include <QTranslator>
+#include <QLocale>
 #include <cstdio>
 #include <cstdlib>
 
@@ -86,6 +88,22 @@ int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 	qInstallMsgHandler( MessageBoxHandler );
+
+	// The translation .qm files are included in the application binary
+	QTranslator Translator;
+	QLocale DefaultLocale;
+	QString TranslatorFile;
+
+	// See http://web.mit.edu/qt/www/i18n.html#internationalization
+	TranslatorFile.append( DefaultLocale.name() );
+	// Truncating the locale to a maximum of 5 characters so it looks like
+	// xx_yy where xx is the lang and yy is the country
+	TranslatorFile.truncate( 5 );
+	TranslatorFile.append( ".qm" );
+	TranslatorFile.prepend( ":/translations/" );
+	Translator.load( TranslatorFile );
+	a.installTranslator( &Translator );
+
 	a.connect( &a, SIGNAL(aboutToQuit()), MapData::instance(), SLOT(cleanup()) );
 	a.connect( &a, SIGNAL(aboutToQuit()), RoutingLogic::instance(), SLOT(cleanup()) );
 	a.connect( &a, SIGNAL(aboutToQuit()), Logger::instance(), SLOT(cleanup()) );

@@ -42,6 +42,7 @@ protected slots:
 	void mapLoaded();
 	void modulesLoaded();
 	void modulesCancelled();
+	void tripinfoCancelled();
 
 	void dataLoaded();
 
@@ -58,50 +59,39 @@ protected slots:
 	void settingsAddressLookup();
 	void settingsGPS();
 
-	void gotoSource();
-	void gotoGpsCoordinate();
-	void gotoGpsLocation();
-	void gotoTarget();
-	void gotoBookmark();
-	void gotoAddress();
-
-	void sourceByBookmark();
-	void sourceByAddress();
-	void sourceByGPS();
-
-	void setWaypointID( int id );
-	void waypointsChanged();
-
-	void targetByBookmark();
-	void targetByAddress();
-	void subductRoutepoint();
-	void addRoutepoint();
-
 	void bookmarks();
-	void computeRoundTrip();
+	void addresses();
+	void alterRoute( UnsignedCoordinate );
+	void remove();
+	void gpsLocation();
+	void gpsCoordinate();
 
 	void setModeSourceSelection();
+	void setModeViaNone();
+	void setModeViaInsert();
+	void setModeViaAppend();
 	void setModeTargetSelection();
-	void setModeNoSelection();
-	void toggleLocked();
-
-	void toolsMenu();
-	void gotoMenu();
-	void settingsMenu();
-	void sourceMenu();
-	void targetMenu();
+	void setModeInstructions();
+	void setModeless();
 
 	void showInstructions();
 	void instructionsChanged();
 
 	void displayMapChooser();
 	void displayModuleChooser();
+	void displayTripinfo();
+	void hideControls();
+
+	void about();
+	void projectPage();
 
 protected:
 
 	virtual void resizeEvent( QResizeEvent* event );
+	void createActions();
+	void populateMenus();
+	void populateToolbars();
 	void connectSlots();
-	void setupMenu();
 	void resizeIcons();
 
 #ifdef Q_WS_MAEMO_5

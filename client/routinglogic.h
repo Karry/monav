@@ -61,8 +61,12 @@ public:
 	UnsignedCoordinate source() const;
 	// target == last waypoint
 	UnsignedCoordinate target() const;
-	// route description via its nodes' coordinate
+	// route description via its nodes' coordinates
 	QVector< IRouter::Node > route() const;
+	// returns the distance from source to target in meters
+	double routeDistance();
+	// returns the speed according to the information of the GPS subsystem
+	double groundSpeed();
 	// is the source linked to the GPS reciever?
 	bool gpsLink() const;
 	// GPS information
