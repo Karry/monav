@@ -52,14 +52,16 @@ InstructionGenerator::~InstructionGenerator()
 void InstructionGenerator::generateInstructions()
 {
 	// qDebug() << "About to generate instructions";
-	// Called by RoutingLogic before it emits routeChanged()
+	// Main entry point, called by RoutingLogic before it emits routeChanged()
 	generate( RoutingLogic::instance()->nodes(), RoutingLogic::instance()->edges() );
+	qDebug() << m_icons << m_labels << 	m_audioSnippets;
 }
 
 
 // This method has been ported from descriptiongenerator.h
 // void descriptions( QStringList* icons, QStringList* labels, QVector< IRouter::Node > pathNodes, QVector< IRouter::Edge > pathEdges, int maxSeconds = std::numeric_limits< int >::max() )
-void InstructionGenerator::generate( QVector< IRouter::Node > pathNodes, QVector< IRouter::Edge > pathEdges )
+// TODO: Better use a reference than a copy?
+void InstructionGenerator::generate( QVector< IRouter::Node > pathNodes, QVector< IRouter::Edge > pathEdges, int maxSeconds )
 {
 	m_icons.clear();
 	m_labels.clear();
@@ -125,7 +127,7 @@ void InstructionGenerator::generate( QVector< IRouter::Node > pathNodes, QVector
 			// describe( icons, labels);
 			describe();
 			// TODO: maxSeconds = std::numeric_limits< int >::max() once was a parameter of this function call which I didn't understand
-			if ( seconds >= std::numeric_limits< int >::max() )
+			if ( seconds >= maxSeconds )
 				break;
 			newDescription( router, pathEdges[edge + 1] );
 			m_direction = direction;
@@ -134,7 +136,7 @@ void InstructionGenerator::generate( QVector< IRouter::Node > pathNodes, QVector
 	GPSCoordinate nextGPS = pathNodes.back().coordinate.ToGPSCoordinate();
 	m_distance += gps.ApproximateDistance( nextGPS );
 	// TODO: maxSeconds = std::numeric_limits< int >::max() once was a parameter of this function call which I didn't understand
-	if ( seconds < std::numeric_limits< int >::max() ){
+	if ( seconds < maxSeconds ){
 		// describe( icons, labels );
 		describe();
 	}

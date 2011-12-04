@@ -50,7 +50,9 @@ signals:
 
 protected:
 
-	void generate( QVector< IRouter::Node > pathNodes, QVector< IRouter::Edge > pathEdges );
+	// I didn't understand the maxSeconds parameter. Since the MainWindow passed a value of 60, I placed it here.
+	// void generate( QVector< IRouter::Node > pathNodes, QVector< IRouter::Edge > pathEdges, int maxSeconds = std::numeric_limits< int >::max() );
+	void generate( QVector< IRouter::Node > pathNodes, QVector< IRouter::Edge > pathEdges, int maxSeconds = 60 );
 	void newDescription( IRouter* router, const IRouter::Edge& edge );
 	// Ported from descriptiongenerator.h
 	int angle( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third );
