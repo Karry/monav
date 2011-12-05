@@ -97,8 +97,6 @@ void InstructionGenerator::generateAbstractInstructions()
 		
 	}
 
-
-	// m_previousAbstractInstruction.init();
 	if ( m_abstractInstructions.size() > 0 ){
 		if ( m_previousAbstractInstruction.typeID != m_abstractInstructions[0].typeID && m_previousAbstractInstruction.nameID != m_abstractInstructions[0].nameID ){
 			m_previousAbstractInstruction = m_abstractInstructions[0];
@@ -118,7 +116,6 @@ void InstructionGenerator::purgeInstructions()
 			m_abstractInstructions[i+1].typeID == 13
 		)
 		{
-			// qDebug() << "Unifying roundabout";
 			m_abstractInstructions[i+1].distance += m_abstractInstructions[i].distance;
 			m_abstractInstructions[i+1].direction = m_abstractInstructions[i].direction;
 			if ( m_abstractInstructions[i].branchingPossible )
@@ -137,11 +134,9 @@ void InstructionGenerator::purgeInstructions()
 		)
 		{
 			m_abstractInstructions[i+1].distance += m_abstractInstructions[i].distance;
-			// m_abstractInstructions[i+1].direction = m_abstractInstructions[i].direction;
 			deleteCurrentIndex = true;
 		}
 		if ( deleteCurrentIndex ){
-			// qDebug() << "Removing" << i << "of type" << m_abstractInstructions[i].typeID << "Name ID" << m_abstractInstructions[i].nameID;
 			m_abstractInstructions.remove(i);
 			i--;
 			deleteCurrentIndex = false;
@@ -208,8 +203,7 @@ void InstructionGenerator::generateSpeech(){
 
 	audioFilename.prepend( ":/audio/en/" );
 	audioFilename.append( ".wav" );
-	// qDebug() << audioFilename;
-	// Didn't work
+	// TODO: Didn't work
 	// emit speechRequest( audioFilename );
 	Audio::instance()->speechRequest( audioFilename );
 }
