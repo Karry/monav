@@ -92,7 +92,7 @@ void InstructionGenerator::generateAbstractInstructions()
 		bool nameAvailable = router->GetName( &name, m_abstractInstructions[i].nameID );
 		assert( nameAvailable );
 
-		qDebug() << type << name << (int)m_abstractInstructions[i].distance;
+		qDebug() << type << name << (int)m_abstractInstructions[i].distance << "m";
 		
 	}
 }
@@ -122,7 +122,8 @@ void InstructionGenerator::purgeInstructions( QVector< AbstractInstruction > &ab
 		if (
 			abstractInstructions[i].typeID == abstractInstructions[i+1].typeID &&
 			abstractInstructions[i].nameID == abstractInstructions[i+1].nameID &&
-			abstractInstructions[i].direction == 0
+			abstractInstructions[i].direction >= -1 &&
+			abstractInstructions[i].direction <= 1
 		)
 		{
 			abstractInstructions[i+1].distance += abstractInstructions[i].distance;
