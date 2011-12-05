@@ -43,6 +43,8 @@ struct AbstractInstruction {
 	int direction;
 	int exitNumber;
 	bool branchingPossible;
+	bool followInstructionGenerated;
+	bool turnInstructionGenerated;
 	void init() {
 		nameID = std::numeric_limits< unsigned >::max();
 		typeID = std::numeric_limits< unsigned >::max();
@@ -50,6 +52,8 @@ struct AbstractInstruction {
 		direction = std::numeric_limits< int >::max();
 		exitNumber = std::numeric_limits< int >::max();
 		branchingPossible = false;
+		followInstructionGenerated = false;
+		turnInstructionGenerated = false;
 	}
 };
 
@@ -66,12 +70,15 @@ public slots:
 
 signals:
 
+	void speechRequest( QString );
+
 protected:
 
 	void generateAbstractInstructions();
 	int angle( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third );
 	void describe();
-	void purgeInstructions( QVector< AbstractInstruction >& );
+	void purgeInstructions();
+	void generateSpeech();
 
 	double m_totalDistance;
 	double m_totalSeconds;

@@ -13,9 +13,11 @@ TARGET = monav
 TRANSLATIONS += ../translations/de_DE.ts
 RESOURCES += translations.qrc
 RESOURCES += images.qrc
+RESOURCES += audio.qrc
 
 # Required by osmrendererclient
 QT += network
+QT += multimedia
 CONFIG += mobility
 MOBILITY += location
 # Required to get a non-debug build (at least on Windows)
@@ -50,7 +52,8 @@ SOURCES += main.cpp \
 	 gpsdpositioninfosource.cpp \
 	 json.cpp \
 	tripinfodialog.cpp \
-	worldmapchooser.cpp
+	worldmapchooser.cpp \
+	audio.cpp
 
 HEADERS += \
 	paintwidget.h \
@@ -84,7 +87,8 @@ HEADERS += \
 	json.h \
 	gpsdpositioninfosource.h \
 	tripinfodialog.h \
-	worldmapchooser.h
+	worldmapchooser.h \
+	audio.h
 
 FORMS += \
 	paintwidget.ui \

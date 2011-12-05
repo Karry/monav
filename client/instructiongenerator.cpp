@@ -17,8 +17,9 @@ You should have received a copy of the GNU General Public License
 along with MoNav. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "instructiongenerator.h"
 #include "routinglogic.h"
+#include "instructiongenerator.h"
+#include "audio.h"
 
 InstructionGenerator* InstructionGenerator::instance()
 {
@@ -81,8 +82,8 @@ void InstructionGenerator::generateAbstractInstructions()
 		}
 		m_abstractInstructions.append( abstractInstruction );
 	}
-	purgeInstructions( m_abstractInstructions );
-	
+	purgeInstructions();
+
 	for ( int i = 0; i < m_abstractInstructions.size(); i++ ){
 		QString type, name;
 
@@ -92,51 +93,125 @@ void InstructionGenerator::generateAbstractInstructions()
 		bool nameAvailable = router->GetName( &name, m_abstractInstructions[i].nameID );
 		assert( nameAvailable );
 
-		qDebug() << type << name << (int)m_abstractInstructions[i].distance << "m";
+		qDebug() << type << name << (int)m_abstractInstructions[i].distance << "m" << m_abstractInstructions[i].direction;
 		
 	}
+
+
+	// m_previousAbstractInstruction.init();
+	if ( m_abstractInstructions.size() > 0 ){
+		if ( m_previousAbstractInstruction.typeID != m_abstractInstructions[0].typeID && m_previousAbstractInstruction.nameID != m_abstractInstructions[0].nameID ){
+			m_previousAbstractInstruction = m_abstractInstructions[0];
+		}
+	}
+	generateSpeech();
 }
 
 
-void InstructionGenerator::purgeInstructions( QVector< AbstractInstruction > &abstractInstructions)
+void InstructionGenerator::purgeInstructions()
 {
 	bool deleteCurrentIndex = false;
-	for ( int i = 0; i < abstractInstructions.size()-1; i++ ){
+	for ( int i = 0; i < m_abstractInstructions.size()-1; i++ ){
 		// Roundabouts
 		if (
-			abstractInstructions[i].typeID == 13 &&
-			abstractInstructions[i+1].typeID == 13
+			m_abstractInstructions[i].typeID == 13 &&
+			m_abstractInstructions[i+1].typeID == 13
 		)
 		{
 			// qDebug() << "Unifying roundabout";
-			abstractInstructions[i+1].distance += abstractInstructions[i].distance;
-			abstractInstructions[i+1].direction = abstractInstructions[i].direction;
-			if ( abstractInstructions[i].branchingPossible )
+			m_abstractInstructions[i+1].distance += m_abstractInstructions[i].distance;
+			m_abstractInstructions[i+1].direction = m_abstractInstructions[i].direction;
+			if ( m_abstractInstructions[i].branchingPossible )
 			{
-				abstractInstructions[i+1].branchingPossible = true;
-				abstractInstructions[i+1].exitNumber += 1;
+				m_abstractInstructions[i+1].branchingPossible = true;
+				m_abstractInstructions[i+1].exitNumber += 1;
 			}
 			deleteCurrentIndex = true;
 		}
 		// General collection
 		if (
-			abstractInstructions[i].typeID == abstractInstructions[i+1].typeID &&
-			abstractInstructions[i].nameID == abstractInstructions[i+1].nameID &&
-			abstractInstructions[i].direction >= -1 &&
-			abstractInstructions[i].direction <= 1
+			m_abstractInstructions[i].typeID == m_abstractInstructions[i+1].typeID &&
+			m_abstractInstructions[i].nameID == m_abstractInstructions[i+1].nameID &&
+			m_abstractInstructions[i].direction >= -1 &&
+			m_abstractInstructions[i].direction <= 1
 		)
 		{
-			abstractInstructions[i+1].distance += abstractInstructions[i].distance;
-			// abstractInstructions[i+1].direction = abstractInstructions[i].direction;
+			m_abstractInstructions[i+1].distance += m_abstractInstructions[i].distance;
+			// m_abstractInstructions[i+1].direction = m_abstractInstructions[i].direction;
 			deleteCurrentIndex = true;
 		}
 		if ( deleteCurrentIndex ){
-			// qDebug() << "Removing" << i << "of type" << abstractInstructions[i].typeID << "Name ID" << abstractInstructions[i].nameID;
-			abstractInstructions.remove(i);
+			// qDebug() << "Removing" << i << "of type" << m_abstractInstructions[i].typeID << "Name ID" << m_abstractInstructions[i].nameID;
+			m_abstractInstructions.remove(i);
 			i--;
 			deleteCurrentIndex = false;
 		}
 	}
+}
+
+
+void InstructionGenerator::generateSpeech(){
+	if ( m_abstractInstructions.size() == 0 ){
+		return;
+	}
+
+	QString audioFilename;
+	if ( m_abstractInstructions[0].distance > 1000 && !m_previousAbstractInstruction.followInstructionGenerated ){
+		audioFilename == "instructions-follow";
+		m_previousAbstractInstruction.followInstructionGenerated = true;
+	}
+	else if ( m_abstractInstructions[0].distance < 100 && !m_previousAbstractInstruction.turnInstructionGenerated ){
+		switch ( m_abstractInstructions[0].direction )
+		{
+			case -3:
+			{
+				audioFilename = "instructions-turn-sharply-left.wav";
+				break;
+			}
+			case -2:
+			{
+				audioFilename = "instructions-turn-left.wav";
+				break;
+			}
+			case -1:
+			{
+				audioFilename = "instructions-turn-slightly-left.wav";
+				break;
+			}
+		case 0:
+		{
+			audioFilename = "instructions-head-straightforward";
+			break;
+		}
+			case 1:
+			{
+				audioFilename = "instructions-turn-slightly-right.wav";
+				break;
+			}
+			case 2:
+			{
+				audioFilename = "instructions-turn-right.wav";
+				break;
+			}
+			case 3:
+			{
+				audioFilename = "instructions-turn-sharply-right.wav";
+				break;
+			}
+			case 4:
+			{
+				audioFilename = "instructions-u-turn.wav";
+				break;
+			}
+		}
+	}
+
+	audioFilename.prepend( ":/audio/en/" );
+	audioFilename.append( ".wav" );
+	// qDebug() << audioFilename;
+	// Didn't work
+	// emit speechRequest( audioFilename );
+	Audio::instance()->speechRequest( audioFilename );
 }
 
 

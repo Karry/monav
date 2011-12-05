@@ -1,0 +1,22 @@
+<RCC>
+    <qresource prefix="/">
+        <file>audio/en/instructions-head-straightforward.wav</file>
+        <file>audio/en/instructions-roundabout_01.wav</file>
+        <file>audio/en/instructions-roundabout_02.wav</file>
+        <file>audio/en/instructions-roundabout_03.wav</file>
+        <file>audio/en/instructions-roundabout_04.wav</file>
+        <file>audio/en/instructions-roundabout_05.wav</file>
+        <file>audio/en/instructions-roundabout_06.wav</file>
+        <file>audio/en/instructions-roundabout_07.wav</file>
+        <file>audio/en/instructions-roundabout_08.wav</file>
+        <file>audio/en/instructions-roundabout_09.wav</file>
+        <file>audio/en/instructions-take-ramp.wav</file>
+        <file>audio/en/instructions-turn-left.wav</file>
+        <file>audio/en/instructions-turn-right.wav</file>
+        <file>audio/en/instructions-turn-sharply-left.wav</file>
+        <file>audio/en/instructions-turn-sharply-right.wav</file>
+        <file>audio/en/instructions-turn-slightly-left.wav</file>
+        <file>audio/en/instructions-turn-slightly-right.wav</file>
+        <file>audio/en/instructions-u-turn.wav</file>
+    </qresource>
+</RCC>
