@@ -24,22 +24,12 @@ InstructionGenerator* InstructionGenerator::instance()
 {
 	static InstructionGenerator instructionGenerator;
 	return &instructionGenerator;
-	// connect( RoutingLogic::instance(), SIGNAL(routeChanged()), this, SLOT(routeChanged()) );
-	// connect( this, SIGNAL(routeChanged()), InstructionGenerator::instance(), SLOT(routeChanged()) );
 }
 
 
 InstructionGenerator::InstructionGenerator()
 {
-	// connect( RoutingLogic::instance(), SIGNAL(routeChanged()), this, SLOT(routeChanged()) );
-	unsigned m_lastNameID = 0;
-	unsigned m_lastTypeID = 0;
-	QString m_lastName = "";
-	QString m_lastType = "";
-	bool m_branchingPossible = false;
-	double m_distance = std::numeric_limits< double >::max();
-	int m_direction = 0;
-	int m_exitNumber = 0;
+	m_previousAbstractInstruction.init();
 }
 
 
@@ -51,115 +41,101 @@ InstructionGenerator::~InstructionGenerator()
 
 void InstructionGenerator::generateInstructions()
 {
-	// qDebug() << "About to generate instructions";
-	// Main entry point, called by RoutingLogic before it emits routeChanged()
-	generate( RoutingLogic::instance()->nodes(), RoutingLogic::instance()->edges() );
-	qDebug() << m_icons << m_labels << 	m_audioSnippets;
+	// Called by RoutingLogic before it emits routeChanged()
+	generateAbstractInstructions();
 }
 
 
-// This method has been ported from descriptiongenerator.h
-// void descriptions( QStringList* icons, QStringList* labels, QVector< IRouter::Node > pathNodes, QVector< IRouter::Edge > pathEdges, int maxSeconds = std::numeric_limits< int >::max() )
-// TODO: Better use a reference than a copy?
-void InstructionGenerator::generate( QVector< IRouter::Node > pathNodes, QVector< IRouter::Edge > pathEdges, int maxSeconds )
+void InstructionGenerator::generateAbstractInstructions()
 {
-	m_icons.clear();
-	m_labels.clear();
-	m_audioSnippets.clear();
 
+	QVector< IRouter::Edge > pathEdges = RoutingLogic::instance()->edges();
+	QVector< IRouter::Node > pathNodes = RoutingLogic::instance()->nodes();
 	IRouter* router = MapData::instance()->router();
+
 	if ( router == NULL || pathEdges.empty() || pathNodes.empty() ) {
-		// *icons = QStringList();
-		// *labels = QStringList();
 		return;
 	}
 
-	newDescription( router, pathEdges.first() );
-	int seconds = 0;
+	m_abstractInstructions.clear();
+	AbstractInstruction abstractInstruction;
+	abstractInstruction.init();
+	m_totalDistance = 0;
+	m_totalSeconds = 0;
 
-	int node = 0;
 	GPSCoordinate gps = pathNodes.first().coordinate.ToGPSCoordinate();
-	for ( int edge = 0; edge < pathEdges.size() - 1; edge++ ) {
+	unsigned int node = 0;
+
+	for ( int edge = 0; edge < pathEdges.size(); edge++ ) {
 		node += pathEdges[edge].length;
 		GPSCoordinate nextGPS = pathNodes[node].coordinate.ToGPSCoordinate();
-		m_distance += gps.ApproximateDistance( nextGPS );
+		abstractInstruction.distance = gps.ApproximateDistance( nextGPS );
 		gps = nextGPS;
-		m_branchingPossible = pathEdges[edge].branchingPossible;
-		seconds += pathEdges[edge].seconds;
-
-		if ( m_lastType == "roundabout" && pathEdges[edge + 1].type == m_lastTypeID ) {
-			if ( m_branchingPossible )
-				m_exitNumber++;
-			continue;
+		m_totalDistance += abstractInstruction.distance;
+		m_totalSeconds += pathEdges[edge].seconds;
+		abstractInstruction.branchingPossible = pathEdges[edge].branchingPossible;
+		abstractInstruction.typeID = pathEdges[edge].type;
+		abstractInstruction.nameID = pathEdges[edge].name;
+		if ( edge < pathEdges.size() -1 ){
+			abstractInstruction.direction = angle( pathNodes[node - 1].coordinate, pathNodes[node].coordinate, pathNodes[node +  1].coordinate );
 		}
+		m_abstractInstructions.append( abstractInstruction );
+	}
+	purgeInstructions( m_abstractInstructions );
+	
+	for ( int i = 0; i < m_abstractInstructions.size(); i++ ){
+		QString type, name;
 
-		int direction = angle( pathNodes[node - 1].coordinate, pathNodes[node].coordinate, pathNodes[node +  1].coordinate );
-		bool breakDescription = false;
-
-		QString type;
-		bool typeAvailable = router->GetType( &type, pathEdges[edge + 1].type );
+		bool typeAvailable = router->GetType( &type, m_abstractInstructions[i].typeID );
 		assert( typeAvailable );
 
-		if ( type == "motorway_link" && m_lastType != "motorway_link" ) {
-			for ( int nextEdge = edge + 2; nextEdge < pathEdges.size(); nextEdge++ ) {
-				if ( pathEdges[nextEdge].type != pathEdges[edge + 1].type ) {
-					for ( int otherEdge = edge + 1; otherEdge < nextEdge; otherEdge++ )
-						pathEdges[otherEdge].name = pathEdges[nextEdge].name;
-					break;
-				}
-			}
-		}
+		bool nameAvailable = router->GetName( &name, m_abstractInstructions[i].nameID );
+		assert( nameAvailable );
 
-		if ( ( type == "roundabout" ) != ( m_lastType == "roundabout" ) ) {
-			breakDescription = true;
-			if ( type != "roundabout" )
-				direction = 0;
-		} else {
-			if ( m_branchingPossible ) {
-				if ( abs( direction ) > 1 )
-					breakDescription = true;
-			}
-			if ( m_lastNameID != pathEdges[edge + 1].name )
-				breakDescription = true;
-		}
-
-		if ( breakDescription ) {
-			// describe( icons, labels);
-			describe();
-			// TODO: maxSeconds = std::numeric_limits< int >::max() once was a parameter of this function call which I didn't understand
-			if ( seconds >= maxSeconds )
-				break;
-			newDescription( router, pathEdges[edge + 1] );
-			m_direction = direction;
-		}
-	}
-	GPSCoordinate nextGPS = pathNodes.back().coordinate.ToGPSCoordinate();
-	m_distance += gps.ApproximateDistance( nextGPS );
-	// TODO: maxSeconds = std::numeric_limits< int >::max() once was a parameter of this function call which I didn't understand
-	if ( seconds < maxSeconds ){
-		// describe( icons, labels );
-		describe();
+		qDebug() << type << name << (int)m_abstractInstructions[i].distance;
+		
 	}
 }
 
 
-// TODO: Rename this method which was ported from descriptiongenerator.h
-void InstructionGenerator::newDescription( IRouter* router, const IRouter::Edge& edge )
+void InstructionGenerator::purgeInstructions( QVector< AbstractInstruction > &abstractInstructions)
 {
-	if ( m_lastNameID != edge.name ) {
-		m_lastNameID = edge.name;
-		bool nameAvailable = router->GetName( &m_lastName, m_lastNameID );
-		assert( nameAvailable );
+	bool deleteCurrentIndex = false;
+	for ( int i = 0; i < abstractInstructions.size()-1; i++ ){
+		// Roundabouts
+		if (
+			abstractInstructions[i].typeID == 13 &&
+			abstractInstructions[i+1].typeID == 13
+		)
+		{
+			// qDebug() << "Unifying roundabout";
+			abstractInstructions[i+1].distance += abstractInstructions[i].distance;
+			abstractInstructions[i+1].direction = abstractInstructions[i].direction;
+			if ( abstractInstructions[i].branchingPossible )
+			{
+				abstractInstructions[i+1].branchingPossible = true;
+				abstractInstructions[i+1].exitNumber += 1;
+			}
+			deleteCurrentIndex = true;
+		}
+		// General collection
+		if (
+			abstractInstructions[i].typeID == abstractInstructions[i+1].typeID &&
+			abstractInstructions[i].nameID == abstractInstructions[i+1].nameID &&
+			abstractInstructions[i].direction == 0
+		)
+		{
+			abstractInstructions[i+1].distance += abstractInstructions[i].distance;
+			// abstractInstructions[i+1].direction = abstractInstructions[i].direction;
+			deleteCurrentIndex = true;
+		}
+		if ( deleteCurrentIndex ){
+			// qDebug() << "Removing" << i << "of type" << abstractInstructions[i].typeID << "Name ID" << abstractInstructions[i].nameID;
+			abstractInstructions.remove(i);
+			i--;
+			deleteCurrentIndex = false;
+		}
 	}
-	if ( m_lastTypeID != edge.type ) {
-		m_lastTypeID = edge.type;
-		bool typeAvailable = router->GetType( &m_lastType, m_lastTypeID );
-		assert( typeAvailable );
-	}
-	m_branchingPossible = edge.branchingPossible;
-	m_distance = 0;
-	m_direction = 0;
-	m_exitNumber = m_lastType == "roundabout" ? 1 : 0;
 }
 
 
@@ -201,93 +177,3 @@ int InstructionGenerator::angle( UnsignedCoordinate first, UnsignedCoordinate se
 }
 
 
-// void InstructionGenerator::describe( QStringList* icons, QStringList* labels )
-void InstructionGenerator::describe()
-{
-	if ( m_exitNumber != 0 ) {
-		m_icons.push_back( QString( ":/images/directions/roundabout.png" ) );
-		m_labels.push_back( QString( "Enter the roundabout." ) );
-		m_icons.push_back( QString( ":/images/directions/roundabout_exit%1.png" ).arg( m_exitNumber ) );
-		m_labels.push_back( QString( "Take the %1. exit." ).arg( m_exitNumber ) );
-		m_exitNumber = 0;
-		return;
-	}
-
-	QString name = m_lastName;
-
-		switch ( m_direction ) {
-		case 0:
-			break;
-		case 1:
-			{
-				m_icons.push_back( ":/images/directions/slightly_right.png" );
-				m_labels.push_back( "Keep slightly right" );
-				break;
-			}
-		case 2:
-			{
-				m_icons.push_back( ":/images/directions/right.png" );
-				m_labels.push_back( "Turn right" );
-				break;
-			}
-		case 3:
-			{
-				m_icons.push_back( ":/images/directions/sharply_right.png" );
-				m_labels.push_back( "Turn sharply right" );
-				break;
-			}
-		case -1:
-			{
-				m_icons.push_back( ":/images/directions/slightly_left.png" );
-				m_labels.push_back( "Keep slightly left" );
-				break;
-			}
-		case -2:
-			{
-				m_icons.push_back( ":/images/directions/left.png" );
-				m_labels.push_back( "Turn left" );
-				break;
-			}
-		case -3:
-			{
-				m_icons.push_back( ":/images/directions/sharply_left.png" );
-				m_labels.push_back( "Turn sharply left" );
-				break;
-			}
-		}
-		if ( m_direction != 0 ) {
-			if ( !name.isEmpty() )
-				m_labels.back() += " into " + name + ".";
-			else
-				m_labels.back() += ".";
-		}
-
-		if ( m_lastType == "motorway_link" ) {
-			if ( m_direction == 0 ) {
-				m_icons.push_back( ":/images/directions/forward.png" );
-				m_labels.push_back( "" );
-			}
-			if ( !name.isEmpty() )
-				m_labels.last() = "Take the ramp towards " + name + ".";
-			else
-				m_labels.last() = "Take the ramp.";
-		}
-
-	if ( m_distance > 20 ) {
-		QString distance;
-		if ( m_distance < 100 )
-			distance = QString( "%1m" ).arg( ( int ) m_distance );
-		else if ( m_distance < 1000 )
-			distance = QString( "%1m" ).arg( ( int ) m_distance / 10 * 10 );
-		else if ( m_distance < 10000 )
-			distance = QString( "%1.%2km" ).arg( ( int ) m_distance / 1000 ).arg( ( ( int ) m_distance / 100 ) % 10 );
-		else
-			distance = QString( "%1km" ).arg( ( int ) m_distance / 1000 );
-
-		m_icons.push_back( ":/images/directions/forward.png" );
-		if ( !name.isEmpty() )
-			m_labels.push_back( ( "Continue on " + name + " for " + distance + "." ) );
-		else
-			m_labels.push_back( ( "Continue for " + distance + "." ) );
-	}
-}

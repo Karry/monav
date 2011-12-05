@@ -36,6 +36,24 @@ Q_OBJECT
 
 public:
 
+struct AbstractInstruction {
+	unsigned nameID;
+	unsigned typeID;
+	double distance;
+	int direction;
+	int exitNumber;
+	bool branchingPossible;
+	void init() {
+		nameID = std::numeric_limits< unsigned >::max();
+		typeID = std::numeric_limits< unsigned >::max();
+		distance = std::numeric_limits< double >::max();
+		direction = std::numeric_limits< int >::max();
+		exitNumber = std::numeric_limits< int >::max();
+		branchingPossible = false;
+	}
+};
+
+
 	static InstructionGenerator* instance();
 	~InstructionGenerator();
 	InstructionGenerator();
@@ -50,28 +68,18 @@ signals:
 
 protected:
 
-	// I didn't understand the maxSeconds parameter. Since the MainWindow passed a value of 60, I placed it here.
-	// void generate( QVector< IRouter::Node > pathNodes, QVector< IRouter::Edge > pathEdges, int maxSeconds = std::numeric_limits< int >::max() );
-	void generate( QVector< IRouter::Node > pathNodes, QVector< IRouter::Edge > pathEdges, int maxSeconds = 60 );
-	void newDescription( IRouter* router, const IRouter::Edge& edge );
-	// Ported from descriptiongenerator.h
+	void generateAbstractInstructions();
 	int angle( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third );
-	// void InstructionGenerator::describe( QStringList* icons, QStringList* labels );
 	void describe();
+	void purgeInstructions( QVector< AbstractInstruction >& );
 
+	double m_totalDistance;
+	double m_totalSeconds;
 	QStringList m_icons;
 	QStringList m_labels;
 	QStringList m_audioSnippets;
-	
-	// Ported from descriptiongenerator.h
-	unsigned m_lastNameID;
-	unsigned m_lastTypeID;
-	QString m_lastName;
-	QString m_lastType;
-	bool m_branchingPossible;
-	double m_distance;
-	int m_direction;
-	int m_exitNumber;
+	QVector< AbstractInstruction > m_abstractInstructions;
+	AbstractInstruction m_previousAbstractInstruction;
 };
 
 #endif // INSTRUCTIONGENERATOR_H
