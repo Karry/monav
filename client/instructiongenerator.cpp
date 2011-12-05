@@ -160,17 +160,17 @@ void InstructionGenerator::generateSpeech(){
 		{
 			case -3:
 			{
-				audioFilename = "instructions-turn-sharply-left.wav";
+				audioFilename = "instructions-turn-sharply-left";
 				break;
 			}
 			case -2:
 			{
-				audioFilename = "instructions-turn-left.wav";
+				audioFilename = "instructions-turn-left";
 				break;
 			}
 			case -1:
 			{
-				audioFilename = "instructions-turn-slightly-left.wav";
+				audioFilename = "instructions-turn-slightly-left";
 				break;
 			}
 		case 0:
@@ -180,22 +180,22 @@ void InstructionGenerator::generateSpeech(){
 		}
 			case 1:
 			{
-				audioFilename = "instructions-turn-slightly-right.wav";
+				audioFilename = "instructions-turn-slightly-right";
 				break;
 			}
 			case 2:
 			{
-				audioFilename = "instructions-turn-right.wav";
+				audioFilename = "instructions-turn-right";
 				break;
 			}
 			case 3:
 			{
-				audioFilename = "instructions-turn-sharply-right.wav";
+				audioFilename = "instructions-turn-sharply-right";
 				break;
 			}
 			case 4:
 			{
-				audioFilename = "instructions-u-turn.wav";
+				audioFilename = "instructions-u-turn";
 				break;
 			}
 		}
