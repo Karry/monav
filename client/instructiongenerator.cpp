@@ -32,9 +32,8 @@ InstructionGenerator* InstructionGenerator::instance()
 
 InstructionGenerator::InstructionGenerator()
 {
-	m_previousAbstractInstruction.init();
-	// m_highwayID = std::numeric_limits< unsigned >::max();
-	// m_roundaboutID = std::numeric_limits< unsigned >::max();
+	m_previousInstruction.init();
+	m_currentInstruction.init();
 	m_audioFilenames.append( "instructions-turn-sharply-left" );
 	m_audioFilenames.append( "instructions-turn-left" );
 	m_audioFilenames.append( "instructions-turn-slightly-left" );
@@ -52,51 +51,36 @@ InstructionGenerator::~InstructionGenerator()
 
 
 // Called by RoutingLogic immediately before it emits routeChanged()
-void InstructionGenerator::generateInstructions()
+void InstructionGenerator::generate()
 {
-	generateAbstractInstructions();
-	purgeRoundabouts();
-	purgeGeneral();
-
-	if ( m_abstractInstructions.size() > 0 ){
+	generateInstruction();
+	if ( speechRequired() ){
 		determineSpeech();
-		generateSpeech();
+		speak();
+		m_currentInstruction.spoken = true;
+		m_previousInstruction = m_currentInstruction;
 	}
 }
 
 
 void InstructionGenerator::determineSpeech(){
-	for ( int i = 0; i < m_abstractInstructions.size(); i++ ){
-		m_abstractInstructions[i].audiofileIndex = m_abstractInstructions[i].direction;
-	}
+	m_currentInstruction.audiofileIndex = m_currentInstruction.direction;
 }
 
 
-void InstructionGenerator::generateSpeech(){
-	// qDebug() << "Speech Distance" << speechDistance();
-	if ( m_abstractInstructions[0].distance > speechDistance() ){
-		qDebug() << "Speech cancelled due to huge distance";
-		return;
-	}
-
-	if ( m_abstractInstructions[0].audiofileIndex < 0 || m_abstractInstructions[0].audiofileIndex >= m_audioFilenames.size() ){
-		qDebug() << "Speech cancelled due to audio filename out of range.";
-		return;
-	}
-
-	QString audioFilename = m_audioFilenames[m_abstractInstructions[0].audiofileIndex];
-	// qDebug() << audioFilename;
+void InstructionGenerator::speak(){
+	QString audioFilename = m_audioFilenames[m_currentInstruction.audiofileIndex];
 	audioFilename.prepend( ":/audio/en/" );
 	audioFilename.append( ".wav" );
-	// TODO: Didn't work
-	// emit speechRequest( audioFilename );
-	Audio::instance()->speechRequest( audioFilename );
-	m_previousAbstractInstruction = m_abstractInstructions[0];
-	m_previousAbstractInstruction.turnInstructionGenerated = true;
+	// Required to instantiate it for signal-slot-connections
+	Audio::instance();
+	emit speechRequest( audioFilename );
+	// m_previousAbstractInstruction = m_abstractInstructions[0];
+	// m_previousAbstractInstruction.turnInstructionGenerated = true;
 }
 
 
-void InstructionGenerator::generateAbstractInstructions()
+void InstructionGenerator::generateInstruction()
 {
 
 	QVector< IRouter::Edge > pathEdges = RoutingLogic::instance()->edges();
@@ -107,13 +91,19 @@ void InstructionGenerator::generateAbstractInstructions()
 		return;
 	}
 
-	m_abstractInstructions.clear();
-	AbstractInstruction abstractInstruction;
-	abstractInstruction.init();
-	m_totalDistance = 0;
-	m_totalSeconds = 0;
 
+	m_currentInstruction.init();
+	m_currentInstruction.typeID = pathEdges[0].type;
+	m_currentInstruction.nameID = pathEdges[0].name;
+	m_currentInstruction.branchingPossible = pathEdges[0].branchingPossible;
+	m_currentInstruction.direction = angle( pathNodes[0].coordinate, pathNodes[pathEdges[0].length].coordinate, pathNodes[pathEdges[0].length + 1].coordinate );
 	GPSCoordinate gps = pathNodes.first().coordinate.ToGPSCoordinate();
+	GPSCoordinate nextGPS = pathNodes[pathEdges[0].length].coordinate.ToGPSCoordinate();
+	m_currentInstruction.distance = gps.ApproximateDistance( nextGPS );
+
+
+
+/*
 	unsigned int node = 0;
 
 	for ( int edge = 0; edge < pathEdges.size(); edge++ ) {
@@ -131,48 +121,7 @@ void InstructionGenerator::generateAbstractInstructions()
 		}
 		m_abstractInstructions.append( abstractInstruction );
 	}
-}
-
-
-void InstructionGenerator::purgeRoundabouts()
-{
-	bool isRoundabout = false;
-	for ( int i = 0; i < m_abstractInstructions.size()-1; i++ ){
-		isRoundabout = m_abstractInstructions[i].typeID == 13 ? true : false;
-		if ( isRoundabout && m_abstractInstructions[i].branchingPossible ){
-			m_abstractInstructions[i].exitNumber++;
-		}
-		if ( isRoundabout && m_abstractInstructions[i].typeID == m_abstractInstructions[i+1].typeID ){
-			m_abstractInstructions[i].branchingPossible = m_abstractInstructions[i+1].branchingPossible;
-			m_abstractInstructions[i].distance += m_abstractInstructions[i+1].distance;
-			if ( m_abstractInstructions[i+1].branchingPossible ){
-				m_abstractInstructions[i].exitNumber++;
-			}
-			m_abstractInstructions.remove( i+1 );
-			// TODO: Isn't this line ugly?
-			// It's only necessary due to the i--
-			m_abstractInstructions[i].exitNumber--;
-			i--;
-		}
-	}
-}
-
-
-void InstructionGenerator::purgeGeneral()
-{
-	for ( int i = 0; i < m_abstractInstructions.size()-1; i++ ){
-		if (
-			m_abstractInstructions[i].typeID == m_abstractInstructions[i+1].typeID &&
-			m_abstractInstructions[i].nameID == m_abstractInstructions[i+1].nameID &&
-			m_abstractInstructions[i].direction == 0
-		)
-		{
-			m_abstractInstructions[i].distance += m_abstractInstructions[i+1].distance;
-			m_abstractInstructions[i].direction = m_abstractInstructions[i+1].direction;
-			m_abstractInstructions.remove(i);
-			i--;
-		}
-	}
+*/
 }
 
 
@@ -233,230 +182,18 @@ int InstructionGenerator::angle( UnsignedCoordinate first, UnsignedCoordinate se
 	}
 }
 
-/*
-void InstructionGenerator::determineTypes()
+
+bool InstructionGenerator::speechRequired()
 {
-	IRouter* router = MapData::instance()->router();
-	if ( router == NULL ) {
-		return;
+	bool required = true;
+	// Structs do not provide an == operator
+	if (
+				m_currentInstruction.typeID == m_previousInstruction.typeID &&
+				m_currentInstruction.nameID == m_previousInstruction.nameID &&
+				m_previousInstruction.spoken
+			){
+		required = false;
 	}
-
-	QString type;
-	// TODO: Risky - better ask the router for the amount of types
-	for ( unsigned i = 0; i < 14; i++ ){
-		router->GetType( &type, i );
-		// qDebug() << "ID and type:" << i << type;
-		if ( type == "highway" ){
-			m_highwayID = i;
-		}
-		if ( type == "roundabout" ){
-			m_roundaboutID = i;
-		}
-	}
+	return required;
 }
-*/
-
-#ifdef CPPUNITLITE
-
-#include "CppUnitLite/CppUnitLite.h"
-
-/*
-Current Types:
-ID and type: 0 "motorway"
-ID and type: 1 "motorway_link"
-ID and type: 2 "trunk"
-ID and type: 3 "trunk_link"
-ID and type: 4 "primary"
-ID and type: 5 "primary_link"
-ID and type: 6 "secondary"
-ID and type: 7 "secondary_link"
-ID and type: 8 "tertiary"
-ID and type: 9 "unclassified"
-ID and type: 10 "residential"
-ID and type: 11 "service"
-ID and type: 12 "living_street"
-ID and type: 13 "roundabout"
-*/
-
-void InstructionGenerator::createSimpleRoundabout(){
-
-	// Residential, roundabout, roundabout, residential
-	m_abstractInstructions.clear();
-	AbstractInstruction instructionPopulator;
-	instructionPopulator.init();
-	
-	// residential
-	instructionPopulator.typeID = 10;
-	instructionPopulator.branchingPossible = true;
-	instructionPopulator.direction = 4;
-	instructionPopulator.distance = 100;
-	m_abstractInstructions.append( instructionPopulator );
-
-	// roundabout no exit
-	instructionPopulator.typeID = 13;
-	instructionPopulator.branchingPossible = false;
-	instructionPopulator.direction = 2;
-	instructionPopulator.distance = 10;
-	m_abstractInstructions.append( instructionPopulator );
-
-	// roundabout exit
-	instructionPopulator.typeID = 13;
-	instructionPopulator.branchingPossible = true;
-	instructionPopulator.direction = 4;
-	instructionPopulator.distance = 10;
-	m_abstractInstructions.append( instructionPopulator );
-
-	// residential
-	instructionPopulator.typeID = 10;
-	instructionPopulator.branchingPossible = false;
-	instructionPopulator.direction = 4;
-	instructionPopulator.distance = 100;
-	m_abstractInstructions.append( instructionPopulator );
-}
-
-
-TEST( simpleRoundabout, listcheck)
-{
-	// CHECK_EQUAL(InstructionGenerator::instance()->m_abstractInstructions[0].direction, 0);
-	InstructionGenerator::instance()->createSimpleRoundabout();
-	InstructionGenerator::instance()->generateInstructions();
-	CHECK_EQUAL(InstructionGenerator::instance()->m_abstractInstructions.size(), 3);
-	CHECK_EQUAL(InstructionGenerator::instance()->m_abstractInstructions[1].exitNumber, 1);
-	CHECK_EQUAL(InstructionGenerator::instance()->m_abstractInstructions[1].distance, 20);
-}
-
-
-void InstructionGenerator::createSimpleString(){
-
-	// branchless, branching, branchless, name changed + branching, name change + branchless
-	m_abstractInstructions.clear();
-	AbstractInstruction instructionPopulator;
-	instructionPopulator.init();
-	
-	// Create first branchless segment
-	instructionPopulator.typeID = 0;
-	instructionPopulator.branchingPossible = false;
-	instructionPopulator.direction = 0;
-	instructionPopulator.distance = 500;
-	instructionPopulator.nameID = 0;
-	m_abstractInstructions.append( instructionPopulator );
-
-	// Add a branch segment
-	instructionPopulator.branchingPossible = true;
-	m_abstractInstructions.append( instructionPopulator );
-
-	// add a branchless segment
-	instructionPopulator.branchingPossible = false;
-	m_abstractInstructions.append( instructionPopulator );
-
-	// Change edge's name, add branch
-	instructionPopulator.nameID = 1;
-	instructionPopulator.branchingPossible = true;
-	m_abstractInstructions.append( instructionPopulator );
-
-	// Change edge's name
-	instructionPopulator.branchingPossible = false;
-	instructionPopulator.nameID = 2;
-	m_abstractInstructions.append( instructionPopulator );
-}
-
-
-TEST( simpleString, listcheck)
-{
-	InstructionGenerator::instance()->createSimpleString();
-	InstructionGenerator::instance()->generateInstructions();
-	CHECK_EQUAL(InstructionGenerator::instance()->m_abstractInstructions[0].typeID, 0 );
-	CHECK_EQUAL(InstructionGenerator::instance()->m_abstractInstructions[0].typeID, InstructionGenerator::instance()->m_abstractInstructions[1].typeID);
-	CHECK_EQUAL(InstructionGenerator::instance()->m_abstractInstructions[0].typeID, InstructionGenerator::instance()->m_abstractInstructions[2].typeID);
-	CHECK_EQUAL(InstructionGenerator::instance()->m_abstractInstructions.size(), 3 );
-}
-
-
-void InstructionGenerator::createMultiString(){
-
-	m_abstractInstructions.clear();
-	AbstractInstruction instructionPopulator;
-	instructionPopulator.init();
-	
-	// Create first branchless segment
-	instructionPopulator.typeID = 0;
-	instructionPopulator.branchingPossible = false;
-	instructionPopulator.direction = 0;
-	instructionPopulator.distance = 500;
-	instructionPopulator.nameID = 0;
-	m_abstractInstructions.append( instructionPopulator );
-
-	// Add a branch segment
-	instructionPopulator.branchingPossible = true;
-	m_abstractInstructions.append( instructionPopulator );
-
-	// add a branchless segment
-	instructionPopulator.branchingPossible = false;
-	m_abstractInstructions.append( instructionPopulator );
-
-	// Change edge's name, add branch
-	instructionPopulator.nameID = 1;
-	instructionPopulator.branchingPossible = true;
-	m_abstractInstructions.append( instructionPopulator );
-
-	// Change edge's name
-	instructionPopulator.branchingPossible = false;
-	instructionPopulator.nameID = 2;
-	m_abstractInstructions.append( instructionPopulator );
-
-
-	// Repeat this for all the other types
-	int size = m_abstractInstructions.size();
-	// Avoid type 13 == roundabout
-	for ( int ID = 1; ID < 13; ID++ ){
-		for ( int index = 0; index < size; index++ ){
-			instructionPopulator = m_abstractInstructions[index];
-			instructionPopulator.typeID = ID;
-			m_abstractInstructions.append( instructionPopulator );
-		}
-	}
-}
-
-
-TEST( multiString, listcheck)
-{
-	InstructionGenerator::instance()->createMultiString();
-	InstructionGenerator::instance()->generateInstructions();
-
-	CHECK_EQUAL(InstructionGenerator::instance()->m_abstractInstructions.size(), 39 );
-}
-
-
-void InstructionGenerator::createSimpleTurns(){
-
-	m_abstractInstructions.clear();
-	AbstractInstruction instructionPopulator;
-	instructionPopulator.init();
-	
-	// Create residential turns from sharply left to sharply right
-	instructionPopulator.typeID = 10;
-	instructionPopulator.branchingPossible = true;
-	instructionPopulator.distance = 500;
-
-	for ( int i = 0; i <= 6; i++ ){
-		instructionPopulator.direction = i;
-		instructionPopulator.nameID = i;
-		m_abstractInstructions.append( instructionPopulator );
-	}
-}
-
-
-TEST( simpleTurns, speechId)
-{
-	InstructionGenerator::instance()->createSimpleTurns();
-	InstructionGenerator::instance()->generateInstructions();
-
-	for ( int i = 0; i <= 6; i++ ){
-		CHECK_EQUAL(InstructionGenerator::instance()->m_abstractInstructions[i].audiofileIndex, i );
-	}
-}
-
-
-#endif // CPPUNITLITE
-
 

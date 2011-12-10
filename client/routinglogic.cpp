@@ -103,7 +103,7 @@ RoutingLogic::RoutingLogic() :
 
 	connect( this, SIGNAL(gpsInfoChanged()), Logger::instance(), SLOT(positionChanged()) );
 	connect( MapData::instance(), SIGNAL(dataLoaded()), this, SLOT(dataLoaded()) );
-	connect( this, SIGNAL(generateInstructions()), InstructionGenerator::instance(), SLOT(generateInstructions()) );
+	connect( this, SIGNAL(generateInstructions()), InstructionGenerator::instance(), SLOT(generate()) );
 	computeRoute();
 	emit waypointsChanged();
 }

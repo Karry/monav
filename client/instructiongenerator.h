@@ -44,7 +44,7 @@ struct AbstractInstruction {
 	int audiofileIndex;
 	int exitNumber;
 	bool branchingPossible;
-	bool turnInstructionGenerated;
+	bool spoken;
 	void init() {
 		nameID = std::numeric_limits< unsigned >::max();
 		typeID = std::numeric_limits< unsigned >::max();
@@ -53,7 +53,7 @@ struct AbstractInstruction {
 		audiofileIndex = std::numeric_limits< int >::max();
 		exitNumber = 0;
 		branchingPossible = false;
-		turnInstructionGenerated = false;
+		spoken = false;
 	}
 };
 
@@ -66,7 +66,7 @@ public slots:
 
 	// destroys the object
 	// void cleanup();
-	void generateInstructions();
+	void generate();
 
 signals:
 
@@ -74,38 +74,19 @@ signals:
 
 protected:
 
-	void generateAbstractInstructions();
+	void generateInstruction();
 	int angle( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third );
-	void purgeRoundabouts();
-	void purgeGeneral();
 	void determineSpeech();
-	void generateSpeech();
+	void speak();
 	double speechDistance();
-	// void determineTypes();
+	bool speechRequired();
 
-	double m_totalDistance;
-	double m_totalSeconds;
-	// unsigned m_highwayID;
-	// unsigned m_roundaboutID;
-	QStringList m_icons;
-	QStringList m_labels;
-	// QStringList m_audioSnippets;
+	// QStringList m_icons;
+	// QStringList m_labels;
 	QStringList m_audioFilenames;
-	QVector< AbstractInstruction > m_abstractInstructions;
-	AbstractInstruction m_previousAbstractInstruction;
-
-#ifdef CPPUNITLITE
-	void createSimpleRoundabout();
-	void createSimpleString();
-	void createMultiString();
-	void createSimpleTurns();
-	// Scheme: group, test, base class
-	friend class listcheck_simpleRoundaboutTest;
-	friend class listcheck_simpleStringTest;
-	friend class listcheck_multiStringTest;
-	friend class speechId_simpleTurnsTest;
-#endif // CPPUNITLITE
-
+	// QVector< AbstractInstruction > m_abstractInstructions;
+	AbstractInstruction m_previousInstruction;
+	AbstractInstruction m_currentInstruction;
 };
 
 #endif // INSTRUCTIONGENERATOR_H
