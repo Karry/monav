@@ -69,6 +69,9 @@ void InstructionGenerator::determineSpeech(){
 
 
 void InstructionGenerator::speak(){
+	if ( m_currentInstruction.audiofileIndex < 0 || m_currentInstruction.audiofileIndex >= m_audioFilenames.size() ){
+		return;
+	}
 	QString audioFilename = m_audioFilenames[m_currentInstruction.audiofileIndex];
 	audioFilename.prepend( ":/audio/en/" );
 	audioFilename.append( ".wav" );
@@ -87,7 +90,7 @@ void InstructionGenerator::generateInstruction()
 	QVector< IRouter::Node > pathNodes = RoutingLogic::instance()->nodes();
 	IRouter* router = MapData::instance()->router();
 
-	if ( router == NULL || pathEdges.empty() || pathNodes.empty() ) {
+	if ( router == NULL || pathEdges.size() < 2 || pathNodes.empty() ) {
 		return;
 	}
 
