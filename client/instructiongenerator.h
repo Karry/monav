@@ -81,12 +81,12 @@ protected:
 	void determineSpeech();
 	void generateSpeech();
 	double speechDistance();
-	void determineTypes();
+	// void determineTypes();
 
 	double m_totalDistance;
 	double m_totalSeconds;
-	unsigned m_highwayID;
-	unsigned m_roundaboutID;
+	// unsigned m_highwayID;
+	// unsigned m_roundaboutID;
 	QStringList m_icons;
 	QStringList m_labels;
 	// QStringList m_audioSnippets;

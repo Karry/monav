@@ -77,7 +77,7 @@ void Audio::speechRequest( QString fileName )
 {
 	// qDebug() << "Speakink";
 	if ( m_audioFile.isOpen() ){
-		qDebug() << "Sorry, I'm still busy playing audio.";
+		// qDebug() << "Sorry, I'm still busy playing audio.";
 		return;
 	}
 
