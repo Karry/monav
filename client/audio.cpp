@@ -90,7 +90,7 @@ void Audio::speechRequest( QString fileName )
 
 	if ( !m_audioFile.open( QIODevice::ReadOnly ) )
 	{
-		qDebug() << "Cannot read audio data" << fileName << "so no audio playback.";
+		// qDebug() << "Cannot read audio data" << fileName << "so no audio playback.";
 		return;
 	}
 	qDebug() << fileName;
