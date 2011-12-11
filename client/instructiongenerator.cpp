@@ -56,7 +56,6 @@ InstructionGenerator::InstructionGenerator()
 	QLocale DefaultLocale;
 	m_language = DefaultLocale.name();
 	m_language.truncate( 2 );
-	qDebug() << m_language;
 }
 
 
@@ -73,15 +72,19 @@ void InstructionGenerator::generate()
 	if ( speechRequired() ){
 		determineSpeech();
 		speak();
-		m_currentInstruction.spoken = true;
-		m_previousInstruction = m_currentInstruction;
+		// m_currentInstruction.spoken = true;
+		// m_previousInstruction = m_currentInstruction;
 	}
 }
 
 
 void InstructionGenerator::determineSpeech(){
-	// qDebug() << "current and next types:" << m_currentInstruction.type << m_nextInstruction.type;
-	if ( m_nextInstruction.type == "roundabout" ){
+	// Do not speak at all in roundabouts
+	if ( m_currentInstruction.type == "roundabout" ){
+		m_currentInstruction.audiofileIndex = -1;
+	}
+	// Announce a roundabout by providing the exit number
+	else if ( m_currentInstruction.type != "roundabout" && m_nextInstruction.type == "roundabout" ){
 		m_currentInstruction.audiofileIndex = m_nextInstruction.exitNumber + 6;
 	}
 	else if ( m_currentInstruction.type == "motorway" && m_nextInstruction.type == "motorway_link" ){
@@ -90,14 +93,20 @@ void InstructionGenerator::determineSpeech(){
 	else if ( m_currentInstruction.type == "trunk" && m_nextInstruction.type == "trunk_link" ){
 		m_currentInstruction.audiofileIndex = 17;
 	}
-	else{
+	// else if ( m_currentInstruction.branchingPossible ){
+	else if ( m_currentInstruction.branchingPossible && m_currentInstruction.direction != 3 ){
 		m_currentInstruction.audiofileIndex = m_currentInstruction.direction;
+	}
+	else{
+		qDebug() << "Setting the index to -1:" << m_currentInstruction.type << m_currentInstruction.name << m_nextInstruction.type << m_nextInstruction.name;
+		m_currentInstruction.audiofileIndex = -1;
 	}
 }
 
 
 void InstructionGenerator::speak(){
 	if ( m_currentInstruction.audiofileIndex < 0 || m_currentInstruction.audiofileIndex >= m_audioFilenames.size() ){
+		qDebug() << "Audio file index out of range.";
 		return;
 	}
 
@@ -109,6 +118,8 @@ void InstructionGenerator::speak(){
 	// Required to instantiate it for signal-slot-connections
 	Audio::instance();
 	emit speechRequest( audioFilename );
+	m_currentInstruction.spoken = true;
+	m_previousInstruction = m_currentInstruction;
 }
 
 
@@ -170,24 +181,20 @@ void InstructionGenerator::generateInstructions()
 bool InstructionGenerator::speechRequired()
 {
 	bool required = true;
-	// Required to avoid speech output at startup
-	if (
-	    m_previousInstruction.type == "" &&
-	    m_previousInstruction.name == "" &&
-	    m_previousInstruction.direction == std::numeric_limits< int >::max()
-	    ){
-		required = false;
-		m_previousInstruction = m_currentInstruction;
-	}
 	// Structs do not provide an == operator
-	else if (
+	if (
 				m_currentInstruction.type == m_previousInstruction.type &&
 				m_currentInstruction.name == m_previousInstruction.name &&
+				m_previousInstruction.direction == 3 &&
 				m_previousInstruction.spoken
 			){
 		required = false;
+		qDebug() << "Edge already announced.";
 	}
-	qDebug() << "Speech Required:" << required;
+	else if ( m_currentInstruction.distance > speechDistance() ){
+		required = false;
+		qDebug() << "Speech distance not yet reached:" << speechDistance() << m_currentInstruction.distance;
+	}
 	return required;
 }
 
@@ -197,9 +204,9 @@ double InstructionGenerator::speechDistance() {
 	double currentSpeed = 0;
 
 	// Speed is in meters per second
-	currentSpeed = gpsInfo.position.IsValid() ? gpsInfo.verticalSpeed : 28;
+	currentSpeed = gpsInfo.position.IsValid() ? gpsInfo.verticalSpeed : 2;
 
-	// Some possibly reasonable values:
+	// Some possibly reasonable values (0.2 seconds per km/h):
 	//  5s	  35m	 7m/s	 25km/h	residential areas
 	// 10s	 140m	14m/s	 50km/h	inner city
 	// 15s	 315m	21m/s	 75km/h	primaries
@@ -207,7 +214,11 @@ double InstructionGenerator::speechDistance() {
 	// 30s	1260m	42m/s	150km/h	highways
 	// 40s	2240m	56m/s	200km/h	highways
 	// Which results in a factor of about 0.7
-	double speechDistance = currentSpeed * currentSpeed * 0.7;
+	// Reduced to 0.6 due to reality check
+	double speechDistance = currentSpeed * currentSpeed * 0.6;
+	if ( speechDistance < 10 ){
+		speechDistance = 10;
+	}
 	return speechDistance;
 }
 
