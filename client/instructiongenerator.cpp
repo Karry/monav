@@ -73,8 +73,6 @@ void InstructionGenerator::generate()
 	if ( speechRequired() ){
 		determineSpeech();
 		speak();
-		// m_currentInstruction.spoken = true;
-		// m_previousInstruction = m_currentInstruction;
 	}
 }
 
@@ -194,7 +192,7 @@ bool InstructionGenerator::speechRequired()
 	if (
 				m_currentInstruction.type == m_previousInstruction.type &&
 				m_currentInstruction.name == m_previousInstruction.name &&
-				m_previousInstruction.direction == 3 &&
+				// m_previousInstruction.direction == 0 &&
 				m_previousInstruction.spoken
 			){
 		required = false;
@@ -225,9 +223,11 @@ double InstructionGenerator::speechDistance() {
 	// Which results in a factor of about 0.7
 	// Reduced to 0.6 due to reality check
 	double speechDistance = currentSpeed * currentSpeed * 0.6;
+#ifdef CPPUNITLITE
 	if ( speechDistance < 10 ){
-		speechDistance = 10;
+		speechDistance = 50;
 	}
+#endif // CPPUNITLITE
 	return speechDistance;
 }
 
@@ -375,6 +375,36 @@ TEST( LeaveMotorwayTurn, AudioIndex)
 	InstructionGenerator::instance()->createLeaveMotorway();
 	InstructionGenerator::instance()->determineSpeech();
 	CHECK_EQUAL( InstructionGenerator::instance()->m_currentInstruction.audiofileIndex, 17 );
+}
+
+
+void InstructionGenerator::createDontSpeakAgain(){
+	m_previousInstruction.init();
+	m_currentInstruction.init();
+	m_nextInstruction.init();
+
+	m_previousInstruction.branchingPossible = true;
+	m_previousInstruction.direction = 2;
+	m_previousInstruction.distance = 100;
+	m_previousInstruction.type = "residential";
+	m_previousInstruction.name = "Heinrichstrasse";
+	m_previousInstruction.exitNumber = 0;
+	m_previousInstruction.spoken = true;
+
+	m_currentInstruction.branchingPossible = true;
+	m_currentInstruction.direction = 2;
+	m_currentInstruction.distance = 95;
+	m_currentInstruction.type = "residential";
+	m_currentInstruction.name = "Heinrichstrasse";
+	m_currentInstruction.exitNumber = 0;
+	m_currentInstruction.spoken = false;
+}
+
+TEST( DontSpeakAgain, AudioIndex)
+{
+	InstructionGenerator::instance()->createDontSpeakAgain();
+	InstructionGenerator::instance()->determineSpeech();
+	CHECK_EQUAL( InstructionGenerator::instance()->speechRequired(), false );
 }
 
 #endif // CPPUNITLITE

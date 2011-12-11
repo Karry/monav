@@ -96,11 +96,13 @@ protected:
 	void createStraightforwardTurn();
 	void createLeaveMotorway();
 	void createAnnounceRoundabout();
+	void createDontSpeakAgain();
 	// Scheme: group, test, base class
 	friend class AudioIndex_InsideRoundaboutTest;
 	friend class AudioIndex_StraightforwardTurnTest;
 	friend class AudioIndex_LeaveMotorwayTurnTest;
 	friend class AudioIndex_AnnounceRoundaboutTest;
+	friend class AudioIndex_DontSpeakAgainTest;
 #endif // CPPUNITLITE
 };
 
