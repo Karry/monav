@@ -37,9 +37,6 @@ Q_OBJECT
 public:
 
 struct AbstractInstruction {
-	// TODO: Eliminate those
-	unsigned nameID;
-	unsigned typeID;
 	QString type;
 	QString name;
 	double distance;
@@ -49,8 +46,6 @@ struct AbstractInstruction {
 	bool branchingPossible;
 	bool spoken;
 	void init() {
-		nameID = std::numeric_limits< unsigned >::max();
-		typeID = std::numeric_limits< unsigned >::max();
 		type = "";
 		name = "";
 		distance = std::numeric_limits< double >::max();
@@ -79,7 +74,7 @@ signals:
 
 protected:
 
-	void generateInstruction();
+	void generateInstructions();
 	int angle( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third );
 	void determineSpeech();
 	void speak();
@@ -93,6 +88,7 @@ protected:
 	QVector< IRouter::Node > m_pathNodes;
 	AbstractInstruction m_previousInstruction;
 	AbstractInstruction m_currentInstruction;
+	AbstractInstruction m_nextInstruction;
 };
 
 #endif // INSTRUCTIONGENERATOR_H

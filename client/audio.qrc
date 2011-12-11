@@ -18,5 +18,7 @@
         <file>audio/en/instructions-turn-slightly-left.wav</file>
         <file>audio/en/instructions-turn-slightly-right.wav</file>
         <file>audio/en/instructions-u-turn.wav</file>
+        <file>audio/en/instructions-leave-motorway.wav</file>
+        <file>audio/en/instructions-leave-trunk.wav</file>
     </qresource>
 </RCC>

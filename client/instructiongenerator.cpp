@@ -34,6 +34,7 @@ InstructionGenerator::InstructionGenerator()
 {
 	m_previousInstruction.init();
 	m_currentInstruction.init();
+	m_nextInstruction.init();
 	m_audioFilenames.append( "instructions-turn-sharply-left" );
 	m_audioFilenames.append( "instructions-turn-left" );
 	m_audioFilenames.append( "instructions-turn-slightly-left" );
@@ -50,6 +51,8 @@ InstructionGenerator::InstructionGenerator()
 	m_audioFilenames.append( "instructions-roundabout_07" );
 	m_audioFilenames.append( "instructions-roundabout_08" );
 	m_audioFilenames.append( "instructions-roundabout_09" );
+	m_audioFilenames.append( "instructions-leave-motorway" );
+	m_audioFilenames.append( "instructions-leave-trunk" );
 }
 
 
@@ -62,7 +65,7 @@ InstructionGenerator::~InstructionGenerator()
 // Called by RoutingLogic immediately before it emits routeChanged()
 void InstructionGenerator::generate()
 {
-	generateInstruction();
+	generateInstructions();
 	if ( speechRequired() ){
 		determineSpeech();
 		speak();
@@ -73,8 +76,15 @@ void InstructionGenerator::generate()
 
 
 void InstructionGenerator::determineSpeech(){
-	if ( m_currentInstruction.exitNumber > 0 ){
-		m_currentInstruction.audiofileIndex = m_currentInstruction.exitNumber + 6;
+	// qDebug() << "current and next types:" << m_currentInstruction.type << m_nextInstruction.type;
+	if ( m_nextInstruction.type == "roundabout" ){
+		m_currentInstruction.audiofileIndex = m_nextInstruction.exitNumber + 6;
+	}
+	else if ( m_currentInstruction.type == "motorway" && m_nextInstruction.type == "motorway_link" ){
+		m_currentInstruction.audiofileIndex = 16;
+	}
+	else if ( m_currentInstruction.type == "trunk" && m_nextInstruction.type == "trunk_link" ){
+		m_currentInstruction.audiofileIndex = 17;
 	}
 	else{
 		m_currentInstruction.audiofileIndex = m_currentInstruction.direction;
@@ -86,18 +96,17 @@ void InstructionGenerator::speak(){
 	if ( m_currentInstruction.audiofileIndex < 0 || m_currentInstruction.audiofileIndex >= m_audioFilenames.size() ){
 		return;
 	}
+
 	QString audioFilename = m_audioFilenames[m_currentInstruction.audiofileIndex];
 	audioFilename.prepend( ":/audio/en/" );
 	audioFilename.append( ".wav" );
 	// Required to instantiate it for signal-slot-connections
 	Audio::instance();
 	emit speechRequest( audioFilename );
-	// m_previousAbstractInstruction = m_abstractInstructions[0];
-	// m_previousAbstractInstruction.turnInstructionGenerated = true;
 }
 
 
-void InstructionGenerator::generateInstruction()
+void InstructionGenerator::generateInstructions()
 {
 
 	QVector< IRouter::Edge > m_pathEdges = RoutingLogic::instance()->edges();
@@ -113,11 +122,10 @@ void InstructionGenerator::generateInstruction()
 	QString nameString;
 
 	m_currentInstruction.init();
+	m_nextInstruction.init();
 
-	m_currentInstruction.typeID = m_pathEdges[0].type;
 	router->GetType( &typeString, m_pathEdges[0].type );
 	m_currentInstruction.type = typeString;
-	m_currentInstruction.nameID = m_pathEdges[0].name;
 	router->GetName( &nameString, m_pathEdges[0].name );
 	m_currentInstruction.name = nameString;
 
@@ -127,37 +135,54 @@ void InstructionGenerator::generateInstruction()
 	GPSCoordinate nextGPS = m_pathNodes[m_pathEdges[0].length].coordinate.ToGPSCoordinate();
 	m_currentInstruction.distance = gps.ApproximateDistance( nextGPS );
 
-	for ( int i = 1; i < m_pathEdges.size(); i++ ){
-		router->GetType( &typeString, m_pathEdges[i].type );
-		if ( typeString == "roundabout" && m_pathEdges[i].branchingPossible ){
-			m_currentInstruction.exitNumber++;
-		}
-		else{
-			break;
+// typeString.clear();
+// nameString.clear();
+
+	router->GetType( &typeString, m_pathEdges[1].type );
+	m_nextInstruction.type = typeString;
+	router->GetName( &nameString, m_pathEdges[1].name );
+	m_nextInstruction.name = nameString;
+
+// qDebug() << "current and next types:" << m_currentInstruction.type << m_nextInstruction.type;
+
+	if ( m_nextInstruction.type == "roundabout" ){
+		for ( int i = 1; i < m_pathEdges.size(); i++ ){
+			router->GetType( &typeString, m_pathEdges[i].type );
+			if ( typeString == "roundabout" ){
+				if ( m_pathEdges[i].branchingPossible ){
+					m_nextInstruction.exitNumber++;
+				}
+			}
+			else{
+				break;
+			}
 		}
 	}
+}
 
 
-
-/*
-	unsigned int node = 0;
-
-	for ( int edge = 0; edge < pathEdges.size(); edge++ ) {
-		node += pathEdges[edge].length;
-		GPSCoordinate nextGPS = pathNodes[node].coordinate.ToGPSCoordinate();
-		abstractInstruction.distance = gps.ApproximateDistance( nextGPS );
-		gps = nextGPS;
-		m_totalDistance += abstractInstruction.distance;
-		m_totalSeconds += pathEdges[edge].seconds;
-		abstractInstruction.branchingPossible = pathEdges[edge].branchingPossible;
-		abstractInstruction.typeID = pathEdges[edge].type;
-		abstractInstruction.nameID = pathEdges[edge].name;
-		if ( edge < pathEdges.size() -1 ){
-			abstractInstruction.direction = angle( pathNodes[node - 1].coordinate, pathNodes[node].coordinate, pathNodes[node +  1].coordinate );
-		}
-		m_abstractInstructions.append( abstractInstruction );
+bool InstructionGenerator::speechRequired()
+{
+	bool required = true;
+	// Required to avoid speech output at startup
+	if (
+	    m_previousInstruction.type == "" &&
+	    m_previousInstruction.name == "" &&
+	    m_previousInstruction.direction == std::numeric_limits< int >::max()
+	    ){
+		required = false;
+		m_previousInstruction = m_currentInstruction;
 	}
-*/
+	// Structs do not provide an == operator
+	else if (
+				m_currentInstruction.type == m_previousInstruction.type &&
+				m_currentInstruction.name == m_previousInstruction.name &&
+				m_previousInstruction.spoken
+			){
+		required = false;
+	}
+	qDebug() << "Speech Required:" << required;
+	return required;
 }
 
 
@@ -178,21 +203,6 @@ double InstructionGenerator::speechDistance() {
 	// Which results in a factor of about 0.7
 	double speechDistance = currentSpeed * currentSpeed * 0.7;
 	return speechDistance;
-}
-
-
-bool InstructionGenerator::speechRequired()
-{
-	bool required = true;
-	// Structs do not provide an == operator
-	if (
-				m_currentInstruction.typeID == m_previousInstruction.typeID &&
-				m_currentInstruction.nameID == m_previousInstruction.nameID &&
-				m_previousInstruction.spoken
-			){
-		required = false;
-	}
-	return required;
 }
 
 
