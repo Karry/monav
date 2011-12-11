@@ -90,6 +90,12 @@ protected:
 	AbstractInstruction m_currentInstruction;
 	AbstractInstruction m_nextInstruction;
 	QString m_language;
+
+#ifdef CPPUNITLITE
+	void createSimpleTurns();
+	// Scheme: group, test, base class
+	friend class speechcheck_simpleTurnsTest;
+#endif // CPPUNITLITE
 };
 
 #endif // INSTRUCTIONGENERATOR_H

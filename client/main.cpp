@@ -91,6 +91,19 @@ void MessageBoxHandler(QtMsgType type, const char *msg)
 
 int main(int argc, char *argv[])
 {
+
+#ifdef CPPUNITLITE
+	clock_t unittestTimer = clock();
+	const char* testResults = testHarness.RunAllTests();
+	clock_t unittestElapsed = clock() - unittestTimer;
+
+	QString resultMsg;
+	resultMsg.sprintf("%s\n%ld Tests ended in %ldms", testResults, testHarness.GetNumTestsRun(), unittestElapsed);
+	qDebug() << "\n\n";
+	qDebug() << resultMsg;
+	qDebug() << "\n";
+#endif // CPPUNITLITE
+
 	QApplication a(argc, argv);
 	qInstallMsgHandler( MessageBoxHandler );
 

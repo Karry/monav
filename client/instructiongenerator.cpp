@@ -261,4 +261,43 @@ int InstructionGenerator::angle( UnsignedCoordinate first, UnsignedCoordinate se
 }
 
 
+#ifdef CPPUNITLITE
+
+#include "CppUnitLite/CppUnitLite.h"
+
+/*
+Current Types:
+ID and type: 0 "motorway"
+ID and type: 1 "motorway_link"
+ID and type: 2 "trunk"
+ID and type: 3 "trunk_link"
+ID and type: 4 "primary"
+ID and type: 5 "primary_link"
+ID and type: 6 "secondary"
+ID and type: 7 "secondary_link"
+ID and type: 8 "tertiary"
+ID and type: 9 "unclassified"
+ID and type: 10 "residential"
+ID and type: 11 "service"
+ID and type: 12 "living_street"
+ID and type: 13 "roundabout"
+*/
+
+void InstructionGenerator::createSimpleTurns(){
+
+
+}
+
+
+TEST( simpleTurns, speechcheck)
+{
+	InstructionGenerator::instance()->createSimpleTurns();
+	InstructionGenerator::instance()->determineSpeech();
+	// CHECK_EQUAL(InstructionGenerator::instance()->m_abstractInstructions.size(), 3);
+}
+
+
+
+
+#endif // CPPUNITLITE
 
