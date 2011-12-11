@@ -80,10 +80,11 @@ void InstructionGenerator::generate()
 
 
 void InstructionGenerator::determineSpeech(){
-	// Do not speak at all in roundabouts
+
 	qDebug() << "Previous, current and next types:" << m_previousInstruction.type << m_currentInstruction.type << m_nextInstruction.type;
 	qDebug() << "Previous, current and next exit amounts:" << m_previousInstruction.exitNumber << m_currentInstruction.exitNumber << m_nextInstruction.exitNumber;
 
+	// Do not speak at all in roundabouts
 	if ( m_currentInstruction.type == "roundabout" ){
 		m_currentInstruction.audiofileIndex = -1;
 	}
@@ -287,7 +288,7 @@ void InstructionGenerator::createInsideRoundabout(){
 	m_currentInstruction.spoken = false;
 }
 
-TEST( InsideRoundabout, speechcheck)
+TEST( InsideRoundabout, AudioIndex)
 {
 	InstructionGenerator::instance()->createInsideRoundabout();
 	InstructionGenerator::instance()->determineSpeech();
@@ -317,7 +318,7 @@ void InstructionGenerator::createAnnounceRoundabout(){
 	m_nextInstruction.spoken = false;
 }
 
-TEST( AnnounceRoundabout, speechcheck)
+TEST( AnnounceRoundabout, AudioIndex)
 {
 	InstructionGenerator::instance()->createAnnounceRoundabout();
 	InstructionGenerator::instance()->determineSpeech();
@@ -339,7 +340,7 @@ void InstructionGenerator::createStraightforwardTurn(){
 	m_currentInstruction.spoken = false;
 }
 
-TEST( StraightforwardTurn, speechcheck)
+TEST( StraightforwardTurn, AudioIndex)
 {
 	InstructionGenerator::instance()->createStraightforwardTurn();
 	InstructionGenerator::instance()->determineSpeech();
@@ -369,7 +370,7 @@ void InstructionGenerator::createLeaveMotorway(){
 	m_nextInstruction.spoken = false;
 }
 
-TEST( LeaveMotorwayTurn, speechcheck)
+TEST( LeaveMotorwayTurn, AudioIndex)
 {
 	InstructionGenerator::instance()->createLeaveMotorway();
 	InstructionGenerator::instance()->determineSpeech();

@@ -97,10 +97,10 @@ protected:
 	void createLeaveMotorway();
 	void createAnnounceRoundabout();
 	// Scheme: group, test, base class
-	friend class speechcheck_InsideRoundaboutTest;
-	friend class speechcheck_StraightforwardTurnTest;
-	friend class speechcheck_LeaveMotorwayTurnTest;
-	friend class speechcheck_AnnounceRoundaboutTest;
+	friend class AudioIndex_InsideRoundaboutTest;
+	friend class AudioIndex_StraightforwardTurnTest;
+	friend class AudioIndex_LeaveMotorwayTurnTest;
+	friend class AudioIndex_AnnounceRoundaboutTest;
 #endif // CPPUNITLITE
 };
 
