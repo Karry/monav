@@ -41,6 +41,15 @@ InstructionGenerator::InstructionGenerator()
 	m_audioFilenames.append( "instructions-turn-slightly-right" );
 	m_audioFilenames.append( "instructions-turn-right" );
 	m_audioFilenames.append( "instructions-turn-sharply-right" );
+	m_audioFilenames.append( "instructions-roundabout_01" );
+	m_audioFilenames.append( "instructions-roundabout_02" );
+	m_audioFilenames.append( "instructions-roundabout_03" );
+	m_audioFilenames.append( "instructions-roundabout_04" );
+	m_audioFilenames.append( "instructions-roundabout_05" );
+	m_audioFilenames.append( "instructions-roundabout_06" );
+	m_audioFilenames.append( "instructions-roundabout_07" );
+	m_audioFilenames.append( "instructions-roundabout_08" );
+	m_audioFilenames.append( "instructions-roundabout_09" );
 }
 
 
@@ -64,7 +73,12 @@ void InstructionGenerator::generate()
 
 
 void InstructionGenerator::determineSpeech(){
-	m_currentInstruction.audiofileIndex = m_currentInstruction.direction;
+	if ( m_currentInstruction.exitNumber > 0 ){
+		m_currentInstruction.audiofileIndex = m_currentInstruction.exitNumber + 6;
+	}
+	else{
+		m_currentInstruction.audiofileIndex = m_currentInstruction.direction;
+	}
 }
 
 
@@ -86,23 +100,42 @@ void InstructionGenerator::speak(){
 void InstructionGenerator::generateInstruction()
 {
 
-	QVector< IRouter::Edge > pathEdges = RoutingLogic::instance()->edges();
-	QVector< IRouter::Node > pathNodes = RoutingLogic::instance()->nodes();
-	IRouter* router = MapData::instance()->router();
+	QVector< IRouter::Edge > m_pathEdges = RoutingLogic::instance()->edges();
+	QVector< IRouter::Node > m_pathNodes = RoutingLogic::instance()->nodes();
 
-	if ( router == NULL || pathEdges.size() < 2 || pathNodes.empty() ) {
+	// Do not make this a member variable, as the router can change during runtime
+	IRouter* router = MapData::instance()->router();
+	if ( router == NULL || m_pathEdges.size() < 2 || m_pathNodes.empty() ) {
 		return;
 	}
 
+	QString typeString;
+	QString nameString;
 
 	m_currentInstruction.init();
-	m_currentInstruction.typeID = pathEdges[0].type;
-	m_currentInstruction.nameID = pathEdges[0].name;
-	m_currentInstruction.branchingPossible = pathEdges[0].branchingPossible;
-	m_currentInstruction.direction = angle( pathNodes[0].coordinate, pathNodes[pathEdges[0].length].coordinate, pathNodes[pathEdges[0].length + 1].coordinate );
-	GPSCoordinate gps = pathNodes.first().coordinate.ToGPSCoordinate();
-	GPSCoordinate nextGPS = pathNodes[pathEdges[0].length].coordinate.ToGPSCoordinate();
+
+	m_currentInstruction.typeID = m_pathEdges[0].type;
+	router->GetType( &typeString, m_pathEdges[0].type );
+	m_currentInstruction.type = typeString;
+	m_currentInstruction.nameID = m_pathEdges[0].name;
+	router->GetName( &nameString, m_pathEdges[0].name );
+	m_currentInstruction.name = nameString;
+
+	m_currentInstruction.branchingPossible = m_pathEdges[0].branchingPossible;
+	m_currentInstruction.direction = angle( m_pathNodes[0].coordinate, m_pathNodes[m_pathEdges[0].length].coordinate, m_pathNodes[m_pathEdges[0].length + 1].coordinate );
+	GPSCoordinate gps = m_pathNodes.first().coordinate.ToGPSCoordinate();
+	GPSCoordinate nextGPS = m_pathNodes[m_pathEdges[0].length].coordinate.ToGPSCoordinate();
 	m_currentInstruction.distance = gps.ApproximateDistance( nextGPS );
+
+	for ( int i = 1; i < m_pathEdges.size(); i++ ){
+		router->GetType( &typeString, m_pathEdges[i].type );
+		if ( typeString == "roundabout" && m_pathEdges[i].branchingPossible ){
+			m_currentInstruction.exitNumber++;
+		}
+		else{
+			break;
+		}
+	}
 
 
 
@@ -148,6 +181,21 @@ double InstructionGenerator::speechDistance() {
 }
 
 
+bool InstructionGenerator::speechRequired()
+{
+	bool required = true;
+	// Structs do not provide an == operator
+	if (
+				m_currentInstruction.typeID == m_previousInstruction.typeID &&
+				m_currentInstruction.nameID == m_previousInstruction.nameID &&
+				m_previousInstruction.spoken
+			){
+		required = false;
+	}
+	return required;
+}
+
+
 int InstructionGenerator::angle( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third ) {
 	double x1 = ( double ) second.x - first.x; // a = (x1,y1)
 	double y1 = ( double ) second.y - first.y;
@@ -186,17 +234,4 @@ int InstructionGenerator::angle( UnsignedCoordinate first, UnsignedCoordinate se
 }
 
 
-bool InstructionGenerator::speechRequired()
-{
-	bool required = true;
-	// Structs do not provide an == operator
-	if (
-				m_currentInstruction.typeID == m_previousInstruction.typeID &&
-				m_currentInstruction.nameID == m_previousInstruction.nameID &&
-				m_previousInstruction.spoken
-			){
-		required = false;
-	}
-	return required;
-}
 

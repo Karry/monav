@@ -37,8 +37,11 @@ Q_OBJECT
 public:
 
 struct AbstractInstruction {
+	// TODO: Eliminate those
 	unsigned nameID;
 	unsigned typeID;
+	QString type;
+	QString name;
 	double distance;
 	int direction;
 	int audiofileIndex;
@@ -48,6 +51,8 @@ struct AbstractInstruction {
 	void init() {
 		nameID = std::numeric_limits< unsigned >::max();
 		typeID = std::numeric_limits< unsigned >::max();
+		type = "";
+		name = "";
 		distance = std::numeric_limits< double >::max();
 		direction = std::numeric_limits< int >::max();
 		audiofileIndex = std::numeric_limits< int >::max();
@@ -84,7 +89,8 @@ protected:
 	// QStringList m_icons;
 	// QStringList m_labels;
 	QStringList m_audioFilenames;
-	// QVector< AbstractInstruction > m_abstractInstructions;
+	QVector< IRouter::Edge > m_pathEdges;
+	QVector< IRouter::Node > m_pathNodes;
 	AbstractInstruction m_previousInstruction;
 	AbstractInstruction m_currentInstruction;
 };
