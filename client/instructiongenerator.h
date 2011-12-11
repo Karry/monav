@@ -89,6 +89,7 @@ protected:
 	AbstractInstruction m_previousInstruction;
 	AbstractInstruction m_currentInstruction;
 	AbstractInstruction m_nextInstruction;
+	QString m_language;
 };
 
 #endif // INSTRUCTIONGENERATOR_H

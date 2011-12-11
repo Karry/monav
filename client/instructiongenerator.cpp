@@ -53,6 +53,10 @@ InstructionGenerator::InstructionGenerator()
 	m_audioFilenames.append( "instructions-roundabout_09" );
 	m_audioFilenames.append( "instructions-leave-motorway" );
 	m_audioFilenames.append( "instructions-leave-trunk" );
+	QLocale DefaultLocale;
+	m_language = DefaultLocale.name();
+	m_language.truncate( 2 );
+	qDebug() << m_language;
 }
 
 
@@ -98,7 +102,9 @@ void InstructionGenerator::speak(){
 	}
 
 	QString audioFilename = m_audioFilenames[m_currentInstruction.audiofileIndex];
-	audioFilename.prepend( ":/audio/en/" );
+	audioFilename.prepend( "/" );
+	audioFilename.prepend( m_language );
+	audioFilename.prepend( ":/audio/" );
 	audioFilename.append( ".wav" );
 	// Required to instantiate it for signal-slot-connections
 	Audio::instance();

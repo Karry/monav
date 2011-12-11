@@ -20,5 +20,25 @@
         <file>audio/en/instructions-u-turn.wav</file>
         <file>audio/en/instructions-leave-motorway.wav</file>
         <file>audio/en/instructions-leave-trunk.wav</file>
+        <file>audio/de/instructions-head-straightforward.wav</file>
+        <file>audio/de/instructions-roundabout_01.wav</file>
+        <file>audio/de/instructions-roundabout_02.wav</file>
+        <file>audio/de/instructions-roundabout_03.wav</file>
+        <file>audio/de/instructions-roundabout_04.wav</file>
+        <file>audio/de/instructions-roundabout_05.wav</file>
+        <file>audio/de/instructions-roundabout_06.wav</file>
+        <file>audio/de/instructions-roundabout_07.wav</file>
+        <file>audio/de/instructions-roundabout_08.wav</file>
+        <file>audio/de/instructions-roundabout_09.wav</file>
+        <file>audio/de/instructions-take-ramp.wav</file>
+        <file>audio/de/instructions-turn-left.wav</file>
+        <file>audio/de/instructions-turn-right.wav</file>
+        <file>audio/de/instructions-turn-sharply-left.wav</file>
+        <file>audio/de/instructions-turn-sharply-right.wav</file>
+        <file>audio/de/instructions-turn-slightly-left.wav</file>
+        <file>audio/de/instructions-turn-slightly-right.wav</file>
+        <file>audio/de/instructions-u-turn.wav</file>
+        <file>audio/de/instructions-leave-motorway.wav</file>
+        <file>audio/de/instructions-leave-trunk.wav</file>
     </qresource>
 </RCC>
