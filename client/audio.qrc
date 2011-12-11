@@ -17,7 +17,7 @@
         <file>audio/en/instructions-turn-sharply-right.wav</file>
         <file>audio/en/instructions-turn-slightly-left.wav</file>
         <file>audio/en/instructions-turn-slightly-right.wav</file>
-        <file>audio/en/instructions-u-turn.wav</file>
+        <file>audio/en/instructions-turn-u.wav</file>
         <file>audio/en/instructions-leave-motorway.wav</file>
         <file>audio/en/instructions-leave-trunk.wav</file>
         <file>audio/de/instructions-head-straightforward.wav</file>
@@ -37,7 +37,7 @@
         <file>audio/de/instructions-turn-sharply-right.wav</file>
         <file>audio/de/instructions-turn-slightly-left.wav</file>
         <file>audio/de/instructions-turn-slightly-right.wav</file>
-        <file>audio/de/instructions-u-turn.wav</file>
+        <file>audio/de/instructions-turn-u.wav</file>
         <file>audio/de/instructions-leave-motorway.wav</file>
         <file>audio/de/instructions-leave-trunk.wav</file>
     </qresource>

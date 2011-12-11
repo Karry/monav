@@ -92,9 +92,15 @@ protected:
 	QString m_language;
 
 #ifdef CPPUNITLITE
-	void createSimpleTurns();
+	void createInsideRoundabout();
+	void createStraightforwardTurn();
+	void createLeaveMotorway();
+	void createAnnounceRoundabout();
 	// Scheme: group, test, base class
-	friend class speechcheck_simpleTurnsTest;
+	friend class speechcheck_InsideRoundaboutTest;
+	friend class speechcheck_StraightforwardTurnTest;
+	friend class speechcheck_LeaveMotorwayTurnTest;
+	friend class speechcheck_AnnounceRoundaboutTest;
 #endif // CPPUNITLITE
 };
 

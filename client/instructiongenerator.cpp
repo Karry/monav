@@ -35,13 +35,14 @@ InstructionGenerator::InstructionGenerator()
 	m_previousInstruction.init();
 	m_currentInstruction.init();
 	m_nextInstruction.init();
-	m_audioFilenames.append( "instructions-turn-sharply-left" );
-	m_audioFilenames.append( "instructions-turn-left" );
-	m_audioFilenames.append( "instructions-turn-slightly-left" );
 	m_audioFilenames.append( "instructions-head-straightforward" );
 	m_audioFilenames.append( "instructions-turn-slightly-right" );
 	m_audioFilenames.append( "instructions-turn-right" );
 	m_audioFilenames.append( "instructions-turn-sharply-right" );
+	m_audioFilenames.append( "instructions-turn-u" );
+	m_audioFilenames.append( "instructions-turn-sharply-left" );
+	m_audioFilenames.append( "instructions-turn-left" );
+	m_audioFilenames.append( "instructions-turn-slightly-left" );
 	m_audioFilenames.append( "instructions-roundabout_01" );
 	m_audioFilenames.append( "instructions-roundabout_02" );
 	m_audioFilenames.append( "instructions-roundabout_03" );
@@ -80,33 +81,40 @@ void InstructionGenerator::generate()
 
 void InstructionGenerator::determineSpeech(){
 	// Do not speak at all in roundabouts
+	qDebug() << "Previous, current and next types:" << m_previousInstruction.type << m_currentInstruction.type << m_nextInstruction.type;
+	qDebug() << "Previous, current and next exit amounts:" << m_previousInstruction.exitNumber << m_currentInstruction.exitNumber << m_nextInstruction.exitNumber;
+
 	if ( m_currentInstruction.type == "roundabout" ){
 		m_currentInstruction.audiofileIndex = -1;
 	}
 	// Announce a roundabout by providing the exit number
 	else if ( m_currentInstruction.type != "roundabout" && m_nextInstruction.type == "roundabout" ){
-		m_currentInstruction.audiofileIndex = m_nextInstruction.exitNumber + 6;
+		m_currentInstruction.audiofileIndex = m_nextInstruction.exitNumber + 7;
 	}
+	// Say "Leave the motorway"
 	else if ( m_currentInstruction.type == "motorway" && m_nextInstruction.type == "motorway_link" ){
-		m_currentInstruction.audiofileIndex = 16;
-	}
-	else if ( m_currentInstruction.type == "trunk" && m_nextInstruction.type == "trunk_link" ){
 		m_currentInstruction.audiofileIndex = 17;
 	}
-	// else if ( m_currentInstruction.branchingPossible ){
-	else if ( m_currentInstruction.branchingPossible && m_currentInstruction.direction != 3 ){
+	// Say "Leave the trunk"
+	else if ( m_currentInstruction.type == "trunk" && m_nextInstruction.type == "trunk_link" ){
+		m_currentInstruction.audiofileIndex = 18;
+	}
+	// Say "Turn [slightly/sharply] [left/right]"
+	else if ( m_currentInstruction.branchingPossible && m_currentInstruction.direction != 0 ){
 		m_currentInstruction.audiofileIndex = m_currentInstruction.direction;
 	}
+	// Do not speak at all
 	else{
-		qDebug() << "Setting the index to -1:" << m_currentInstruction.type << m_currentInstruction.name << m_nextInstruction.type << m_nextInstruction.name;
 		m_currentInstruction.audiofileIndex = -1;
 	}
+	qDebug() << "Previous, current and next audio index:" << m_previousInstruction.audiofileIndex << m_currentInstruction.audiofileIndex << m_nextInstruction.audiofileIndex;
+
 }
 
 
 void InstructionGenerator::speak(){
 	if ( m_currentInstruction.audiofileIndex < 0 || m_currentInstruction.audiofileIndex >= m_audioFilenames.size() ){
-		qDebug() << "Audio file index out of range.";
+		// qDebug() << "Audio file index out of range:" << m_currentInstruction.audiofileIndex;
 		return;
 	}
 
@@ -236,26 +244,26 @@ int InstructionGenerator::angle( UnsignedCoordinate first, UnsignedCoordinate se
 	if ( angle > 180 ) {
 		if ( angle > 360 - forward - slightly ) {
 			if ( angle > 360 - forward )
-				return 3;
-			else
-				return 4;
-		} else {
-			if ( angle > 180 + sharp )
-				return 5;
-			else
-				return 6;
-		}
-	} else {
-		if ( angle > forward + slightly ) {
-			if ( angle > 180 - sharp )
 				return 0;
 			else
 				return 1;
 		} else {
-			if ( angle > forward )
+			if ( angle > 180 + sharp )
 				return 2;
 			else
 				return 3;
+		}
+	} else {
+		if ( angle > forward + slightly ) {
+			if ( angle > 180 - sharp )
+				return 5;
+			else
+				return 6;
+		} else {
+			if ( angle > forward )
+				return 7;
+			else
+				return 0;
 		}
 	}
 }
@@ -265,39 +273,108 @@ int InstructionGenerator::angle( UnsignedCoordinate first, UnsignedCoordinate se
 
 #include "CppUnitLite/CppUnitLite.h"
 
-/*
-Current Types:
-ID and type: 0 "motorway"
-ID and type: 1 "motorway_link"
-ID and type: 2 "trunk"
-ID and type: 3 "trunk_link"
-ID and type: 4 "primary"
-ID and type: 5 "primary_link"
-ID and type: 6 "secondary"
-ID and type: 7 "secondary_link"
-ID and type: 8 "tertiary"
-ID and type: 9 "unclassified"
-ID and type: 10 "residential"
-ID and type: 11 "service"
-ID and type: 12 "living_street"
-ID and type: 13 "roundabout"
-*/
+void InstructionGenerator::createInsideRoundabout(){
+	m_previousInstruction.init();
+	m_currentInstruction.init();
+	m_nextInstruction.init();
 
-void InstructionGenerator::createSimpleTurns(){
-
-
+	m_currentInstruction.branchingPossible = true;
+	m_currentInstruction.direction = 7;
+	m_currentInstruction.distance = 20;
+	m_currentInstruction.type = "roundabout";
+	m_currentInstruction.name = "";
+	m_currentInstruction.exitNumber = 0;
+	m_currentInstruction.spoken = false;
 }
 
-
-TEST( simpleTurns, speechcheck)
+TEST( InsideRoundabout, speechcheck)
 {
-	InstructionGenerator::instance()->createSimpleTurns();
+	InstructionGenerator::instance()->createInsideRoundabout();
 	InstructionGenerator::instance()->determineSpeech();
-	// CHECK_EQUAL(InstructionGenerator::instance()->m_abstractInstructions.size(), 3);
+	CHECK_EQUAL( InstructionGenerator::instance()->m_currentInstruction.audiofileIndex, -1 );
 }
 
 
+void InstructionGenerator::createAnnounceRoundabout(){
+	m_previousInstruction.init();
+	m_currentInstruction.init();
+	m_nextInstruction.init();
 
+	m_currentInstruction.branchingPossible = true;
+	m_currentInstruction.direction = 2;
+	m_currentInstruction.distance = 100;
+	m_currentInstruction.type = "unclassified";
+	m_currentInstruction.name = "";
+	m_currentInstruction.exitNumber = 0;
+	m_currentInstruction.spoken = false;
+
+	m_nextInstruction.branchingPossible = true;
+	m_nextInstruction.direction = 7;
+	m_nextInstruction.distance = 20;
+	m_nextInstruction.type = "roundabout";
+	m_nextInstruction.name = "";
+	m_nextInstruction.exitNumber = 3;
+	m_nextInstruction.spoken = false;
+}
+
+TEST( AnnounceRoundabout, speechcheck)
+{
+	InstructionGenerator::instance()->createAnnounceRoundabout();
+	InstructionGenerator::instance()->determineSpeech();
+	CHECK_EQUAL( InstructionGenerator::instance()->m_currentInstruction.audiofileIndex, 10 );
+}
+
+
+void InstructionGenerator::createStraightforwardTurn(){
+	m_previousInstruction.init();
+	m_currentInstruction.init();
+	m_nextInstruction.init();
+
+	m_currentInstruction.branchingPossible = true;
+	m_currentInstruction.direction = 0;
+	m_currentInstruction.distance = 100;
+	m_currentInstruction.type = "residential";
+	m_currentInstruction.name = "Mozartstrasse";
+	m_currentInstruction.exitNumber = 0;
+	m_currentInstruction.spoken = false;
+}
+
+TEST( StraightforwardTurn, speechcheck)
+{
+	InstructionGenerator::instance()->createStraightforwardTurn();
+	InstructionGenerator::instance()->determineSpeech();
+	CHECK_EQUAL( InstructionGenerator::instance()->m_currentInstruction.audiofileIndex, -1 );
+}
+
+
+void InstructionGenerator::createLeaveMotorway(){
+	m_previousInstruction.init();
+	m_currentInstruction.init();
+	m_nextInstruction.init();
+
+	m_currentInstruction.branchingPossible = true;
+	m_currentInstruction.direction = 0;
+	m_currentInstruction.distance = 100;
+	m_currentInstruction.type = "motorway";
+	m_currentInstruction.name = "A5";
+	m_currentInstruction.exitNumber = 0;
+	m_currentInstruction.spoken = false;
+
+	m_nextInstruction.branchingPossible = true;
+	m_nextInstruction.direction = 0;
+	m_nextInstruction.distance = 100;
+	m_nextInstruction.type = "motorway_link";
+	m_nextInstruction.name = "";
+	m_nextInstruction.exitNumber = 0;
+	m_nextInstruction.spoken = false;
+}
+
+TEST( LeaveMotorwayTurn, speechcheck)
+{
+	InstructionGenerator::instance()->createLeaveMotorway();
+	InstructionGenerator::instance()->determineSpeech();
+	CHECK_EQUAL( InstructionGenerator::instance()->m_currentInstruction.audiofileIndex, 17 );
+}
 
 #endif // CPPUNITLITE
 
