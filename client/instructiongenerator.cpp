@@ -198,9 +198,13 @@ bool InstructionGenerator::speechRequired()
 		required = false;
 		qDebug() << "Edge already announced.";
 	}
+	else if ( m_currentInstruction.type == "motorway_link" || m_currentInstruction.type == "trunk_link" || m_currentInstruction.type == "primary_link" ){
+		if ( m_currentInstruction.branchingPossible ){
+			required = true;
+		}
+	}
 	else if ( m_currentInstruction.distance > speechDistance() ){
 		required = false;
-		qDebug() << "Speech distance not yet reached:" << speechDistance() << m_currentInstruction.distance;
 	}
 	return required;
 }
@@ -370,11 +374,43 @@ void InstructionGenerator::createLeaveMotorway(){
 	m_nextInstruction.spoken = false;
 }
 
-TEST( LeaveMotorwayTurn, AudioIndex)
+TEST( LeaveMotorway, AudioIndex)
 {
 	InstructionGenerator::instance()->createLeaveMotorway();
 	InstructionGenerator::instance()->determineSpeech();
 	CHECK_EQUAL( InstructionGenerator::instance()->m_currentInstruction.audiofileIndex, 17 );
+}
+
+
+void InstructionGenerator::createMotorwayLinkBranch(){
+	m_previousInstruction.init();
+	m_currentInstruction.init();
+	m_nextInstruction.init();
+
+	m_currentInstruction.branchingPossible = true;
+	m_currentInstruction.direction = 1;
+	m_currentInstruction.distance = 100;
+	m_currentInstruction.type = "motorway_link";
+	m_currentInstruction.name = "";
+	m_currentInstruction.exitNumber = 0;
+	m_currentInstruction.spoken = false;
+
+	m_nextInstruction.branchingPossible = true;
+	m_nextInstruction.direction = 0;
+	m_nextInstruction.distance = 100;
+	m_nextInstruction.type = "motorway_link";
+	m_nextInstruction.name = "";
+	m_nextInstruction.exitNumber = 0;
+	m_nextInstruction.spoken = false;
+}
+
+TEST( MotorwayLinkBranch, AudioIndex)
+{
+	InstructionGenerator::instance()->createMotorwayLinkBranch();
+	InstructionGenerator::instance()->determineSpeech();
+	// 1 slightly right, 7 slightly left
+	CHECK_EQUAL( InstructionGenerator::instance()->m_currentInstruction.audiofileIndex, 1 );
+	CHECK_EQUAL( InstructionGenerator::instance()->speechRequired(), true );
 }
 
 
@@ -400,7 +436,7 @@ void InstructionGenerator::createDontSpeakAgain(){
 	m_currentInstruction.spoken = false;
 }
 
-TEST( DontSpeakAgain, AudioIndex)
+TEST( DontSpeakAgain, SpeechRequired)
 {
 	InstructionGenerator::instance()->createDontSpeakAgain();
 	InstructionGenerator::instance()->determineSpeech();

@@ -97,12 +97,14 @@ protected:
 	void createLeaveMotorway();
 	void createAnnounceRoundabout();
 	void createDontSpeakAgain();
+	void createMotorwayLinkBranch();
 	// Scheme: group, test, base class
 	friend class AudioIndex_InsideRoundaboutTest;
 	friend class AudioIndex_StraightforwardTurnTest;
-	friend class AudioIndex_LeaveMotorwayTurnTest;
+	friend class AudioIndex_LeaveMotorwayTest;
+	friend class AudioIndex_MotorwayLinkBranchTest;
 	friend class AudioIndex_AnnounceRoundaboutTest;
-	friend class AudioIndex_DontSpeakAgainTest;
+	friend class SpeechRequired_DontSpeakAgainTest;
 #endif // CPPUNITLITE
 };
 
