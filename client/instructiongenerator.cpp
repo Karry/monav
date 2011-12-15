@@ -208,7 +208,7 @@ bool InstructionGenerator::speechRequired()
 	}
 	else if ( m_currentInstruction.distance > speechDistance() ){
 		required = false;
-		qDebug() << "Speech distance not reached yet.";
+		qDebug() << "Speech distance not reached yet (current, required):" << m_currentInstruction.distance << "" << speechDistance();
 	}
 	return required;
 }
