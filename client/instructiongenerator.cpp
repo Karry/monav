@@ -81,29 +81,31 @@ void InstructionGenerator::determineSpeech(){
 
 	qDebug() << "Previous, current and next types:" << m_previousInstruction.type << m_currentInstruction.type << m_nextInstruction.type;
 	qDebug() << "Previous, current and next exit amounts:" << m_previousInstruction.exitNumber << m_currentInstruction.exitNumber << m_nextInstruction.exitNumber;
+	qDebug() << "Previous, current and next lengths:" << m_previousInstruction.distance << m_currentInstruction.distance << m_nextInstruction.distance;
+	qDebug() << "Previous, current and next directions:" << m_previousInstruction.direction << m_currentInstruction.direction << m_nextInstruction.direction;
 
-	// Do not speak at all in roundabouts
 	if ( m_currentInstruction.type == "roundabout" ){
+		qDebug() << "No speech at all in roundabouts";
 		m_currentInstruction.audiofileIndex = -1;
 	}
-	// Announce a roundabout by providing the exit number
 	else if ( m_currentInstruction.type != "roundabout" && m_nextInstruction.type == "roundabout" ){
+		qDebug() << "Announcing a roundabout by providing the exit number";
 		m_currentInstruction.audiofileIndex = m_nextInstruction.exitNumber + 7;
 	}
-	// Say "Leave the motorway"
 	else if ( m_currentInstruction.type == "motorway" && m_nextInstruction.type == "motorway_link" ){
+		qDebug() << "Leaving the motorway";
 		m_currentInstruction.audiofileIndex = 17;
 	}
-	// Say "Leave the trunk"
 	else if ( m_currentInstruction.type == "trunk" && m_nextInstruction.type == "trunk_link" ){
+		qDebug() << "Leaving the trunk";
 		m_currentInstruction.audiofileIndex = 18;
 	}
-	// Say "Turn [slightly/sharply] [left/right]"
 	else if ( m_currentInstruction.branchingPossible && m_currentInstruction.direction != 0 ){
+		qDebug() << "Announdcing an ordinary turn";
 		m_currentInstruction.audiofileIndex = m_currentInstruction.direction;
 	}
-	// Do not speak at all
 	else{
+		qDebug() << "No speech at all required";
 		m_currentInstruction.audiofileIndex = -1;
 	}
 	qDebug() << "Previous, current and next audio index:" << m_previousInstruction.audiofileIndex << m_currentInstruction.audiofileIndex << m_nextInstruction.audiofileIndex;
@@ -192,7 +194,8 @@ bool InstructionGenerator::speechRequired()
 	if (
 				m_currentInstruction.type == m_previousInstruction.type &&
 				m_currentInstruction.name == m_previousInstruction.name &&
-				// m_previousInstruction.direction == 0 &&
+				m_currentInstruction.direction == m_previousInstruction.direction &&
+				// !m_currentInstruction.branchingPossible &&
 				m_previousInstruction.spoken
 			){
 		required = false;
@@ -205,6 +208,7 @@ bool InstructionGenerator::speechRequired()
 	}
 	else if ( m_currentInstruction.distance > speechDistance() ){
 		required = false;
+		qDebug() << "Speech distance not reached yet.";
 	}
 	return required;
 }
