@@ -208,7 +208,7 @@ bool InstructionGenerator::speechRequired()
 	}
 	else if ( m_currentInstruction.distance > speechDistance() ){
 		required = false;
-		qDebug() << "Speech distance not reached yet (current, required):" << m_currentInstruction.distance << "" << speechDistance();
+		qDebug() << "Speech dist not reached (current, required):" << m_currentInstruction.distance << "" << speechDistance();
 	}
 	return required;
 }
@@ -219,7 +219,7 @@ double InstructionGenerator::speechDistance() {
 	double currentSpeed = 0;
 
 	// Speed is in meters per second
-	currentSpeed = gpsInfo.position.IsValid() ? gpsInfo.verticalSpeed : 2;
+	currentSpeed = gpsInfo.position.IsValid() ? gpsInfo.groundSpeed : 2;
 
 	// Some possibly reasonable values (0.2 seconds per km/h):
 	//  5s	  35m	 7m/s	 25km/h	residential areas
