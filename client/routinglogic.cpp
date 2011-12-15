@@ -386,7 +386,8 @@ void RoutingLogic::computeRoute()
 
 	emit generateInstructions();
 	emit routeChanged();
-	// emit instructionsChanged();
+	// TODO: Move this to instructiongenerator
+	emit instructionsChanged();
 	// emit distanceChanged( d->distance );
 	// emit travelTimeChanged( d->travelTime );
 }

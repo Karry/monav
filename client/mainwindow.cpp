@@ -232,7 +232,8 @@ void MainWindow::connectSlots()
 
 	connect( mapData, SIGNAL(informationChanged()), this, SLOT(informationLoaded()) );
 	connect( mapData, SIGNAL(dataLoaded()), this, SLOT(dataLoaded()) );
-	// connect( RoutingLogic::instance(), SIGNAL(instructionsChanged()), this, SLOT(instructionsChanged()) );
+	// TODO: Move 
+	connect( RoutingLogic::instance(), SIGNAL(instructionsChanged()), this, SLOT(instructionsChanged()) );
 	// connect( RoutingLogic::instance(), SIGNAL(waypointsChanged()), this, SLOT(waypointsChanged()) );
 }
 

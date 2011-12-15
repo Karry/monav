@@ -83,7 +83,8 @@ public:
 
 signals:
 
-	// void instructionsChanged();
+	// TODO: Move this to instructiongenerator
+	void instructionsChanged();
 	void routeChanged();
 	void generateInstructions();
 	// void distanceChanged( double meter );
