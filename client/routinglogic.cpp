@@ -25,13 +25,14 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include "logger.h"
 #ifndef NOQTMOBILE
 #include "gpsdpositioninfosource.h"
-#endif
+#endif // NOQTMOBILE
 
 #include <limits>
 #include <algorithm>
 #include <QtDebug>
 #include <QSettings>
 #include <QDir>
+
 
 struct RoutingLogic::PrivateImplementation {
 	GPSInfo gpsInfo;
@@ -51,6 +52,7 @@ struct RoutingLogic::PrivateImplementation {
 	QGeoPositionInfoSource* gpsSource;
 #endif
 };
+
 
 RoutingLogic::RoutingLogic() :
 		d( new PrivateImplementation )
@@ -108,10 +110,12 @@ RoutingLogic::RoutingLogic() :
 	emit waypointsChanged();
 }
 
+
 RoutingLogic::~RoutingLogic()
 {
 	delete d;
 }
+
 
 void RoutingLogic::cleanup()
 {
@@ -131,11 +135,13 @@ void RoutingLogic::cleanup()
 	}
 }
 
+
 RoutingLogic* RoutingLogic::instance()
 {
 	static RoutingLogic routingLogic;
 	return &routingLogic;
 }
+
 
 #ifndef NOQTMOBILE
 void RoutingLogic::positionUpdated( const QGeoPositionInfo& update )
@@ -160,25 +166,42 @@ void RoutingLogic::positionUpdated( const QGeoPositionInfo& update )
 	if ( update.hasAttribute( QGeoPositionInfo::VerticalAccuracy ) )
 		d->gpsInfo.verticalAccuracy = update.attribute( QGeoPositionInfo::VerticalAccuracy );
 
+
+	// TODO: Determine the next waypoint
+	// TODO: Recalculate route
+	// TODO: Create speech for the very first edge which reads as "head [north|east|south|west]"
+	if ( d->linked ) {
+		d->source = d->gpsInfo.position;
+		emit sourceChanged();
+		if ( !onTrack() ){
+			qDebug() << "Route was left. Recalculating.";
+			computeRoute();
+		}
+	}
+
+/*
 	if ( d->linked ) {
 		d->source = d->gpsInfo.position;
 		emit sourceChanged();
 		computeRoute();
 	}
-
+*/
 	emit gpsInfoChanged();
 }
 #endif
+
 
 QVector< UnsignedCoordinate > RoutingLogic::waypoints() const
 {
 	return d->waypoints;
 }
 
+
 UnsignedCoordinate RoutingLogic::source() const
 {
 	return d->source;
 }
+
 
 UnsignedCoordinate RoutingLogic::target() const
 {
@@ -187,20 +210,24 @@ UnsignedCoordinate RoutingLogic::target() const
 	return d->waypoints.last();
 }
 
+
 bool RoutingLogic::gpsLink() const
 {
 	return d->linked;
 }
+
 
 const RoutingLogic::GPSInfo RoutingLogic::gpsInfo() const
 {
 	return d->gpsInfo;
 }
 
+
 QVector< IRouter::Node > RoutingLogic::route() const
 {
 	return d->pathNodes;
 }
+
 
 double RoutingLogic::routeDistance()
 {
@@ -216,10 +243,12 @@ double RoutingLogic::routeDistance()
 	return distance;
 }
 
+
 double RoutingLogic::groundSpeed()
 {
 	return d->gpsInfo.groundSpeed;
 }
+
 
 void RoutingLogic::clear()
 {
@@ -248,6 +277,7 @@ void RoutingLogic::instructions( QStringList* labels, QStringList* icons, int ma
 	*icons = d->icons;
 }
 
+
 void RoutingLogic::setWaypoints( QVector<UnsignedCoordinate> waypoints )
 {
 	bool changed = waypoints != d->waypoints;
@@ -258,6 +288,7 @@ void RoutingLogic::setWaypoints( QVector<UnsignedCoordinate> waypoints )
 		emit waypointsChanged();
 	}
 }
+
 
 void RoutingLogic::setWaypoint( int id, UnsignedCoordinate coordinate )
 {
@@ -272,6 +303,7 @@ void RoutingLogic::setWaypoint( int id, UnsignedCoordinate coordinate )
 	emit waypointsChanged();
 }
 
+
 void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 {
 	setGPSLink( false );
@@ -280,11 +312,13 @@ void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 	emit sourceChanged();
 }
 
+
 void RoutingLogic::setTarget( UnsignedCoordinate target )
 {
 	int index = d->waypoints.empty() ? 0 : d->waypoints.size() - 1;
 	setWaypoint( index, target );
 }
+
 
 void RoutingLogic::setGPSLink( bool linked )
 {
@@ -298,6 +332,76 @@ void RoutingLogic::setGPSLink( bool linked )
 	}
 	emit gpsLinkChanged( d->linked );
 }
+
+
+bool RoutingLogic::onTrack()
+{
+	bool sourceNearRoute = false;
+	if ( distanceToRoute() < 30 ){
+		sourceNearRoute = true;
+	}
+	return sourceNearRoute;
+}
+
+
+double RoutingLogic::distanceToRoute()
+{
+	// Note: Each edge contains a length, telling the amount of nodes belonging to the edge
+	double distToSegment = std::numeric_limits< double >::max();
+	double distToFormerSegment = std::numeric_limits< double >::max();
+	int nodeDropIndexMax = 0;
+	for ( int i = 1; i < d->pathNodes.size(); i++ ){
+		distToSegment = distanceToSegment( i );
+		if ( distToSegment < distToFormerSegment ){
+			distToFormerSegment = distToSegment;
+		}
+		else if ( distToSegment > distToFormerSegment ){
+			// TODO: Truncate route
+			nodeDropIndexMax = i - 1;
+			break;
+		}
+	}
+	truncateRoute( nodeDropIndexMax )
+	return distToFormerSegment;
+}
+
+
+double RoutingLogic::distanceToSegment( int NodeId )
+{
+	double distance = 0.0;
+
+	if ( !d->source.IsValid() ){
+		return distance;
+	}
+
+	double ax = d->pathNodes[NodeId - 1].coordinate.x;
+	double ay = d->pathNodes[NodeId - 1].coordinate.y;
+	double bx = d->pathNodes[NodeId].coordinate.x;
+	double by = d->pathNodes[NodeId].coordinate.y;
+	double cx = d->source.x;
+	double cy = d->source.y;
+
+	// Vector magic adapted from
+	// http://benc45.wordpress.com/2008/05/08/point-line-segment-distance/
+	double r_numerator = (cx-ax)*(bx-ax) + (cy-ay)*(by-ay);
+	double r_denomenator = (bx-ax)*(bx-ax) + (by-ay)*(by-ay);
+	double r = r_numerator / r_denomenator;
+	double px = ax + r*(bx-ax);
+	double py = ay + r*(by-ay);
+
+	UnsignedCoordinate unsignedOnRoute;
+	unsignedOnRoute.x = px;
+	unsignedOnRoute.y = py;
+	distance = unsignedOnRoute.ToGPSCoordinate().ApproximateDistance( d->gpsInfo.position.ToGPSCoordinate() );
+	return distance;
+}
+
+
+void RoutingLogic::truncateRoute( int maxIndex )
+{
+	
+}
+
 
 void RoutingLogic::computeRoute()
 {
@@ -392,6 +496,7 @@ void RoutingLogic::computeRoute()
 	// emit travelTimeChanged( d->travelTime );
 }
 
+
 void RoutingLogic::clearRoute()
 {
 	d->distance = -1;
@@ -407,6 +512,7 @@ void RoutingLogic::clearRoute()
 	// emit travelTimeChanged( d->travelTime );
 }
 
+
 void RoutingLogic::dataLoaded()
 {
 	if ( !d->source.IsValid() )
@@ -418,6 +524,7 @@ void RoutingLogic::dataLoaded()
 	}
 	computeRoute();
 }
+
 
 void RoutingLogic::computeRoundtrip()
 {
