@@ -79,37 +79,36 @@ void InstructionGenerator::generate()
 
 void InstructionGenerator::determineSpeech(){
 
-	qDebug() << "Previous, current and next types:" << m_previousInstruction.type << m_currentInstruction.type << m_nextInstruction.type;
-	qDebug() << "Previous, current and next exit amounts:" << m_previousInstruction.exitNumber << m_currentInstruction.exitNumber << m_nextInstruction.exitNumber;
-	qDebug() << "Previous, current and next lengths:" << m_previousInstruction.distance << m_currentInstruction.distance << m_nextInstruction.distance;
-	qDebug() << "Previous, current and next directions:" << m_previousInstruction.direction << m_currentInstruction.direction << m_nextInstruction.direction;
+	// qDebug() << "Previous, current and next types:" << m_previousInstruction.type << m_currentInstruction.type << m_nextInstruction.type;
+	// qDebug() << "Previous, current and next exit amounts:" << m_previousInstruction.exitNumber << m_currentInstruction.exitNumber << m_nextInstruction.exitNumber;
+	// qDebug() << "Previous, current and next lengths:" << m_previousInstruction.distance << m_currentInstruction.distance << m_nextInstruction.distance;
+	// qDebug() << "Previous, current and next directions:" << m_previousInstruction.direction << m_currentInstruction.direction << m_nextInstruction.direction;
 
 	if ( m_currentInstruction.type == "roundabout" ){
-		qDebug() << "No speech at all in roundabouts";
+		// qDebug() << "No speech at all in roundabouts";
 		m_currentInstruction.audiofileIndex = -1;
 	}
 	else if ( m_currentInstruction.type != "roundabout" && m_nextInstruction.type == "roundabout" ){
-		qDebug() << "Announcing a roundabout by providing the exit number";
+		// qDebug() << "Announcing a roundabout by providing the exit number";
 		m_currentInstruction.audiofileIndex = m_nextInstruction.exitNumber + 7;
 	}
 	else if ( m_currentInstruction.type == "motorway" && m_nextInstruction.type == "motorway_link" ){
-		qDebug() << "Leaving the motorway";
+		// qDebug() << "Leaving the motorway";
 		m_currentInstruction.audiofileIndex = 17;
 	}
 	else if ( m_currentInstruction.type == "trunk" && m_nextInstruction.type == "trunk_link" ){
-		qDebug() << "Leaving the trunk";
+		// qDebug() << "Leaving the trunk";
 		m_currentInstruction.audiofileIndex = 18;
 	}
 	else if ( m_currentInstruction.branchingPossible && m_currentInstruction.direction != 0 ){
-		qDebug() << "Announdcing an ordinary turn";
+		// qDebug() << "Announdcing an ordinary turn";
 		m_currentInstruction.audiofileIndex = m_currentInstruction.direction;
 	}
 	else{
-		qDebug() << "No speech at all required";
+		// qDebug() << "No speech at all required";
 		m_currentInstruction.audiofileIndex = -1;
 	}
-	qDebug() << "Previous, current and next audio index:" << m_previousInstruction.audiofileIndex << m_currentInstruction.audiofileIndex << m_nextInstruction.audiofileIndex;
-
+	// qDebug() << "Previous, current and next audio index:" << m_previousInstruction.audiofileIndex << m_currentInstruction.audiofileIndex << m_nextInstruction.audiofileIndex;
 }
 
 
@@ -199,7 +198,7 @@ bool InstructionGenerator::speechRequired()
 				m_previousInstruction.spoken
 			){
 		required = false;
-		qDebug() << "Edge already announced.";
+		// qDebug() << "Edge already announced.";
 	}
 	else if ( m_currentInstruction.type == "motorway_link" || m_currentInstruction.type == "trunk_link" || m_currentInstruction.type == "primary_link" ){
 		if ( m_currentInstruction.branchingPossible ){
@@ -208,7 +207,7 @@ bool InstructionGenerator::speechRequired()
 	}
 	else if ( m_currentInstruction.distance > speechDistance() ){
 		required = false;
-		qDebug() << "Speech dist not reached (current, required):" << m_currentInstruction.distance << "" << speechDistance();
+		// qDebug() << "Speech dist not reached (current, required):" << m_currentInstruction.distance << "" << speechDistance();
 	}
 	return required;
 }
