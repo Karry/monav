@@ -120,6 +120,10 @@ protected:
 
 	RoutingLogic();
 	~RoutingLogic();
+	bool onTrack();
+	// double distanceToRoute();
+	UnsignedCoordinate unsignedOnSegment( int NodeId );
+	void truncateRoute( int maxIndex );
 	void computeRoute();
 	void updateInstructions();
 	void clearRoute();

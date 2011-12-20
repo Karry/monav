@@ -168,8 +168,6 @@ void RoutingLogic::positionUpdated( const QGeoPositionInfo& update )
 
 
 	// TODO: Determine the next waypoint
-	// TODO: Recalculate route
-	// TODO: Create speech for the very first edge which reads as "head [north|east|south|west]"
 	if ( d->linked ) {
 		d->source = d->gpsInfo.position;
 		emit sourceChanged();
@@ -336,70 +334,50 @@ void RoutingLogic::setGPSLink( bool linked )
 
 bool RoutingLogic::onTrack()
 {
+	// Note: Each edge contains a length, telling the amount of nodes belonging to the edge
+	double distToNearestSegment = std::numeric_limits< double >::max();
+	double distToSegment = std::numeric_limits< double >::max();
+	int nodeDropIndexMax = 0;
+	UnsignedCoordinate unsignedOnNearestSeg;
+	UnsignedCoordinate unsignedOnSeg;
+
+	for ( int i = 1; i <= d->pathNodes.size(); i++ ){
+		unsignedOnSeg = unsignedOnSegment( i );
+		distToSegment = unsignedOnSeg.ToGPSCoordinate().ApproximateDistance( d->gpsInfo.position.ToGPSCoordinate() );
+		if ( distToSegment < distToNearestSegment ){
+			distToNearestSegment = distToSegment;
+			unsignedOnNearestSeg = unsignedOnSeg;
+			nodeDropIndexMax = i;
+		}
+		// Segment near position was the former one
+		else if ( distToSegment > distToNearestSegment ){
+			break;
+		}
+	}
+
 	bool sourceNearRoute = false;
-	if ( distanceToRoute() < 30 ){
+	if ( distToNearestSegment < 30 ){
 		sourceNearRoute = true;
+		truncateRoute( nodeDropIndexMax -2 );
+		d->pathNodes[0] = unsignedOnNearestSeg;
+		emit routeChanged();
+		d->source = unsignedOnNearestSeg;
+		emit sourceChanged();
 	}
 	return sourceNearRoute;
 }
 
 
-double RoutingLogic::distanceToRoute()
+void RoutingLogic::truncateRoute( int nodeDropIndexMax )
 {
-	// Note: Each edge contains a length, telling the amount of nodes belonging to the edge
-	double distToSegment = std::numeric_limits< double >::max();
-	double distToFormerSegment = std::numeric_limits< double >::max();
-	int nodeDropIndexMax = 0;
-	for ( int i = 1; i < d->pathNodes.size(); i++ ){
-		distToSegment = distanceToSegment( i );
-		if ( distToSegment < distToFormerSegment ){
-			distToFormerSegment = distToSegment;
+	// Edge nodes always 1 less than nodes.
+	for ( int i = 0; i < nodeDropIndexMax; i++ ){
+		d->pathEdges[0].length --;
+		if ( d->pathEdges[0].length == 0 ){
+			d->pathEdges.pop_front();
 		}
-		else if ( distToSegment > distToFormerSegment ){
-			// TODO: Truncate route
-			nodeDropIndexMax = i - 1;
-			break;
-		}
+		d->pathNodes.pop_front();
 	}
-	truncateRoute( nodeDropIndexMax )
-	return distToFormerSegment;
-}
-
-
-double RoutingLogic::distanceToSegment( int NodeId )
-{
-	double distance = 0.0;
-
-	if ( !d->source.IsValid() ){
-		return distance;
-	}
-
-	double ax = d->pathNodes[NodeId - 1].coordinate.x;
-	double ay = d->pathNodes[NodeId - 1].coordinate.y;
-	double bx = d->pathNodes[NodeId].coordinate.x;
-	double by = d->pathNodes[NodeId].coordinate.y;
-	double cx = d->source.x;
-	double cy = d->source.y;
-
-	// Vector magic adapted from
-	// http://benc45.wordpress.com/2008/05/08/point-line-segment-distance/
-	double r_numerator = (cx-ax)*(bx-ax) + (cy-ay)*(by-ay);
-	double r_denomenator = (bx-ax)*(bx-ax) + (by-ay)*(by-ay);
-	double r = r_numerator / r_denomenator;
-	double px = ax + r*(bx-ax);
-	double py = ay + r*(by-ay);
-
-	UnsignedCoordinate unsignedOnRoute;
-	unsignedOnRoute.x = px;
-	unsignedOnRoute.y = py;
-	distance = unsignedOnRoute.ToGPSCoordinate().ApproximateDistance( d->gpsInfo.position.ToGPSCoordinate() );
-	return distance;
-}
-
-
-void RoutingLogic::truncateRoute( int maxIndex )
-{
-	
 }
 
 
@@ -510,6 +488,31 @@ void RoutingLogic::clearRoute()
 	// emit instructionsChanged();
 	// emit distanceChanged( d->distance );
 	// emit travelTimeChanged( d->travelTime );
+}
+
+
+UnsignedCoordinate RoutingLogic::unsignedOnSegment( int NodeId )
+{
+	double ax = d->pathNodes[NodeId - 1].coordinate.x;
+	double ay = d->pathNodes[NodeId - 1].coordinate.y;
+	double bx = d->pathNodes[NodeId].coordinate.x;
+	double by = d->pathNodes[NodeId].coordinate.y;
+	double cx = d->source.x;
+	double cy = d->source.y;
+
+	// Vector magic adapted from
+	// http://benc45.wordpress.com/2008/05/08/point-line-segment-distance/
+	double r_numerator = (cx-ax)*(bx-ax) + (cy-ay)*(by-ay);
+	double r_denomenator = (bx-ax)*(bx-ax) + (by-ay)*(by-ay);
+	double r = r_numerator / r_denomenator;
+	double px = ax + r*(bx-ax);
+	double py = ay + r*(by-ay);
+
+	UnsignedCoordinate unsignedOnSeg;
+	unsignedOnSeg.x = px;
+	unsignedOnSeg.y = py;
+	// unsignedOnSeg.ToGPSCoordinate().ApproximateDistance( d->gpsInfo.position.ToGPSCoordinate() );
+	return unsignedOnSeg;
 }
 
 
