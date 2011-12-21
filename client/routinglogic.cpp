@@ -177,13 +177,6 @@ void RoutingLogic::positionUpdated( const QGeoPositionInfo& update )
 		}
 	}
 
-/*
-	if ( d->linked ) {
-		d->source = d->gpsInfo.position;
-		emit sourceChanged();
-		computeRoute();
-	}
-*/
 	emit gpsInfoChanged();
 }
 #endif
@@ -334,34 +327,37 @@ void RoutingLogic::setGPSLink( bool linked )
 
 bool RoutingLogic::onTrack()
 {
-	// Note: Each edge contains a length, telling the amount of nodes belonging to the edge
 	double distToNearestSegment = std::numeric_limits< double >::max();
 	double distToSegment = std::numeric_limits< double >::max();
-	int nodeDropIndexMax = 0;
 	UnsignedCoordinate unsignedOnNearestSeg;
 	UnsignedCoordinate unsignedOnSeg;
+	int nodeDropIndexMax = 0;
 
 	for ( int i = 1; i <= d->pathNodes.size(); i++ ){
 		unsignedOnSeg = unsignedOnSegment( i );
 		distToSegment = unsignedOnSeg.ToGPSCoordinate().ApproximateDistance( d->gpsInfo.position.ToGPSCoordinate() );
-		if ( distToSegment < distToNearestSegment ){
+		if ( distToSegment <= distToNearestSegment ){
 			distToNearestSegment = distToSegment;
 			unsignedOnNearestSeg = unsignedOnSeg;
 			nodeDropIndexMax = i;
 		}
-		// Segment near position was the former one
+		// Segment nearest to position was the former one
 		else if ( distToSegment > distToNearestSegment ){
 			break;
 		}
 	}
 
 	bool sourceNearRoute = false;
-	if ( distToNearestSegment < 30 ){
+	if ( distToNearestSegment < 25 ){
 		sourceNearRoute = true;
 		truncateRoute( nodeDropIndexMax -2 );
-		d->pathNodes[0] = unsignedOnNearestSeg;
+		// Check whether the position is in opposite direction of the route
+		// TODO: The turn instruction should announce something like "you're heading in the wrong direction".
+		if ( unsignedOnNearestSeg != d->pathNodes[0].coordinate ){
+			d->pathNodes[0] = unsignedOnNearestSeg;
+			d->source = unsignedOnNearestSeg;
+		}
 		emit routeChanged();
-		d->source = unsignedOnNearestSeg;
 		emit sourceChanged();
 	}
 	return sourceNearRoute;
