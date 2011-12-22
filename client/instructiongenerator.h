@@ -36,6 +36,7 @@ Q_OBJECT
 
 public:
 
+// TODO: Remove this struct
 struct AbstractInstruction {
 	QString type;
 	QString name;
@@ -58,34 +59,34 @@ struct AbstractInstruction {
 };
 
 
-	static InstructionGenerator* instance();
+	// static InstructionGenerator* instance();
 	~InstructionGenerator();
 	InstructionGenerator();
+	void createInstructions( QVector< IRouter::Edge >&, QVector< IRouter::Node >& );
 
 public slots:
 
 	// destroys the object
 	// void cleanup();
-	void generate();
 
 signals:
 
-	void speechRequest( QString );
+	// void speechRequest( QString );
 
 protected:
 
-	void generateInstructions();
+	// void generateInstructions();
 	int angle( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third );
 	void determineSpeech();
 	void speak();
 	double speechDistance();
-	bool speechRequired();
+	// bool speechRequired();
 
 	// QStringList m_icons;
 	// QStringList m_labels;
 	QStringList m_audioFilenames;
-	QVector< IRouter::Edge > m_pathEdges;
-	QVector< IRouter::Node > m_pathNodes;
+	// QVector< IRouter::Edge > m_pathEdges;
+	// QVector< IRouter::Node > m_pathNodes;
 	AbstractInstruction m_previousInstruction;
 	AbstractInstruction m_currentInstruction;
 	AbstractInstruction m_nextInstruction;

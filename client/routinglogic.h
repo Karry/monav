@@ -22,6 +22,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "utils/coordinates.h"
 #include "interfaces/irouter.h"
+#include "instructiongenerator.h"
 
 #include <QObject>
 #include <QStringList>
@@ -86,7 +87,7 @@ signals:
 	// TODO: Move this to instructiongenerator
 	void instructionsChanged();
 	void routeChanged();
-	void generateInstructions();
+	// void generateInstructions();
 	// void distanceChanged( double meter );
 	// void travelTimeChanged( double seconds );
 	void waypointReached( int id );
@@ -111,7 +112,7 @@ public slots:
 	// computes a roundtrip visiting all waypoints
 	// starting at the first one
 	// and returning to the first one
-	void computeRoundtrip();
+	// void computeRoundtrip();
 
 	// destroys this object
 	void cleanup();
@@ -130,6 +131,7 @@ protected:
 
 	struct PrivateImplementation;
 	PrivateImplementation* const d;
+	InstructionGenerator instructionGenerator;
 
 protected slots:
 

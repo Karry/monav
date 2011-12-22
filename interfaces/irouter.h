@@ -25,6 +25,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include "interfaces/igpslookup.h"
 #include <QtPlugin>
 #include <QVector>
+#include <QString>
 
 class IRouter
 {
@@ -55,6 +56,14 @@ public:
 		unsigned char type; // type ID of the edge
 		unsigned short length; // the amount of path nodes - 1 == amount of edges
 		unsigned seconds;
+		// Added by ce for InstructionGenerator 2011-12-22
+		int audiofileIndex;
+		int direction;
+		int exitNumber;
+		double distance;
+		bool spoken;
+		QString typeString;
+		QString nameString;
 	};
 
 	virtual ~IRouter() {}

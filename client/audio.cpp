@@ -70,7 +70,7 @@ void Audio::initialize()
 
 	m_audioOut = new QAudioOutput(format, this);
 	connect(m_audioOut,SIGNAL(stateChanged(QAudio::State)),SLOT(finishedPlayback(QAudio::State)));
-	connect(InstructionGenerator::instance(),SIGNAL(speechRequest(QString)),this,SLOT(speechRequest(QString)));
+	// connect(InstructionGenerator::instance(),SIGNAL(speechRequest(QString)),this,SLOT(speechRequest(QString)));
 }
 
 void Audio::speechRequest( QString fileName )

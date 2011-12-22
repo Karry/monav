@@ -8,7 +8,7 @@ DESTDIR = ../bin
 TARGET = monav
 
 # Activate this to run tests
-DEFINES += CPPUNITLITE
+# DEFINES += CPPUNITLITE
 
 # Enable this to compile on desktop machines without QtMobility installed
 # DEFINES += NOQTMOBILE

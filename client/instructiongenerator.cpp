@@ -22,13 +22,13 @@ along with MoNav. If not, see <http://www.gnu.org/licenses/>.
 #include "instructiongenerator.h"
 #include "audio.h"
 
-
+/*
 InstructionGenerator* InstructionGenerator::instance()
 {
 	static InstructionGenerator instructionGenerator;
 	return &instructionGenerator;
 }
-
+*/
 
 InstructionGenerator::InstructionGenerator()
 {
@@ -63,17 +63,6 @@ InstructionGenerator::InstructionGenerator()
 InstructionGenerator::~InstructionGenerator()
 {
 
-}
-
-
-// Called by RoutingLogic immediately before it emits routeChanged()
-void InstructionGenerator::generate()
-{
-	generateInstructions();
-	if ( speechRequired() ){
-		determineSpeech();
-		speak();
-	}
 }
 
 
@@ -125,67 +114,52 @@ void InstructionGenerator::speak(){
 	audioFilename.append( ".wav" );
 	// Required to instantiate it for signal-slot-connections
 	Audio::instance();
-	emit speechRequest( audioFilename );
+	// emit speechRequest( audioFilename );
 	m_currentInstruction.spoken = true;
 	m_previousInstruction = m_currentInstruction;
 }
 
 
-void InstructionGenerator::generateInstructions()
+void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, QVector< IRouter::Node >& nodes )
 {
-
-	QVector< IRouter::Edge > m_pathEdges = RoutingLogic::instance()->edges();
-	QVector< IRouter::Node > m_pathNodes = RoutingLogic::instance()->nodes();
-
 	// Do not make this a member variable, as the router can change during runtime
 	IRouter* router = MapData::instance()->router();
-	if ( router == NULL || m_pathEdges.size() < 2 || m_pathNodes.empty() ) {
+	if ( router == NULL || edges.size() < 2 || nodes.empty() ) {
 		return;
 	}
 
 	QString typeString;
 	QString nameString;
+	int endNode = 0;
 
-	m_currentInstruction.init();
-	m_nextInstruction.init();
+	for ( int i = 0; i < edges.size(); i++ ){
 
-	router->GetType( &typeString, m_pathEdges[0].type );
-	m_currentInstruction.type = typeString;
-	router->GetName( &nameString, m_pathEdges[0].name );
-	m_currentInstruction.name = nameString;
+		edges[i].audiofileIndex = -1;
+		edges[i].exitNumber = -1;
 
-	m_currentInstruction.branchingPossible = m_pathEdges[0].branchingPossible;
-	m_currentInstruction.direction = angle( m_pathNodes[0].coordinate, m_pathNodes[m_pathEdges[0].length].coordinate, m_pathNodes[m_pathEdges[0].length + 1].coordinate );
-	GPSCoordinate gps = m_pathNodes.first().coordinate.ToGPSCoordinate();
-	GPSCoordinate nextGPS = m_pathNodes[m_pathEdges[0].length].coordinate.ToGPSCoordinate();
-	m_currentInstruction.distance = gps.ApproximateDistance( nextGPS );
-
-// typeString.clear();
-// nameString.clear();
-
-	router->GetType( &typeString, m_pathEdges[1].type );
-	m_nextInstruction.type = typeString;
-	router->GetName( &nameString, m_pathEdges[1].name );
-	m_nextInstruction.name = nameString;
-
-// qDebug() << "current and next types:" << m_currentInstruction.type << m_nextInstruction.type;
-
-	if ( m_nextInstruction.type == "roundabout" ){
-		for ( int i = 1; i < m_pathEdges.size(); i++ ){
-			router->GetType( &typeString, m_pathEdges[i].type );
-			if ( typeString == "roundabout" ){
-				if ( m_pathEdges[i].branchingPossible ){
-					m_nextInstruction.exitNumber++;
-				}
-			}
-			else{
-				break;
-			}
+		edges[i].distance = 0;
+		for ( int node = endNode; node < endNode + edges[i].length; node++ ){
+			 edges[i].distance += nodes[ node ].coordinate.ToGPSCoordinate().ApproximateDistance( nodes[ node +1 ].coordinate.ToGPSCoordinate() );
 		}
+
+		endNode += edges[i].length;
+		if ( i < edges.size() -2 ){
+			edges[i].direction = angle( nodes[ endNode -1 ].coordinate, nodes[ endNode ].coordinate, nodes[ endNode +1 ].coordinate );
+		}
+		else{
+			edges[i].direction = -1;
+		}
+
+		edges[i].spoken = false;
+		router->GetType( &typeString, edges[i].type );
+		edges[i].typeString = typeString;
+		router->GetName( &nameString, edges[i].name );
+		edges[i].nameString = nameString;
 	}
 }
 
 
+/*
 bool InstructionGenerator::speechRequired()
 {
 	bool required = true;
@@ -211,6 +185,7 @@ bool InstructionGenerator::speechRequired()
 	}
 	return required;
 }
+*/
 
 
 double InstructionGenerator::speechDistance() {
@@ -297,9 +272,9 @@ void InstructionGenerator::createInsideRoundabout(){
 
 TEST( InsideRoundabout, AudioIndex)
 {
-	InstructionGenerator::instance()->createInsideRoundabout();
-	InstructionGenerator::instance()->determineSpeech();
-	CHECK_EQUAL( InstructionGenerator::instance()->m_currentInstruction.audiofileIndex, -1 );
+	instructionGenerator.createInsideRoundabout();
+	instructionGenerator.determineSpeech();
+	CHECK_EQUAL( instructionGenerator.m_currentInstruction.audiofileIndex, -1 );
 }
 
 
@@ -327,9 +302,9 @@ void InstructionGenerator::createAnnounceRoundabout(){
 
 TEST( AnnounceRoundabout, AudioIndex)
 {
-	InstructionGenerator::instance()->createAnnounceRoundabout();
-	InstructionGenerator::instance()->determineSpeech();
-	CHECK_EQUAL( InstructionGenerator::instance()->m_currentInstruction.audiofileIndex, 10 );
+	instructionGenerator.createAnnounceRoundabout();
+	instructionGenerator.determineSpeech();
+	CHECK_EQUAL( instructionGenerator.m_currentInstruction.audiofileIndex, 10 );
 }
 
 
@@ -349,9 +324,9 @@ void InstructionGenerator::createStraightforwardTurn(){
 
 TEST( StraightforwardTurn, AudioIndex)
 {
-	InstructionGenerator::instance()->createStraightforwardTurn();
-	InstructionGenerator::instance()->determineSpeech();
-	CHECK_EQUAL( InstructionGenerator::instance()->m_currentInstruction.audiofileIndex, -1 );
+	instructionGenerator.createStraightforwardTurn();
+	instructionGenerator.determineSpeech();
+	CHECK_EQUAL( instructionGenerator.m_currentInstruction.audiofileIndex, -1 );
 }
 
 
@@ -379,9 +354,9 @@ void InstructionGenerator::createLeaveMotorway(){
 
 TEST( LeaveMotorway, AudioIndex)
 {
-	InstructionGenerator::instance()->createLeaveMotorway();
-	InstructionGenerator::instance()->determineSpeech();
-	CHECK_EQUAL( InstructionGenerator::instance()->m_currentInstruction.audiofileIndex, 17 );
+	instructionGenerator.createLeaveMotorway();
+	instructionGenerator.determineSpeech();
+	CHECK_EQUAL( instructionGenerator.m_currentInstruction.audiofileIndex, 17 );
 }
 
 
@@ -409,11 +384,11 @@ void InstructionGenerator::createMotorwayLinkBranch(){
 
 TEST( MotorwayLinkBranch, AudioIndex)
 {
-	InstructionGenerator::instance()->createMotorwayLinkBranch();
-	InstructionGenerator::instance()->determineSpeech();
+	instructionGenerator.createMotorwayLinkBranch();
+	instructionGenerator.determineSpeech();
 	// 1 slightly right, 7 slightly left
-	CHECK_EQUAL( InstructionGenerator::instance()->m_currentInstruction.audiofileIndex, 1 );
-	CHECK_EQUAL( InstructionGenerator::instance()->speechRequired(), true );
+	CHECK_EQUAL( instructionGenerator.m_currentInstruction.audiofileIndex, 1 );
+	CHECK_EQUAL( instructionGenerator.speechRequired(), true );
 }
 
 
@@ -441,9 +416,9 @@ void InstructionGenerator::createDontSpeakAgain(){
 
 TEST( DontSpeakAgain, SpeechRequired)
 {
-	InstructionGenerator::instance()->createDontSpeakAgain();
-	InstructionGenerator::instance()->determineSpeech();
-	CHECK_EQUAL( InstructionGenerator::instance()->speechRequired(), false );
+	instructionGenerator.createDontSpeakAgain();
+	instructionGenerator.determineSpeech();
+	CHECK_EQUAL( instructionGenerator.speechRequired(), false );
 }
 
 #endif // CPPUNITLITE

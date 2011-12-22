@@ -33,6 +33,9 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include <QSettings>
 #include <QDir>
 
+#include "instructiongenerator.h"
+#include "audio.h"
+
 
 struct RoutingLogic::PrivateImplementation {
 	GPSInfo gpsInfo;
@@ -81,7 +84,7 @@ RoutingLogic::RoutingLogic() :
 		qDebug() << "No GPS Sensor found! GPS Updates are not available";
 	} else {
 		// prevent QtMobility from cheating
-		// documemenation states that it would provide updates as fast as possible if nothing was specified
+		// documentation states that it would provide updates as fast as possible if nothing was specified
 		// nevertheless, it did provide only one every 5 seconds on the N900
 		// with this setting on every second
 		d->gpsSource->setUpdateInterval( 1000 );
@@ -105,7 +108,7 @@ RoutingLogic::RoutingLogic() :
 
 	connect( this, SIGNAL(gpsInfoChanged()), Logger::instance(), SLOT(positionChanged()) );
 	connect( MapData::instance(), SIGNAL(dataLoaded()), this, SLOT(dataLoaded()) );
-	connect( this, SIGNAL(generateInstructions()), InstructionGenerator::instance(), SLOT(generate()) );
+	// connect( this, SIGNAL(generateInstructions()), InstructionGenerator::instance(), SLOT(generate()) );
 	computeRoute();
 	emit waypointsChanged();
 }
@@ -348,7 +351,7 @@ bool RoutingLogic::onTrack()
 	}
 
 	bool sourceNearRoute = false;
-	if ( distToNearestSegment < 25 ){
+	if ( distToNearestSegment < 30 ){
 		sourceNearRoute = true;
 		truncateRoute( nodeDropIndexMax -2 );
 		// Check whether the position is in opposite direction of the route
@@ -462,7 +465,9 @@ void RoutingLogic::computeRoute()
 
 	d->distance = waypoints.first().ToGPSCoordinate().ApproximateDistance( waypoints.last().ToGPSCoordinate() );
 
-	emit generateInstructions();
+	// emit generateInstructions();
+	// InstructionGenerator::instance()->generate();
+	instructionGenerator.createInstructions( d->pathEdges, d->pathNodes );
 	emit routeChanged();
 	// TODO: Move this to instructiongenerator
 	emit instructionsChanged();
@@ -479,7 +484,7 @@ void RoutingLogic::clearRoute()
 	d->pathNodes.clear();
 	d->icons.clear();
 	d->labels.clear();
-	emit generateInstructions();
+	// emit generateInstructions();
 	emit routeChanged();
 	// emit instructionsChanged();
 	// emit distanceChanged( d->distance );
@@ -521,115 +526,6 @@ void RoutingLogic::dataLoaded()
 		d->source.y = ( ( double ) package.max.y + package.min.y ) / 2;
 		emit sourceChanged();
 	}
-	computeRoute();
-}
-
-
-void RoutingLogic::computeRoundtrip()
-{
-	IGPSLookup* gpsLookup = MapData::instance()->gpsLookup();
-	if ( gpsLookup == NULL )
-		return;
-	IRouter* router = MapData::instance()->router();
-	if ( router == NULL )
-		return;
-
-	Timer time;
-	int num = d->waypoints.size() + 1;
-	if ( num < 3 )
-		return;
-
-	QVector< IGPSLookup::Result > gps;
-
-	// look up all GPS positions
-	QVector< UnsignedCoordinate > waypoints;
-	waypoints.push_back( d->source );
-	waypoints += d->waypoints;
-
-	for ( int i = 0; i < waypoints.size(); i++ ) {
-		IGPSLookup::Result result;
-		bool found = gpsLookup->GetNearestEdge( &result, waypoints[i], 1000 );
-
-		if ( !found ) {
-			clearRoute();
-			return;
-		}
-
-		gps.push_back( result );
-	}
-
-	// qDebug() << "GPS Mass Lookup:" << time.restart() << "ms";
-
-	// compute all pair shortest paths
-	QVector< int > distMatrix( num * num, 0 );
-	for ( int from = 0; from < num; from++ ) {
-		for ( int to = 0; to < num; to++ ) {
-			// skip source == target
-			if ( from == to )
-				continue;
-
-			double travelTime = 0;
-			// lookup distance only
-			bool found = router->GetRoute( &travelTime, NULL, NULL, gps[from], gps[to] );
-			if ( !found )
-				travelTime = std::numeric_limits< double >::max();
-
-			distMatrix[from * num + to] = travelTime;
-		}
-	}
-
-	qDebug() << "Routing Mass Computation:" << time.restart() << "ms";
-
-	// first point is fixed, try all other permutations
-	QVector< int > permutation;
-	permutation.reserve( num + 1 );
-	for ( int i = 0; i < num; i++ )
-		permutation.push_back( i );
-	permutation.push_back( 0 );
-
-	// go through all permutations
-	double bestDistance = std::numeric_limits< double >::max();
-	QVector< int > bestPermutation;
-	do {
-		double currentDistance = 0;
-		bool impossible = false;
-		for ( int pos = 1; pos < num + 1; pos++ )
-		{
-			// calculate cost
-			double distance = distMatrix[permutation[pos - 1] * num + permutation[pos]];
-			if ( distance == std::numeric_limits< double >::max() )
-			{
-				impossible = true;
-				break;
-			}
-			currentDistance += distance;
-		}
-		// permutation not possible? -> skip
-		if ( impossible )
-			continue;
-
-		// found better permutation?
-		if ( currentDistance < bestDistance )
-		{
-			bestDistance = currentDistance;
-			bestPermutation = permutation;
-		}
-	} while( std::next_permutation( permutation.begin() + 1, permutation.end() - 1 ) ); // keep start and end fixed
-
-	if ( bestPermutation.empty() )
-	{
-		qWarning() << "Failed to find Round Trip";
-		return;
-	}
-
-	QVector< UnsignedCoordinate > newWaypoints;
-	newWaypoints.reserve( num + 1 );
-	for ( int pos = 0; pos < num + 1; pos++ )
-		newWaypoints.push_back( waypoints[bestPermutation[pos]] );
-	d->waypoints = newWaypoints;
-
-	qDebug() << "Traveling Salesman Computation:" << time.restart() << "ms";
-
 	computeRoute();
 }
 
