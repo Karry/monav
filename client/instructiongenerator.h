@@ -77,7 +77,8 @@ protected:
 
 	// void generateInstructions();
 	int angle( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third );
-	void determineSpeech();
+	// void determineRoundabouts();
+	// void determineSpeech();
 	void speak();
 	double speechDistance();
 	// bool speechRequired();
@@ -85,7 +86,7 @@ protected:
 	// QStringList m_icons;
 	// QStringList m_labels;
 	QStringList m_audioFilenames;
-	// QVector< IRouter::Edge > m_pathEdges;
+	QVector< IRouter::Edge > m_pathEdges;
 	// QVector< IRouter::Node > m_pathNodes;
 	AbstractInstruction m_previousInstruction;
 	AbstractInstruction m_currentInstruction;
