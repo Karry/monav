@@ -650,6 +650,7 @@ void MainWindow::settingsGeneral()
 	window->exec();
 	delete window;
 	resizeIcons();
+	// xxx
 	m_ui->paintArea->setVirtualZoom( GlobalSettings::magnification() );
 }
 

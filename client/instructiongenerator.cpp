@@ -124,11 +124,8 @@ InstructionGenerator* InstructionGenerator::instance()
 
 void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, QVector< IRouter::Node >& nodes )
 {
-	// m_pathEdges = edges;
-
-	// Do not make this a member variable, as the router can change during runtime
 	IRouter* router = MapData::instance()->router();
-	if ( router == NULL || edges.size() < 2 || nodes.empty() ) {
+	if ( router == NULL || edges.size() < 1 || nodes.empty() ) {
 		return;
 	}
 
@@ -147,7 +144,7 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 		}
 
 		endNode += edges[i].length;
-		if ( i < edges.size() -2 ){
+		if ( i < edges.size() -1 ){
 			edges[i].direction = angle( nodes[ endNode -1 ].coordinate, nodes[ endNode ].coordinate, nodes[ endNode +1 ].coordinate );
 		}
 		else{
@@ -161,8 +158,32 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 		edges[i].nameString = nameString;
 	}
 
+
+	// TODO: Refactoring
+	for ( int i = 0; i < edges.size() -1; i++ ){
+		if ( edges[i].typeString == "roundabout" && edges[i].exitNumber < 1 ){
+			// qDebug() << "No speech at all in roundabouts";xxx
+			edges[i].audiofileIndex = -1;
+		}
+		else if ( edges[i].typeString == "motorway" && edges[i +1].typeString == "motorway_link" ){
+			// qDebug() << "Leaving the motorway";
+			edges[i].audiofileIndex = 17;
+		}
+		else if ( edges[i].typeString == "trunk" && edges[i +1].typeString == "trunk_link" ){
+			// qDebug() << "Leaving the trunk";
+			edges[i].audiofileIndex = 18;
+		}
+		else if ( edges[i].branchingPossible /*&& edges[i].direction != 0*/ ){
+			// qDebug() << "Announcing an ordinary turn";
+			edges[i].audiofileIndex = edges[i].direction;
+		}
+		else{
+			// qDebug() << "No speech at all required";
+			edges[i].audiofileIndex = -1;
+		}
+	}
+
 	// Roundabout detection
-	// TODO: Isn't it ugly?
 	int exitAmount = 0;
 	int preRoundaboutEdge = -1;
 	for ( int i = 0; i < edges.size(); i++ ){
@@ -177,34 +198,9 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 				preRoundaboutEdge = 0;
 			}
 			edges[ preRoundaboutEdge ].exitNumber = exitAmount;
-			// qDebug() << "Announce exit" << edges[ preRoundaboutEdge ].exitNumber << "on edge" << preRoundaboutEdge;
+			edges[ preRoundaboutEdge ].audiofileIndex = edges[0].exitNumber +7;
 			exitAmount = 0;
 			preRoundaboutEdge = -1;
-		}
-	}
-
-
-	// TODO: Refactoring
-	for ( int i = 0; i < edges.size() -1; i++ ){
-		if ( edges[i].typeString == "roundabout" && edges[i].exitNumber < 1 ){
-			// qDebug() << "No speech at all in roundabouts";
-			edges[i].audiofileIndex = -1;
-		}
-		else if ( edges[i].typeString == "motorway" && edges[i +1].typeString == "motorway_link" ){
-			// qDebug() << "Leaving the motorway";
-			edges[i].audiofileIndex = 17;
-		}
-		else if ( edges[i].typeString == "trunk" && edges[i +1].typeString == "trunk_link" ){
-			// qDebug() << "Leaving the trunk";
-			edges[i].audiofileIndex = 18;
-		}
-		else if ( edges[i].branchingPossible && edges[i].direction != 0 ){
-			// qDebug() << "Announcing an ordinary turn";
-			edges[i].audiofileIndex = edges[i].direction;
-		}
-		else{
-			// qDebug() << "No speech at all required";
-			edges[i].audiofileIndex = -1;
 		}
 	}
 }
@@ -229,7 +225,7 @@ void InstructionGenerator::instructions( QStringList* labels, QStringList* icons
 			images.last().prepend( ":/images/directions/" );
 		}
 	}
-	qDebug() << "Instruction amount:" << instructions.size();
+
 	*labels = instructions;
 	*icons = images;
 }
@@ -239,9 +235,12 @@ void InstructionGenerator::requestSpeech(){
 	if ( !m_speechEnabled ){
 		return;
 	}
-
+	// return;
 	// TODO: Use a reference
 	QVector< IRouter::Edge > edges = RoutingLogic::instance()->edges();
+	if ( edges.size() < 1 ){
+		return;
+	}
 
 	if ( edges[0].audiofileIndex < 0 || edges[0].audiofileIndex >= m_audioFilenames.size() ){
 		return;
@@ -256,6 +255,7 @@ void InstructionGenerator::requestSpeech(){
 	}
 
 	QString audioFilename = m_audioFilenames[ edges[0].audiofileIndex ];
+
 	audioFilename.prepend( "/" );
 	audioFilename.prepend( m_language );
 	audioFilename.prepend( ":/audio/" );
@@ -283,8 +283,8 @@ double InstructionGenerator::speechDistance() {
 	// Reduced to 0.6 due to reality check
 	double speechDistance = currentSpeed * currentSpeed * 0.6;
 	// Mainly for debugging on desktop machines with no GPS receiver available
-	if ( speechDistance < 10 ){
-		speechDistance = 10;
+	if ( speechDistance < 15 ){
+		speechDistance = 15;
 	}
 	return speechDistance;
 }
@@ -301,37 +301,66 @@ int InstructionGenerator::angle( UnsignedCoordinate first, UnsignedCoordinate se
 	double y1 = ( double ) second.y - first.y;
 	double x2 = ( double ) third.x - second.x; // b = (x2, y2 )
 	double y2 = ( double ) third.y - second.y;
+	int direction = 0;
+	// Counterclockwise angle
 	int angle = ( atan2( y1, x1 ) - atan2( y2, x2 ) ) * 180 / M_PI + 720;
 	angle %= 360;
-	static const int forward = 10;
+
+	if ( angle > 5.0 && angle <= 45.0 ){
+		direction = 7;
+	}
+	else if ( angle > 45.0  && angle <= 135 ){
+		direction = 6;
+	}
+	else if ( angle > 135 && angle <= 175 ){
+		direction = 5;
+	}
+	else if ( angle > 175 && angle <= 185 ){
+		direction = 4;
+	}
+	else if ( angle > 185 && angle <= 225 ){
+		direction = 3;
+	}
+	else if ( angle > 225 && angle <= 315 ){
+		direction = 2;
+	}
+	else if ( angle > 315 && angle <= 355.0 ){
+		direction = 1;
+	}
+	/*
+	static const int forward = 5;
 	static const int sharp = 45;
-	static const int slightly = 20;
+	static const int slightly = 30;
 	if ( angle > 180 ) {
 		if ( angle > 360 - forward - slightly ) {
 			if ( angle > 360 - forward )
-				return 0;
+				direction = 0;
 			else
-				return 1;
+				direction = 1;
 		} else {
 			if ( angle > 180 + sharp )
-				return 2;
+				direction = 2;
 			else
-				return 3;
+				direction = 3;
 		}
 	} else {
 		if ( angle > forward + slightly ) {
 			if ( angle > 180 - sharp )
-				return 5;
+				direction = 5;// mehr als 35 und mehr als 135
 			else
-				return 6;
+				direction = 6;
 		} else {
 			if ( angle > forward )
-				return 7;
+				direction = 7;
 			else
-				return 0;
+				direction = 0;
 		}
 	}
+	*/
+	// qDebug() << "Angle and direction:" << angle << direction;
+	return direction;
 }
+
 
 
 void InstructionGenerator::setSpeechEnabled( bool enabled )
