@@ -29,19 +29,19 @@ InstructionGenerator::InstructionGenerator()
 	m_speechEnabled = settings.value( "SpeechEnabled", true ).toBool();
 
 	m_audioFilenames.append( "instructions-head-straightforward" );
-	m_labels.append( tr( "Head straightforward." ) );
+	m_labels.append( tr( "Head straightforward" ) );
 	m_icons.append( "forward" );
 
 	m_audioFilenames.append( "instructions-turn-slightly-right" );
-	m_labels.append( tr( "Turn slightly right." ) );
+	m_labels.append( tr( "Turn slightly right" ) );
 	m_icons.append( "slightly_right" );
 
 	m_audioFilenames.append( "instructions-turn-right" );
-	m_labels.append( tr( "Turn right." ) );
+	m_labels.append( tr( "Turn right" ) );
 	m_icons.append( "right" );
 
 	m_audioFilenames.append( "instructions-turn-sharply-right" );
-	m_labels.append( tr( "Turn sharply right." ) );
+	m_labels.append( tr( "Turn sharply right" ) );
 	m_icons.append( "sharply_right" );
 
 	m_audioFilenames.append( "instructions-turn-u" );
@@ -49,67 +49,67 @@ InstructionGenerator::InstructionGenerator()
 	m_icons.append( "backward" );
 
 	m_audioFilenames.append( "instructions-turn-sharply-left" );
-	m_labels.append( tr( "Turn sharply left." ) );
+	m_labels.append( tr( "Turn sharply left" ) );
 	m_icons.append( "sharply_left" );
 
 	m_audioFilenames.append( "instructions-turn-left" );
-	m_labels.append( tr( "Turn left." ) );
+	m_labels.append( tr( "Turn left" ) );
 	m_icons.append( "left" );
 
 	m_audioFilenames.append( "instructions-turn-slightly-left" );
-	m_labels.append( tr( "Turn slightly left." ) );
+	m_labels.append( tr( "Turn slightly left" ) );
 	m_icons.append( "slightly_left" );
 
 	m_audioFilenames.append( "instructions-roundabout_01" );
-	m_labels.append( tr( "Take the 1st exit." ) );
+	m_labels.append( tr( "Take the 1st exit" ) );
 	m_icons.append( "roundabout" );
 
 	m_audioFilenames.append( "instructions-roundabout_02" );
-	m_labels.append( tr( "Take the 2nd exit." ) );
+	m_labels.append( tr( "Take the 2nd exit" ) );
 	m_icons.append( "roundabout" );
 
 	m_audioFilenames.append( "instructions-roundabout_03" );
-	m_labels.append( tr( "Take the 3rd exit." ) );
+	m_labels.append( tr( "Take the 3rd exit" ) );
 	m_icons.append( "roundabout" );
 
 	m_audioFilenames.append( "instructions-roundabout_04" );
-	m_labels.append( tr( "Take the 4th exit." ) );
+	m_labels.append( tr( "Take the 4th exit" ) );
 	m_icons.append( "roundabout" );
 
 	m_audioFilenames.append( "instructions-roundabout_05" );
-	m_labels.append( tr( "Take the 5th exit." ) );
+	m_labels.append( tr( "Take the 5th exit" ) );
 	m_icons.append( "roundabout" );
 
 	m_audioFilenames.append( "instructions-roundabout_06" );
-	m_labels.append( tr( "Take the 6th exit." ) );
+	m_labels.append( tr( "Take the 6th exit" ) );
 	m_icons.append( "roundabout" );
 
 	m_audioFilenames.append( "instructions-roundabout_07" );
-	m_labels.append( tr( "Take the 7th exit." ) );
+	m_labels.append( tr( "Take the 7th exit" ) );
 	m_icons.append( "roundabout" );
 
 	m_audioFilenames.append( "instructions-roundabout_08" );
-	m_labels.append( tr( "Take the 8th exit." ) );
+	m_labels.append( tr( "Take the 8th exit" ) );
 	m_icons.append( "roundabout" );
 
 	m_audioFilenames.append( "instructions-roundabout_09" );
-	m_labels.append( tr( "Take the 9th exit." ) );
+	m_labels.append( tr( "Take the 9th exit" ) );
 	m_icons.append( "roundabout" );
 
 	m_audioFilenames.append( "instructions-leave-motorway" );
-	m_labels.append( tr( "Leave the motorway." ) );
+	m_labels.append( tr( "Leave the motorway" ) );
 	m_icons.append( "slightly_right" );
 
 	m_audioFilenames.append( "instructions-leave-trunk" );
-	m_labels.append( tr( "Leave the trunk." ) );
+	m_labels.append( tr( "Leave the trunk" ) );
 	m_icons.append( "slightly_right" );
 
 	m_audioFilenames.append( "instructions-take-motorway-ramp" );
-	m_labels.append( tr( "Take the ramp to the motorway." ) );
+	m_labels.append( tr( "Take the ramp to the motorway" ) );
 	m_icons.append( "slightly_right" );
 
 	m_audioFilenames.append( "instructions-take-trunk-ramp" );
-	m_labels.append( tr( "Take the ramp to the trunk." ) );
+	m_labels.append( tr( "Take the ramp to the trunk" ) );
 	m_icons.append( "slightly_right" );
 
 	QLocale DefaultLocale;
@@ -236,10 +236,17 @@ void InstructionGenerator::instructions( QStringList* labels, QStringList* icons
 
 	QStringList instructions;
 	QStringList images;
+	double distance = 0;
 
 	for ( int i = 0; i < edges.size(); i++ ){
+		distance += edges[i].distance;
 		if ( edges[i].audiofileIndex >= 0 && edges[i].audiofileIndex < m_labels.size() ){
 			instructions.append( m_labels[ edges[i].audiofileIndex ] );
+			if ( i < edges.size() -1 && edges[i +1].nameString != "" && edges[i +1].typeString != "roundabout" ){
+				instructions.last().append( tr( " into %1" ).arg( edges[i +1].nameString ) );
+			}
+			instructions.last().append( distanceString( distance ) );
+			distance = 0;
 			images.append( m_icons[ edges[i].audiofileIndex ] );
 			images.last().append( ".png" );
 			images.last().prepend( ":/images/directions/" );
@@ -262,7 +269,7 @@ void InstructionGenerator::requestSpeech(){
 		return;
 	}
 	// qDebug() << edges[0].branchingPossible;
-	qDebug() << "Amount of edges:" << edges.size();
+	// qDebug() << "Amount of edges:" << edges.size();
 	// Determining the next edge to announce.
 	// This is necessary for short edges often occuring on crossings
 	int nextBranchEdgeIndex = -1;
@@ -359,6 +366,27 @@ int InstructionGenerator::angle( UnsignedCoordinate first, UnsignedCoordinate se
 	return direction;
 }
 
+QString InstructionGenerator::distanceString( double distance )
+{
+	// TODO: i18n
+	QString distanceString;
+	QString unit;
+
+	if ( distance > 20 ) {
+		if ( distance < 100 )
+			distanceString = QString( "%1m" ).arg( ( int ) distance );
+		else if ( distance < 1000 )
+			distanceString = QString( "%1m" ).arg( ( int ) distance / 10 * 10 );
+		else if ( distance < 10000 )
+			distanceString = QString( "%1.%2km" ).arg( ( int ) distance / 1000 ).arg( ( ( int ) distance / 100 ) % 10 );
+		else
+			distanceString = QString( "%1km" ).arg( ( int ) distance / 1000 );
+	}
+	if ( distanceString != "" ){
+		distanceString.prepend( " in " );
+	}
+	return distanceString;
+}
 
 
 void InstructionGenerator::setSpeechEnabled( bool enabled )

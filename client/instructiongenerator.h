@@ -59,7 +59,7 @@ protected:
 	InstructionGenerator();
 	int angle( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third );
 	double speechDistance();
-
+	QString distanceString( double distance );
 	QStringList m_audioFilenames;
 	QStringList m_labels;
 	QStringList m_icons;
