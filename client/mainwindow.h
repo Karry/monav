@@ -36,6 +36,9 @@ public:
 	explicit MainWindow( QWidget* parent = 0 );
 	~MainWindow();
 
+public slots:
+	void displayInstructions();
+
 protected slots:
 
 	void informationLoaded();
@@ -75,7 +78,7 @@ protected slots:
 	void setModeless();
 
 	void showInstructions();
-	void instructionsChanged();
+	// void displayInstructions();
 
 	void displayMapChooser();
 	void displayModuleChooser();

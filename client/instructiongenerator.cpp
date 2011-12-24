@@ -25,9 +25,9 @@ along with MoNav. If not, see <http://www.gnu.org/licenses/>.
 
 InstructionGenerator::InstructionGenerator()
 {
-	m_previousInstruction.init();
-	m_currentInstruction.init();
-	m_nextInstruction.init();
+	QSettings settings( "MoNavClient" );
+	m_speechEnabled = settings.value( "SpeechEnabled", true ).toBool();
+
 	m_audioFilenames.append( "instructions-head-straightforward" );
 	m_audioFilenames.append( "instructions-turn-slightly-right" );
 	m_audioFilenames.append( "instructions-turn-right" );
@@ -55,17 +55,23 @@ InstructionGenerator::InstructionGenerator()
 
 InstructionGenerator::~InstructionGenerator()
 {
+}
 
+
+InstructionGenerator* InstructionGenerator::instance()
+{
+	static InstructionGenerator instructionGenerator;
+	return &instructionGenerator;
 }
 
 
 void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, QVector< IRouter::Node >& nodes )
 {
-	m_pathEdges = edges;
+	// m_pathEdges = edges;
 
 	// Do not make this a member variable, as the router can change during runtime
 	IRouter* router = MapData::instance()->router();
-	if ( router == NULL || m_pathEdges.size() < 2 || nodes.empty() ) {
+	if ( router == NULL || edges.size() < 2 || nodes.empty() ) {
 		return;
 	}
 
@@ -73,37 +79,37 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 	QString nameString;
 	int endNode = 0;
 
-	for ( int i = 0; i < m_pathEdges.size(); i++ ){
+	for ( int i = 0; i < edges.size(); i++ ){
 
-		m_pathEdges[i].audiofileIndex = -1;
-		m_pathEdges[i].exitNumber = -1;
+		edges[i].audiofileIndex = -1;
+		edges[i].exitNumber = -1;
 
-		m_pathEdges[i].distance = 0;
-		for ( int node = endNode; node < endNode + m_pathEdges[i].length; node++ ){
-			 m_pathEdges[i].distance += nodes[ node ].coordinate.ToGPSCoordinate().ApproximateDistance( nodes[ node +1 ].coordinate.ToGPSCoordinate() );
+		edges[i].distance = 0;
+		for ( int node = endNode; node < endNode + edges[i].length; node++ ){
+			 edges[i].distance += nodes[ node ].coordinate.ToGPSCoordinate().ApproximateDistance( nodes[ node +1 ].coordinate.ToGPSCoordinate() );
 		}
 
-		endNode += m_pathEdges[i].length;
-		if ( i < m_pathEdges.size() -2 ){
-			m_pathEdges[i].direction = angle( nodes[ endNode -1 ].coordinate, nodes[ endNode ].coordinate, nodes[ endNode +1 ].coordinate );
+		endNode += edges[i].length;
+		if ( i < edges.size() -2 ){
+			edges[i].direction = angle( nodes[ endNode -1 ].coordinate, nodes[ endNode ].coordinate, nodes[ endNode +1 ].coordinate );
 		}
 		else{
-			m_pathEdges[i].direction = -1;
+			edges[i].direction = -1;
 		}
 
-		m_pathEdges[i].spoken = false;
-		router->GetType( &typeString, m_pathEdges[i].type );
-		m_pathEdges[i].typeString = typeString;
-		router->GetName( &nameString, m_pathEdges[i].name );
-		m_pathEdges[i].nameString = nameString;
+		edges[i].spoken = false;
+		router->GetType( &typeString, edges[i].type );
+		edges[i].typeString = typeString;
+		router->GetName( &nameString, edges[i].name );
+		edges[i].nameString = nameString;
 	}
 
 	// Roundabout detection
 	// TODO: Isn't it ugly?
 	int exitAmount = 0;
 	int preRoundaboutEdge = -1;
-	for ( int i = 0; i < m_pathEdges.size(); i++ ){
-		if ( m_pathEdges[i].typeString == "roundabout" ){
+	for ( int i = 0; i < edges.size(); i++ ){
+		if ( edges[i].typeString == "roundabout" ){
 			if ( exitAmount == 0 ){
 				preRoundaboutEdge = i -1;
 			}
@@ -113,8 +119,8 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 			if ( preRoundaboutEdge < 0 ){
 				preRoundaboutEdge = 0;
 			}
-			m_pathEdges[ preRoundaboutEdge ].exitNumber = exitAmount;
-			// qDebug() << "Announce exit" << m_pathEdges[ preRoundaboutEdge ].exitNumber << "on edge" << preRoundaboutEdge;
+			edges[ preRoundaboutEdge ].exitNumber = exitAmount;
+			// qDebug() << "Announce exit" << edges[ preRoundaboutEdge ].exitNumber << "on edge" << preRoundaboutEdge;
 			exitAmount = 0;
 			preRoundaboutEdge = -1;
 		}
@@ -122,85 +128,59 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 
 
 	// TODO: Refactoring
-	for ( int i = 0; i < m_pathEdges.size() -1; i++ ){
-		if ( m_pathEdges[i].typeString == "roundabout" && m_pathEdges[i].exitNumber < 1 ){
+	for ( int i = 0; i < edges.size() -1; i++ ){
+		if ( edges[i].typeString == "roundabout" && edges[i].exitNumber < 1 ){
 			// qDebug() << "No speech at all in roundabouts";
-			m_pathEdges[i].audiofileIndex = -1;
+			edges[i].audiofileIndex = -1;
 		}
-		else if ( m_pathEdges[i].typeString == "motorway" && m_pathEdges[i +1].typeString == "motorway_link" ){
+		else if ( edges[i].typeString == "motorway" && edges[i +1].typeString == "motorway_link" ){
 			// qDebug() << "Leaving the motorway";
-			m_pathEdges[i].audiofileIndex = 17;
+			edges[i].audiofileIndex = 17;
 		}
-		else if ( m_pathEdges[i].typeString == "trunk" && m_pathEdges[i +1].typeString == "trunk_link" ){
+		else if ( edges[i].typeString == "trunk" && edges[i +1].typeString == "trunk_link" ){
 			// qDebug() << "Leaving the trunk";
-			m_pathEdges[i].audiofileIndex = 18;
+			edges[i].audiofileIndex = 18;
 		}
-		else if ( m_pathEdges[i].branchingPossible && m_pathEdges[i].direction != 0 ){
+		else if ( edges[i].branchingPossible && edges[i].direction != 0 ){
 			// qDebug() << "Announcing an ordinary turn";
-			m_pathEdges[i].audiofileIndex = m_pathEdges[i].direction;
+			edges[i].audiofileIndex = edges[i].direction;
 		}
 		else{
 			// qDebug() << "No speech at all required";
-			m_currentInstruction.audiofileIndex = -1;
+			edges[i].audiofileIndex = -1;
 		}
 	}
 }
 
-/*
-void InstructionGenerator::determineSpeech(){
 
-	// if ( m_pathEdges[i].type )
+void InstructionGenerator::requestSpeech(){
 
-	// qDebug() << "Previous, current and next types:" << m_previousInstruction.type << m_currentInstruction.type << m_nextInstruction.type;
-	// qDebug() << "Previous, current and next exit amounts:" << m_previousInstruction.exitNumber << m_currentInstruction.exitNumber << m_nextInstruction.exitNumber;
-	// qDebug() << "Previous, current and next lengths:" << m_previousInstruction.distance << m_currentInstruction.distance << m_nextInstruction.distance;
-	// qDebug() << "Previous, current and next directions:" << m_previousInstruction.direction << m_currentInstruction.direction << m_nextInstruction.direction;
-
-	if ( m_currentInstruction.type == "roundabout" ){
-		// qDebug() << "No speech at all in roundabouts";
-		m_currentInstruction.audiofileIndex = -1;
-	}
-	else if ( m_currentInstruction.type != "roundabout" && m_nextInstruction.type == "roundabout" ){
-		// qDebug() << "Announcing a roundabout by providing the exit number";
-		m_currentInstruction.audiofileIndex = m_nextInstruction.exitNumber + 7;
-	}
-	else if ( m_currentInstruction.type == "motorway" && m_nextInstruction.type == "motorway_link" ){
-		// qDebug() << "Leaving the motorway";
-		m_currentInstruction.audiofileIndex = 17;
-	}
-	else if ( m_currentInstruction.type == "trunk" && m_nextInstruction.type == "trunk_link" ){
-		// qDebug() << "Leaving the trunk";
-		m_currentInstruction.audiofileIndex = 18;
-	}
-	else if ( m_currentInstruction.branchingPossible && m_currentInstruction.direction != 0 ){
-		// qDebug() << "Announdcing an ordinary turn";
-		m_currentInstruction.audiofileIndex = m_currentInstruction.direction;
-	}
-	else{
-		// qDebug() << "No speech at all required";
-		m_currentInstruction.audiofileIndex = -1;
-	}
-	// qDebug() << "Previous, current and next audio index:" << m_previousInstruction.audiofileIndex << m_currentInstruction.audiofileIndex << m_nextInstruction.audiofileIndex;
-
-}
- */
-
-void InstructionGenerator::speak(){
-	if ( m_currentInstruction.audiofileIndex < 0 || m_currentInstruction.audiofileIndex >= m_audioFilenames.size() ){
-		// qDebug() << "Audio file index out of range:" << m_currentInstruction.audiofileIndex;
+	if ( !m_speechEnabled ){
 		return;
 	}
 
-	QString audioFilename = m_audioFilenames[m_currentInstruction.audiofileIndex];
+	// TODO: Use a reference
+	QVector< IRouter::Edge > edges = RoutingLogic::instance()->edges();
+
+	if ( edges[0].audiofileIndex < 0 || edges[0].audiofileIndex >= m_audioFilenames.size() ){
+		return;
+	}
+
+	if ( edges[0].spoken ){
+		return;
+	}
+
+	if ( edges[0].distance > speechDistance() ){
+		return;
+	}
+
+	QString audioFilename = m_audioFilenames[ edges[0].audiofileIndex ];
 	audioFilename.prepend( "/" );
 	audioFilename.prepend( m_language );
 	audioFilename.prepend( ":/audio/" );
 	audioFilename.append( ".wav" );
-	// Required to instantiate it for signal-slot-connections
-	Audio::instance();
-	// emit speechRequest( audioFilename );
-	m_currentInstruction.spoken = true;
-	m_previousInstruction = m_currentInstruction;
+	Audio::instance()->speak( audioFilename );
+	edges[0].spoken = true;
 }
 
 
@@ -226,6 +206,12 @@ double InstructionGenerator::speechDistance() {
 		speechDistance = 10;
 	}
 	return speechDistance;
+}
+
+
+void InstructionGenerator::routeChanged()
+{
+	requestSpeech();
 }
 
 
@@ -266,4 +252,17 @@ int InstructionGenerator::angle( UnsignedCoordinate first, UnsignedCoordinate se
 	}
 }
 
+
+void InstructionGenerator::setSpeechEnabled( bool enabled )
+{
+	m_speechEnabled = enabled;
+	QSettings settings( "MoNavClient" );
+	settings.setValue( "SpeechEnabled", m_speechEnabled );
+}
+
+
+bool InstructionGenerator::speechEnabled()
+{
+	return m_speechEnabled;
+}
 

@@ -162,7 +162,6 @@ MainWindow::MainWindow( QWidget* parent ) :
 
 	resizeIcons();
 	connectSlots();
-	// waypointsChanged();
 
 #ifdef Q_WS_MAEMO_5
 	grabZoomKeys( true );
@@ -180,6 +179,9 @@ MainWindow::MainWindow( QWidget* parent ) :
 	} else if ( !mapData->loaded() ) {
 		displayModuleChooser();
 	}
+
+	// showInstructions();
+	// displayInstructions();
 }
 
 MainWindow::~MainWindow()
@@ -232,9 +234,7 @@ void MainWindow::connectSlots()
 
 	connect( mapData, SIGNAL(informationChanged()), this, SLOT(informationLoaded()) );
 	connect( mapData, SIGNAL(dataLoaded()), this, SLOT(dataLoaded()) );
-	// TODO: Move 
-	connect( RoutingLogic::instance(), SIGNAL(instructionsChanged()), this, SLOT(instructionsChanged()) );
-	// connect( RoutingLogic::instance(), SIGNAL(waypointsChanged()), this, SLOT(waypointsChanged()) );
+	connect( RoutingLogic::instance(), SIGNAL(routeChanged()), this, SLOT(displayInstructions()) );
 }
 
 void MainWindow::createActions()
@@ -619,10 +619,15 @@ void MainWindow::dataLoaded()
 	this->setWindowTitle( "MoNav - " + MapData::instance()->information().name );
 }
 
-void MainWindow::instructionsChanged()
+void MainWindow::displayInstructions()
 {
 	if ( !d->fixed )
 		return;
+
+	/*
+	if ( !GlobalSettings::instructionsEnabled() )
+		return;
+ */
 
 	QStringList label;
 	QStringList icon;
@@ -817,7 +822,7 @@ void MainWindow::setModeInstructions()
 
 
 	d->toolBarMethods->setDisabled( true );
-	instructionsChanged();
+	displayInstructions();
 }
 
 void MainWindow::setModeless()
@@ -1027,11 +1032,11 @@ void MainWindow::setZoom( int zoom )
 void MainWindow::about()
 {
 	// TODO: Create a better dialog displaying more details, and read some of the data from an include file or define.
-	QMessageBox::about( this, tr("About MoNav"), tr( "MoNav 0.4 is (c) 2011 by the MoNav authors and was released under the GNU GPL v3." ) );
+	QMessageBox::about( this, tr("About MoNav"), tr( "MoNav 0.4 is (c) 2012 by the MoNav authors and was released under the GNU GPL v3." ) );
 }
 
 void MainWindow::projectPage()
 {
-	QDesktopServices::openUrl( QUrl( tr("http://code.google.com/p/monav/") ) );
+	QDesktopServices::openUrl( QUrl( tr("http://monav.openstreetmap.de") ) );
 }
 

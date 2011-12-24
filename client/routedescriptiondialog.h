@@ -42,7 +42,7 @@ signals:
 
 public slots:
 
-	void instructionsChanged();
+	void displayInstructions();
 
 protected:
 

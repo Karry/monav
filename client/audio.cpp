@@ -70,19 +70,15 @@ void Audio::initialize()
 
 	m_audioOut = new QAudioOutput(format, this);
 	connect(m_audioOut,SIGNAL(stateChanged(QAudio::State)),SLOT(finishedPlayback(QAudio::State)));
-	// connect(InstructionGenerator::instance(),SIGNAL(speechRequest(QString)),this,SLOT(speechRequest(QString)));
 }
 
-void Audio::speechRequest( QString fileName )
+void Audio::speak( QString fileName )
 {
-	// qDebug() << "Speakink";
 	if ( m_audioFile.isOpen() ){
-		// qDebug() << "Sorry, I'm still busy playing audio.";
 		return;
 	}
 
 	if ( fileName == "" ){
-		qDebug() << "Audio filename empty - no audio playback.";
 		return;
 	}
 
@@ -90,7 +86,6 @@ void Audio::speechRequest( QString fileName )
 
 	if ( !m_audioFile.open( QIODevice::ReadOnly ) )
 	{
-		// qDebug() << "Cannot read audio data" << fileName << "so no audio playback.";
 		return;
 	}
 	qDebug() << fileName;

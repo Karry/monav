@@ -54,11 +54,9 @@ public:
 		QDateTime timestamp;
 	};
 
-	// return the instance of RoutingLogic
 	static RoutingLogic* instance();
 	// the waypoints used to calculate the route, excluding the source
 	QVector< UnsignedCoordinate > waypoints() const;
-	// source
 	UnsignedCoordinate source() const;
 	// target == last waypoint
 	UnsignedCoordinate target() const;
@@ -70,49 +68,32 @@ public:
 	double groundSpeed();
 	// is the source linked to the GPS reciever?
 	bool gpsLink() const;
-	// GPS information
 	const GPSInfo gpsInfo() const;
-	// clears the waypoints/ target / route
+	// clears the waypoints, target, and route
 	void clear();
 	// driving instruction for the current route
 	// TODO: Obsolete since the introduction of InstructionGenerator
 	void instructions( QStringList* labels, QStringList* icons, int maxSeconds = std::numeric_limits< int >::max() );
-	// Used by the InstructionGenerator
-	QVector< IRouter::Node > nodes();
 	QVector< IRouter::Edge > edges();
 
 
 signals:
 
-	// TODO: Move this to instructiongenerator
-	void instructionsChanged();
 	void routeChanged();
-	// void generateInstructions();
-	// void distanceChanged( double meter );
-	// void travelTimeChanged( double seconds );
-	void waypointReached( int id );
 	void waypointsChanged();
 	void gpsInfoChanged();
-	void gpsLinkChanged( bool linked );
 	void sourceChanged();
 
 public slots:
 
-	// sets the waypoints
 	void setWaypoints( QVector< UnsignedCoordinate > waypoints );
-	// sets a waypoint. If the coordinate is not valid the waypoint id is removed
+	// If the coordinate is not valid the waypoint id is removed
 	void setWaypoint( int id, UnsignedCoordinate coordinate );
-	// sets the source coordinate
 	void setSource( UnsignedCoordinate coordinate );
-	// sets the target coordine == last waypoint. Inserte a waypoint if necessary.
+	// sets the target coordine == last waypoint. Inserts a waypoint if necessary.
 	void setTarget( UnsignedCoordinate target );
-	// links / unlinks GPS and source coordinate
+	// Unlinks the source coordinate from the GPS subsystem, so clicking routes on the map becomes possible.
 	void setGPSLink( bool linked );
-
-	// computes a roundtrip visiting all waypoints
-	// starting at the first one
-	// and returning to the first one
-	// void computeRoundtrip();
 
 	// destroys this object
 	void cleanup();
@@ -122,7 +103,6 @@ protected:
 	RoutingLogic();
 	~RoutingLogic();
 	bool onTrack();
-	// double distanceToRoute();
 	UnsignedCoordinate unsignedOnSegment( int NodeId );
 	void truncateRoute( int maxIndex );
 	void computeRoute();
@@ -131,7 +111,6 @@ protected:
 
 	struct PrivateImplementation;
 	PrivateImplementation* const d;
-	InstructionGenerator instructionGenerator;
 
 protected slots:
 

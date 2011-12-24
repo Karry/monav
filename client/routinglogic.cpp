@@ -33,7 +33,6 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include <QSettings>
 #include <QDir>
 
-#include "instructiongenerator.h"
 #include "audio.h"
 
 
@@ -109,6 +108,7 @@ RoutingLogic::RoutingLogic() :
 	connect( this, SIGNAL(gpsInfoChanged()), Logger::instance(), SLOT(positionChanged()) );
 	connect( MapData::instance(), SIGNAL(dataLoaded()), this, SLOT(dataLoaded()) );
 	// connect( this, SIGNAL(generateInstructions()), InstructionGenerator::instance(), SLOT(generate()) );
+	connect( this, SIGNAL(routeChanged()), InstructionGenerator::instance(), SLOT(routeChanged()) );
 	computeRoute();
 	emit waypointsChanged();
 }
@@ -173,9 +173,10 @@ void RoutingLogic::positionUpdated( const QGeoPositionInfo& update )
 	// TODO: Determine the next waypoint
 	if ( d->linked ) {
 		d->source = d->gpsInfo.position;
+		// InstructionGenerator::instance()->speak( d->pathEdges );
 		emit sourceChanged();
 		if ( !onTrack() ){
-			qDebug() << "Route was left. Recalculating.";
+			// qDebug() << "Route was left. Recalculating.";
 			computeRoute();
 		}
 	}
@@ -217,6 +218,13 @@ const RoutingLogic::GPSInfo RoutingLogic::gpsInfo() const
 }
 
 
+QVector< IRouter::Edge > RoutingLogic::edges()
+{
+	// TODO: Pass a const reference?
+	return d->pathEdges;
+}
+
+
 QVector< IRouter::Node > RoutingLogic::route() const
 {
 	return d->pathNodes;
@@ -225,6 +233,7 @@ QVector< IRouter::Node > RoutingLogic::route() const
 
 double RoutingLogic::routeDistance()
 {
+	// TODO: Change this, as the route meanwhile contains the edge's lengths
 	double distance = 0.0;
 	GPSCoordinate current;
 	GPSCoordinate next;
@@ -248,18 +257,6 @@ void RoutingLogic::clear()
 {
 	d->waypoints.clear();
 	computeRoute();
-}
-
-
-QVector< IRouter::Node > RoutingLogic::nodes()
-{
-	return d->pathNodes;
-}
-
-
-QVector< IRouter::Edge > RoutingLogic::edges()
-{
-	return d->pathEdges;
 }
 
 
@@ -324,7 +321,6 @@ void RoutingLogic::setGPSLink( bool linked )
 		emit sourceChanged();
 		computeRoute();
 	}
-	emit gpsLinkChanged( d->linked );
 }
 
 
@@ -361,7 +357,6 @@ bool RoutingLogic::onTrack()
 			d->source = unsignedOnNearestSeg;
 		}
 		emit routeChanged();
-		emit sourceChanged();
 	}
 	return sourceNearRoute;
 }
@@ -464,15 +459,8 @@ void RoutingLogic::computeRoute()
 	}
 
 	d->distance = waypoints.first().ToGPSCoordinate().ApproximateDistance( waypoints.last().ToGPSCoordinate() );
-
-	// emit generateInstructions();
-	// InstructionGenerator::instance()->generate();
-	instructionGenerator.createInstructions( d->pathEdges, d->pathNodes );
+	InstructionGenerator::instance()->createInstructions( d->pathEdges, d->pathNodes );
 	emit routeChanged();
-	// TODO: Move this to instructiongenerator
-	emit instructionsChanged();
-	// emit distanceChanged( d->distance );
-	// emit travelTimeChanged( d->travelTime );
 }
 
 
@@ -484,11 +472,7 @@ void RoutingLogic::clearRoute()
 	d->pathNodes.clear();
 	d->icons.clear();
 	d->labels.clear();
-	// emit generateInstructions();
 	emit routeChanged();
-	// emit instructionsChanged();
-	// emit distanceChanged( d->distance );
-	// emit travelTimeChanged( d->travelTime );
 }
 
 

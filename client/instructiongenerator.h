@@ -1,5 +1,5 @@
 /*
-Copyright 2010 Christoph Eckert ce@christeck.de
+Copyright 2011 Christoph Eckert ce@christeck.de
 
 This file is part of MoNav.
 
@@ -36,62 +36,32 @@ Q_OBJECT
 
 public:
 
-// TODO: Remove this struct
-struct AbstractInstruction {
-	QString type;
-	QString name;
-	double distance;
-	int direction;
-	int audiofileIndex;
-	int exitNumber;
-	bool branchingPossible;
-	bool spoken;
-	void init() {
-		type = "";
-		name = "";
-		distance = std::numeric_limits< double >::max();
-		direction = std::numeric_limits< int >::max();
-		audiofileIndex = std::numeric_limits< int >::max();
-		exitNumber = 0;
-		branchingPossible = false;
-		spoken = false;
-	}
-};
-
-
-	// static InstructionGenerator* instance();
+	static InstructionGenerator* instance();
 	~InstructionGenerator();
-	InstructionGenerator();
 	void createInstructions( QVector< IRouter::Edge >&, QVector< IRouter::Node >& );
+	void setSpeechEnabled( bool enabled );
+	bool speechEnabled();
 
 public slots:
 
 	// destroys the object
 	// void cleanup();
+	void routeChanged();
 
 signals:
 
-	// void speechRequest( QString );
+	void speechRequest( QString );
 
 protected:
 
-	// void generateInstructions();
+	InstructionGenerator();
 	int angle( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third );
-	// void determineRoundabouts();
-	// void determineSpeech();
-	void speak();
 	double speechDistance();
-	// bool speechRequired();
+	void requestSpeech();
 
-	// QStringList m_icons;
-	// QStringList m_labels;
 	QStringList m_audioFilenames;
-	QVector< IRouter::Edge > m_pathEdges;
-	// QVector< IRouter::Node > m_pathNodes;
-	AbstractInstruction m_previousInstruction;
-	AbstractInstruction m_currentInstruction;
-	AbstractInstruction m_nextInstruction;
 	QString m_language;
+	bool m_speechEnabled;
 
 #ifdef CPPUNITLITE
 	void createInsideRoundabout();

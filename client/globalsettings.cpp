@@ -34,6 +34,7 @@ struct GlobalSettings::PrivateImplementation {
 	int zoomStreetChooser;
 	int zoomPlaceChooser;
 	bool autoRotation;
+	bool displayInstructions;
 };
 
 GlobalSettings::GlobalSettings()
@@ -65,6 +66,7 @@ void GlobalSettings::loadSettings( QSettings *settings )
 	instance->d->zoomStreetChooser = settings->value( "zoomStreetChooser", 14 ).toInt();
 	instance->d->zoomPlaceChooser = settings->value( "zoomPlaceChooser", 11 ).toInt();
 	instance->d->autoRotation = settings->value( "autoRotation", true ).toBool();
+	instance->d->displayInstructions = settings->value( "displayInstructions", true ).toBool();
 	settings->endGroup();
 }
 
@@ -80,6 +82,7 @@ void GlobalSettings::saveSettings( QSettings *settings )
 	settings->setValue( "zoomStreetChooser", instance->d->zoomStreetChooser );
 	settings->setValue( "zoomPlaceChooser", instance->d->zoomPlaceChooser );
 	settings->setValue( "autoRotation", instance->d->autoRotation );
+	settings->setValue( "displayInstructions", instance->d->displayInstructions );
 	settings->endGroup();
 }
 
@@ -110,6 +113,20 @@ void GlobalSettings::setAutoRotation( bool autoRotation )
 	GlobalSettings* instance = privateInstance();
 	instance->d->autoRotation = autoRotation;
 }
+
+/*
+bool GlobalSettings::instructionsEnabled()
+{
+	GlobalSettings* instance = privateInstance();
+	return instance->d->displayInstructions;
+}
+
+void GlobalSettings::setInstructionsEnabled( bool displayInstructions )
+{
+	GlobalSettings* instance = privateInstance();
+	instance->d->displayInstructions = displayInstructions;
+}
+*/
 
 void GlobalSettings::setDefaultIconsSize()
 {

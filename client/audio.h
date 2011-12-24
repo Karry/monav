@@ -36,12 +36,12 @@ public:
 
 	static Audio* instance();
 	~Audio();
+	void speak( QString fileName );
 
 public slots:
 
 	void initialize();
 	void finishedPlayback( QAudio::State );
-	void speechRequest( QString fileName );
 
 // signals:
 

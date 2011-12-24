@@ -30,7 +30,7 @@ RouteDescriptionWidget::RouteDescriptionWidget( QWidget *parent ) :
 {
 	m_ui->setupUi(this);
 	connect( m_ui->back, SIGNAL(clicked()), this, SIGNAL(closed()) );
-	instructionsChanged();
+	displayInstructions();
 }
 
 RouteDescriptionWidget::~RouteDescriptionWidget()
@@ -38,7 +38,7 @@ RouteDescriptionWidget::~RouteDescriptionWidget()
 	delete m_ui;
 }
 
-void RouteDescriptionWidget::instructionsChanged()
+void RouteDescriptionWidget::displayInstructions()
 {
 	m_ui->descriptionList->clear();
 	QStringList labels;
