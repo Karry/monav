@@ -20,6 +20,8 @@
         <file>audio/en/instructions-turn-u.wav</file>
         <file>audio/en/instructions-leave-motorway.wav</file>
         <file>audio/en/instructions-leave-trunk.wav</file>
+        <file>audio/en/instructions-take-motorway-ramp.wav</file>
+        <file>audio/en/instructions-take-trunk-ramp.wav</file>
         <file>audio/de/instructions-head-straightforward.wav</file>
         <file>audio/de/instructions-roundabout_01.wav</file>
         <file>audio/de/instructions-roundabout_02.wav</file>
@@ -40,5 +42,7 @@
         <file>audio/de/instructions-turn-u.wav</file>
         <file>audio/de/instructions-leave-motorway.wav</file>
         <file>audio/de/instructions-leave-trunk.wav</file>
+        <file>audio/de/instructions-take-motorway-ramp.wav</file>
+        <file>audio/de/instructions-take-trunk-ramp.wav</file>
     </qresource>
 </RCC>

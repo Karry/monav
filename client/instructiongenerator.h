@@ -47,7 +47,8 @@ public slots:
 
 	// destroys the object
 	// void cleanup();
-	void routeChanged();
+	// void routeChanged();
+	void requestSpeech();
 
 signals:
 
@@ -58,7 +59,6 @@ protected:
 	InstructionGenerator();
 	int angle( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third );
 	double speechDistance();
-	void requestSpeech();
 
 	QStringList m_audioFilenames;
 	QStringList m_labels;
