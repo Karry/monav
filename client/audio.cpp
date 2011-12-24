@@ -88,7 +88,7 @@ void Audio::speak( QString fileName )
 	{
 		return;
 	}
-	qDebug() << fileName;
+
 	m_audioOut->start( &m_audioFile );
 }
 

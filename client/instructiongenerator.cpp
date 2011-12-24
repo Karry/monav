@@ -168,55 +168,61 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 
 	for ( int i = 0; i < edges.size() -1; i++ ){
 		if ( edges[i].typeString == "roundabout" && edges[i].exitNumber < 1 ){
-			qDebug() << "No speech at all in roundabouts";
+			// qDebug() << "No speech at all in roundabouts";
 			edges[i].audiofileIndex = -1;
 		}
 		else if ( edges[i].typeString == "motorway" && edges[i +1].typeString == "motorway_link" ){
-			qDebug() << "Leaving the motorway";
+			// qDebug() << "Leaving the motorway";
 			edges[i].audiofileIndex = 17;
 		}
 		else if ( edges[i].typeString == "trunk" && edges[i +1].typeString == "trunk_link" ){
-			qDebug() << "Leaving the trunk";
+			// qDebug() << "Leaving the trunk";
 			edges[i].audiofileIndex = 18;
 		}
 		else if ( edges[i].typeString != "motorway" && edges[i].typeString != "motorway_link" && edges[i +1].typeString == "motorway_link" ){
-			qDebug() << "Entering the motorway";
+			// qDebug() << "Entering the motorway";
 			edges[i].audiofileIndex = 19;
 		}
 		else if ( edges[i].typeString != "trunk" && edges[i].typeString != "trunk_link" && edges[i +1].typeString == "trunk_link" ){
-			qDebug() << "Entering the trunk";
+			// qDebug() << "Entering the trunk";
 			edges[i].audiofileIndex = 20;
 		}
+		else if ( edges[i].branchingPossible && edges[i].direction == 0 && edges[i].typeString == "motorway_link" ){
+			// qDebug() << "Announcing a branch on motorway or trunk links";
+			edges[i].audiofileIndex = edges[i].direction;
+		}
+		else if ( edges[i].branchingPossible && edges[i].direction == 0 && edges[i].typeString == "trunk_link" ){
+			// qDebug() << "Announcing a branch on motorway or trunk links";
+			edges[i].audiofileIndex = edges[i].direction;
+		}
 		else if ( edges[i].branchingPossible && edges[i].direction != 0 ){
-			qDebug() << "Announcing an ordinary turn";
+			// qDebug() << "Announcing an ordinary turn";
 			edges[i].audiofileIndex = edges[i].direction;
 		}
 		else{
-			qDebug() << "No speech required" << edges[i].branchingPossible;
+			// qDebug() << "No speech required" << edges[i].branchingPossible;
 		}
 	}
-	qDebug() << edges[0].audiofileIndex;
+
 	// Roundabout detection
 	int exitAmount = 0;
-	int preRoundaboutEdge = -1;
+	int firstRoundaboutEdge = -1;
 	for ( int i = 0; i < edges.size(); i++ ){
 		if ( edges[i].typeString == "roundabout" ){
-			if ( exitAmount == 0 ){
-				preRoundaboutEdge = i -1;
+			if ( firstRoundaboutEdge == -1 ){
+				firstRoundaboutEdge = i;
 			}
-			exitAmount++;
+			if ( edges[i].branchingPossible ){
+				exitAmount++;
+			}
 		}
 		else if ( exitAmount > 0 ){
-			if ( preRoundaboutEdge < 0 ){
-				preRoundaboutEdge = 0;
-			}
-			edges[ preRoundaboutEdge ].exitNumber = exitAmount;
-			edges[ preRoundaboutEdge ].audiofileIndex = edges[0].exitNumber +7;
+			edges[ firstRoundaboutEdge ].exitNumber = exitAmount;
+			edges[ firstRoundaboutEdge ].audiofileIndex = edges[firstRoundaboutEdge].exitNumber +7;
 			exitAmount = 0;
-			preRoundaboutEdge = -1;
+			firstRoundaboutEdge = -1;
 		}
 	}
-	// qDebug() << edges[0].audiofileIndex;
 }
 
 
@@ -249,33 +255,50 @@ void InstructionGenerator::requestSpeech(){
 	if ( !m_speechEnabled ){
 		return;
 	}
-	// qDebug() << "1";
+
 	// TODO: Use a reference
 	QVector< IRouter::Edge > edges = RoutingLogic::instance()->edges();
 	if ( edges.size() < 1 ){
 		return;
 	}
-	// qDebug() << edges[0].audiofileIndex;
-	if ( edges[0].audiofileIndex < 0 || edges[0].audiofileIndex >= m_audioFilenames.size() ){
-		return;
+	// qDebug() << edges[0].branchingPossible;
+	qDebug() << "Amount of edges:" << edges.size();
+	// Determining the next edge to announce.
+	// This is necessary for short edges often occuring on crossings
+	int nextBranchEdgeIndex = -1;
+	double distanceToBranch = 0.0;
+
+	for ( int i = 0; i < edges.size(); i++ ){
+		nextBranchEdgeIndex = i;
+		distanceToBranch += edges[i].distance;
+		if ( edges[i].audiofileIndex >= 0 ){
+			break;
+		}
 	}
-	// qDebug() << m_audioFilenames[ edges[0].audiofileIndex ];
-	if ( edges[0].spoken ){
+
+	if ( distanceToBranch > speechDistance() ){
+		qDebug() << "Distance to branch" << distanceToBranch << "greater" << speechDistance();
 		return;
 	}
 
-	if ( edges[0].distance > speechDistance() ){
+	if ( edges[nextBranchEdgeIndex].audiofileIndex < 0 || edges[0].audiofileIndex >= m_audioFilenames.size() ){
+		qDebug() << "Audio file index out of range:" << edges[nextBranchEdgeIndex].audiofileIndex;
 		return;
 	}
 
-	QString audioFilename = m_audioFilenames[ edges[0].audiofileIndex ];
+	if ( edges[nextBranchEdgeIndex].spoken ){
+		qDebug() << "Edge already announced:" << edges[nextBranchEdgeIndex].typeString << edges[nextBranchEdgeIndex].nameString;
+		return;
+	}
+
+	QString audioFilename = m_audioFilenames[ edges[nextBranchEdgeIndex].audiofileIndex ];
 
 	audioFilename.prepend( "/" );
 	audioFilename.prepend( m_language );
 	audioFilename.prepend( ":/audio/" );
 	audioFilename.append( ".wav" );
 	Audio::instance()->speak( audioFilename );
-	edges[0].spoken = true;
+	edges[nextBranchEdgeIndex].spoken = true;
 }
 
 
@@ -284,7 +307,8 @@ double InstructionGenerator::speechDistance() {
 	double currentSpeed = 0;
 
 	// Speed is in meters per second
-	currentSpeed = gpsInfo.position.IsValid() ? gpsInfo.groundSpeed : 2;
+	// 10 m per second are equal to 36 km/h
+	currentSpeed = gpsInfo.position.IsValid() ? gpsInfo.groundSpeed : 10;
 
 	// Some possibly reasonable values (0.2 seconds per km/h):
 	//  5s	  35m	 7m/s	 25km/h	residential areas
@@ -296,20 +320,8 @@ double InstructionGenerator::speechDistance() {
 	// Which results in a factor of about 0.7
 	// Reduced to 0.6 due to reality check
 	double speechDistance = currentSpeed * currentSpeed * 0.6;
-	// Mainly for debugging on desktop machines with no GPS receiver available
-	if ( speechDistance < 15 ){
-		speechDistance = 15;
-	}
 	return speechDistance;
 }
-
-
-/*
-void InstructionGenerator::routeChanged()
-{
-	requestSpeech();
-}
-*/
 
 
 int InstructionGenerator::angle( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third ) {
@@ -343,37 +355,7 @@ int InstructionGenerator::angle( UnsignedCoordinate first, UnsignedCoordinate se
 	else if ( angle > 315 && angle <= 355.0 ){
 		direction = 1;
 	}
-	/*
-	static const int forward = 5;
-	static const int sharp = 45;
-	static const int slightly = 30;
-	if ( angle > 180 ) {
-		if ( angle > 360 - forward - slightly ) {
-			if ( angle > 360 - forward )
-				direction = 0;
-			else
-				direction = 1;
-		} else {
-			if ( angle > 180 + sharp )
-				direction = 2;
-			else
-				direction = 3;
-		}
-	} else {
-		if ( angle > forward + slightly ) {
-			if ( angle > 180 - sharp )
-				direction = 5;// mehr als 35 und mehr als 135
-			else
-				direction = 6;
-		} else {
-			if ( angle > forward )
-				direction = 7;
-			else
-				direction = 0;
-		}
-	}
-	*/
-	// qDebug() << "Angle and direction:" << angle << direction;
+
 	return direction;
 }
 
