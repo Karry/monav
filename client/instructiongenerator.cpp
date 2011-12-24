@@ -29,24 +29,81 @@ InstructionGenerator::InstructionGenerator()
 	m_speechEnabled = settings.value( "SpeechEnabled", true ).toBool();
 
 	m_audioFilenames.append( "instructions-head-straightforward" );
+	m_labels.append( tr( "Head straightforward." ) );
+	m_icons.append( "forward" );
+
 	m_audioFilenames.append( "instructions-turn-slightly-right" );
+	m_labels.append( tr( "Turn slightly right." ) );
+	m_icons.append( "slightly_right" );
+
 	m_audioFilenames.append( "instructions-turn-right" );
+	m_labels.append( tr( "Turn right." ) );
+	m_icons.append( "right" );
+
 	m_audioFilenames.append( "instructions-turn-sharply-right" );
+	m_labels.append( tr( "Turn sharply right." ) );
+	m_icons.append( "sharply_right" );
+
 	m_audioFilenames.append( "instructions-turn-u" );
+	m_labels.append( tr( "Take a U-turn" ) );
+	m_icons.append( "backward" );
+
 	m_audioFilenames.append( "instructions-turn-sharply-left" );
+	m_labels.append( tr( "Turn sharply left." ) );
+	m_icons.append( "sharply_left" );
+
 	m_audioFilenames.append( "instructions-turn-left" );
+	m_labels.append( tr( "Turn left." ) );
+	m_icons.append( "left" );
+
 	m_audioFilenames.append( "instructions-turn-slightly-left" );
+	m_labels.append( tr( "Turn slightly left." ) );
+	m_icons.append( "slightly_left" );
+
 	m_audioFilenames.append( "instructions-roundabout_01" );
+	m_labels.append( tr( "Take the 1st exit." ) );
+	m_icons.append( "roundabout" );
+
 	m_audioFilenames.append( "instructions-roundabout_02" );
+	m_labels.append( tr( "Take the 2nd exit." ) );
+	m_icons.append( "roundabout" );
+
 	m_audioFilenames.append( "instructions-roundabout_03" );
+	m_labels.append( tr( "Take the 3rd exit." ) );
+	m_icons.append( "roundabout" );
+
 	m_audioFilenames.append( "instructions-roundabout_04" );
+	m_labels.append( tr( "Take the 4th exit." ) );
+	m_icons.append( "roundabout" );
+
 	m_audioFilenames.append( "instructions-roundabout_05" );
+	m_labels.append( tr( "Take the 5th exit." ) );
+	m_icons.append( "roundabout" );
+
 	m_audioFilenames.append( "instructions-roundabout_06" );
+	m_labels.append( tr( "Take the 6th exit." ) );
+	m_icons.append( "roundabout" );
+
 	m_audioFilenames.append( "instructions-roundabout_07" );
+	m_labels.append( tr( "Take the 7th exit." ) );
+	m_icons.append( "roundabout" );
+
 	m_audioFilenames.append( "instructions-roundabout_08" );
+	m_labels.append( tr( "Take the 8th exit." ) );
+	m_icons.append( "roundabout" );
+
 	m_audioFilenames.append( "instructions-roundabout_09" );
+	m_labels.append( tr( "Take the 9th exit." ) );
+	m_icons.append( "roundabout" );
+
 	m_audioFilenames.append( "instructions-leave-motorway" );
+	m_labels.append( tr( "Leave the motorway." ) );
+	m_icons.append( "slightly_right" );
+
 	m_audioFilenames.append( "instructions-leave-trunk" );
+	m_labels.append( tr( "Leave the trunk." ) );
+	m_icons.append( "slightly_right" );
+
 	QLocale DefaultLocale;
 	m_language = DefaultLocale.name();
 	m_language.truncate( 2 );
@@ -152,6 +209,30 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 	}
 }
 
+
+void InstructionGenerator::instructions( QStringList* labels, QStringList* icons, int maxSeconds )
+{
+	// TODO: Use a reference
+	QVector< IRouter::Edge > edges = RoutingLogic::instance()->edges();
+	if ( edges.size() < 1 ){
+		return;
+	}
+
+	QStringList instructions;
+	QStringList images;
+
+	for ( int i = 0; i < edges.size(); i++ ){
+		if ( edges[i].audiofileIndex >= 0 && edges[i].audiofileIndex < m_labels.size() ){
+			instructions.append( m_labels[ edges[i].audiofileIndex ] );
+			images.append( m_icons[ edges[i].audiofileIndex ] );
+			images.last().append( ".png" );
+			images.last().prepend( ":/images/directions/" );
+		}
+	}
+	qDebug() << "Instruction amount:" << instructions.size();
+	*labels = instructions;
+	*icons = images;
+}
 
 void InstructionGenerator::requestSpeech(){
 

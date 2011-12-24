@@ -179,9 +179,6 @@ MainWindow::MainWindow( QWidget* parent ) :
 	} else if ( !mapData->loaded() ) {
 		displayModuleChooser();
 	}
-
-	// showInstructions();
-	// displayInstructions();
 }
 
 MainWindow::~MainWindow()
@@ -624,15 +621,10 @@ void MainWindow::displayInstructions()
 	if ( !d->fixed )
 		return;
 
-	/*
-	if ( !GlobalSettings::instructionsEnabled() )
-		return;
- */
-
 	QStringList label;
 	QStringList icon;
 
-	RoutingLogic::instance()->instructions( &label, &icon, 60 );
+	InstructionGenerator::instance()->instructions( &label, &icon, 60 );
 
 	m_ui->infoWidget->setHidden( label.empty() );
 

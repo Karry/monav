@@ -18,7 +18,6 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "routinglogic.h"
-#include "descriptiongenerator.h"
 #include "instructiongenerator.h"
 #include "mapdata.h"
 #include "utils/qthelpers.h"
@@ -44,10 +43,6 @@ struct RoutingLogic::PrivateImplementation {
 	QVector< IRouter::Edge > pathEdges;
 	double distance;
 	double travelTime;
-	// TODO: The following three items are obsolete since descriptiongenerator exists
-	DescriptionGenerator descriptionGenerator;
-	QStringList labels;
-	QStringList icons;
 	bool linked;
 #ifndef NOQTMOBILE
 	// the current GPS source
@@ -107,7 +102,6 @@ RoutingLogic::RoutingLogic() :
 
 	connect( this, SIGNAL(gpsInfoChanged()), Logger::instance(), SLOT(positionChanged()) );
 	connect( MapData::instance(), SIGNAL(dataLoaded()), this, SLOT(dataLoaded()) );
-	// connect( this, SIGNAL(generateInstructions()), InstructionGenerator::instance(), SLOT(generate()) );
 	connect( this, SIGNAL(routeChanged()), InstructionGenerator::instance(), SLOT(routeChanged()) );
 	computeRoute();
 	emit waypointsChanged();
@@ -257,15 +251,6 @@ void RoutingLogic::clear()
 {
 	d->waypoints.clear();
 	computeRoute();
-}
-
-
-void RoutingLogic::instructions( QStringList* labels, QStringList* icons, int maxSeconds )
-{
-	d->descriptionGenerator.reset();
-	d->descriptionGenerator.descriptions( &d->icons, &d->labels, d->pathNodes, d->pathEdges, maxSeconds );
-	*labels = d->labels;
-	*icons = d->icons;
 }
 
 
@@ -470,8 +455,6 @@ void RoutingLogic::clearRoute()
 	d->travelTime = -1;
 	d->pathEdges.clear();
 	d->pathNodes.clear();
-	d->icons.clear();
-	d->labels.clear();
 	emit routeChanged();
 }
 
@@ -496,7 +479,6 @@ UnsignedCoordinate RoutingLogic::unsignedOnSegment( int NodeId )
 	UnsignedCoordinate unsignedOnSeg;
 	unsignedOnSeg.x = px;
 	unsignedOnSeg.y = py;
-	// unsignedOnSeg.ToGPSCoordinate().ApproximateDistance( d->gpsInfo.position.ToGPSCoordinate() );
 	return unsignedOnSeg;
 }
 

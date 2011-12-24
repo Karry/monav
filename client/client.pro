@@ -69,7 +69,6 @@ HEADERS += \
 	../interfaces/irouter.h \
 	bookmarksdialog.h \
 	routedescriptiondialog.h \
-	descriptiongenerator.h \
 	mapdata.h \
 	routinglogic.h \
 	instructiongenerator.h \

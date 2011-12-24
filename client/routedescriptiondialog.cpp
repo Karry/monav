@@ -43,10 +43,11 @@ void RouteDescriptionWidget::displayInstructions()
 	m_ui->descriptionList->clear();
 	QStringList labels;
 	QStringList icons;
-	RoutingLogic::instance()->instructions( &labels, &icons );
+	// RoutingLogic::instance()->instructions( &labels, &icons );
+	InstructionGenerator::instance()->instructions( &labels, &icons, 60 );
 	assert( icons.size() == labels.size() );
 	for ( int entry = 0; entry < icons.size(); entry++ ) {
 		new QListWidgetItem( QIcon( icons[entry] ), labels[entry], m_ui->descriptionList );
-		qDebug() << "Route Description:" << labels[entry];
+		// qDebug() << "Route Description:" << labels[entry];
 	}
 }
