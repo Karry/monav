@@ -162,20 +162,11 @@ void RoutingLogic::positionUpdated( const QGeoPositionInfo& update )
 		d->gpsInfo.horizontalAccuracy = update.attribute( QGeoPositionInfo::HorizontalAccuracy );
 	if ( update.hasAttribute( QGeoPositionInfo::VerticalAccuracy ) )
 		d->gpsInfo.verticalAccuracy = update.attribute( QGeoPositionInfo::VerticalAccuracy );
-
-
-	// TODO: Determine the next waypoint
-	if ( d->linked ) {
-		d->source = d->gpsInfo.position;
-		// InstructionGenerator::instance()->speak( d->pathEdges );
-		emit sourceChanged();
-		if ( !onTrack() ){
-			// qDebug() << "Route was left. Recalculating.";
-			computeRoute();
-		}
-	}
-
 	emit gpsInfoChanged();
+
+	if ( gpsLink() ){
+		setSource( d->gpsInfo.position );
+	}
 }
 #endif
 
@@ -280,14 +271,109 @@ void RoutingLogic::setWaypoint( int id, UnsignedCoordinate coordinate )
 }
 
 
-void RoutingLogic::setSource( UnsignedCoordinate coordinate )
+void RoutingLogic::setClickedSource( UnsignedCoordinate coordinate )
 {
 	setGPSLink( false );
-	d->source = coordinate;
-	computeRoute();
-	emit sourceChanged();
+	setSource( coordinate );
 }
 
+
+void RoutingLogic::setSource( UnsignedCoordinate coordinate )
+{
+	// TODO: Use vector maths to determine whether the position is still on track, and whether the position moves with or opposite to the route.
+	d->source = coordinate;
+	emit sourceChanged();
+
+	if ( route().size() < 1 ){
+		return;
+	}
+
+	double currentDistance = std::numeric_limits< double >::max();
+	UnsignedCoordinate currentCoord;
+	int nodeToKeep = -1;
+
+	for ( int i = 0; i < route().size(); i++ ){
+		currentCoord = route()[i].coordinate;
+		currentDistance = currentCoord.ToGPSCoordinate().ApproximateDistance( coordinate.ToGPSCoordinate() );
+		if ( currentDistance < 60 ){
+			nodeToKeep = i;
+			break;
+		}
+	}
+	if ( nodeToKeep > -1 ){
+		truncateRoute( nodeToKeep );
+	}
+	else{
+		computeRoute();
+	}
+	emit routeChanged();
+}
+
+
+
+/*
+Did not do the job due to coordOnSegment failing
+void RoutingLogic::setSource( UnsignedCoordinate coordinate )
+{
+	if ( route().size() < 1 ){
+		d->source = coordinate;
+		emit sourceChanged();
+		return;
+	}
+	qDebug() << "Source coords:" << coordinate.x << coordinate.y;
+
+	double distToNearestSegment = std::numeric_limits< double >::max();
+	double currentDistance = std::numeric_limits< double >::max();
+	UnsignedCoordinate coordOnNearestSeg;
+	UnsignedCoordinate currentCoord;
+	int nodeToKeep = 0;
+
+	for ( int i = 1; i <= d->pathNodes.size(); i++ ){
+		currentCoord = coordOnSegment( i, coordinate );
+		currentDistance = currentCoord.ToGPSCoordinate().ApproximateDistance( coordinate.ToGPSCoordinate() );
+		qDebug() << currentDistance;
+		if ( currentDistance <= distToNearestSegment ){
+			distToNearestSegment = currentDistance;
+			coordOnNearestSeg = currentCoord;
+			nodeToKeep = i -1;
+		}
+		// Assuming the segment nearest to the new source position was the former one
+		else{
+			break;
+		}
+	}
+
+	bool sourceNearRoute = false;
+	if ( distToNearestSegment < 30 ){
+		sourceNearRoute = true;
+	}
+
+	bool oppositeHeading = false;
+	if ( coordOnNearestSeg.x == d->pathNodes[nodeToKeep].coordinate.x && coordOnNearestSeg.y == d->pathNodes[nodeToKeep].coordinate.y ){
+		oppositeHeading = true;
+	}
+
+	if ( oppositeHeading && sourceNearRoute ){
+		d->source = coordinate;
+	}
+	else if ( oppositeHeading && !sourceNearRoute ){
+		d->source = coordinate;
+		computeRoute();
+		emit routeChanged();
+	}
+	else if ( !oppositeHeading ){
+		truncateRoute( nodeToKeep );
+		if ( d->pathNodes.size() > 1 ){
+			d->pathNodes[0] = coordOnNearestSeg;
+		}
+		d->source = coordOnNearestSeg;
+		emit routeChanged();
+	}
+
+	emit sourceChanged();
+	// qDebug() << "\n";
+}
+*/
 
 void RoutingLogic::setTarget( UnsignedCoordinate target )
 {
@@ -309,48 +395,10 @@ void RoutingLogic::setGPSLink( bool linked )
 }
 
 
-bool RoutingLogic::onTrack()
-{
-	double distToNearestSegment = std::numeric_limits< double >::max();
-	double distToSegment = std::numeric_limits< double >::max();
-	UnsignedCoordinate unsignedOnNearestSeg;
-	UnsignedCoordinate unsignedOnSeg;
-	int nodeDropIndexMax = 0;
-
-	for ( int i = 1; i <= d->pathNodes.size(); i++ ){
-		unsignedOnSeg = unsignedOnSegment( i );
-		distToSegment = unsignedOnSeg.ToGPSCoordinate().ApproximateDistance( d->gpsInfo.position.ToGPSCoordinate() );
-		if ( distToSegment <= distToNearestSegment ){
-			distToNearestSegment = distToSegment;
-			unsignedOnNearestSeg = unsignedOnSeg;
-			nodeDropIndexMax = i;
-		}
-		// Segment nearest to position was the former one
-		else if ( distToSegment > distToNearestSegment ){
-			break;
-		}
-	}
-
-	bool sourceNearRoute = false;
-	if ( distToNearestSegment < 30 ){
-		sourceNearRoute = true;
-		truncateRoute( nodeDropIndexMax -2 );
-		// Check whether the position is in opposite direction of the route
-		// TODO: The turn instruction should announce something like "you're heading in the wrong direction".
-		if ( unsignedOnNearestSeg != d->pathNodes[0].coordinate ){
-			d->pathNodes[0] = unsignedOnNearestSeg;
-			d->source = unsignedOnNearestSeg;
-		}
-		emit routeChanged();
-	}
-	return sourceNearRoute;
-}
-
-
-void RoutingLogic::truncateRoute( int nodeDropIndexMax )
+void RoutingLogic::truncateRoute( int nodeToKeep )
 {
 	// Edge nodes always 1 less than nodes.
-	for ( int i = 0; i < nodeDropIndexMax; i++ ){
+	for ( int i = 0; i < nodeToKeep; i++ ){
 		d->pathEdges[0].length --;
 		if ( d->pathEdges[0].length == 0 ){
 			d->pathEdges.pop_front();
@@ -458,18 +506,90 @@ void RoutingLogic::clearRoute()
 	emit routeChanged();
 }
 
-
-UnsignedCoordinate RoutingLogic::unsignedOnSegment( int NodeId )
+/*
+Did not work as expected
+UnsignedCoordinate RoutingLogic::coordOnSegment( int NodeId, UnsignedCoordinate newSource )
 {
 	double ax = d->pathNodes[NodeId - 1].coordinate.x;
 	double ay = d->pathNodes[NodeId - 1].coordinate.y;
 	double bx = d->pathNodes[NodeId].coordinate.x;
 	double by = d->pathNodes[NodeId].coordinate.y;
-	double cx = d->source.x;
-	double cy = d->source.y;
+	double cx = newSource.x;
+	double cy = newSource.y;
 
+
+	// Example coords where the third one should have its nearest point on the line at the 2nd coord:
+	// 562530383 367550754
+	// 562531311 367552386
+	// 562532175 367553922
+	// Unfortunately they don't.
+
+	// ax = 562530383;
+	// ay = 367550754;
+	// bx = 562531311;
+	// by = 367552386;
+	// cx = 562532175;
+	// cy = 367553922;
+
+	double r_numerator = (cx-ax)*(bx-ax) + (cy-ay)*(by-ay);
+	double r_denomenator = (bx-ax)*(bx-ax) + (by-ay)*(by-ay);
+	double r = r_numerator / r_denomenator;
+
+	double px = ax + r*(bx-ax);
+	double py = ay + r*(by-ay);
+	double s =  ((ay-cy)*(bx-ax)-(ax-cx)*(by-ay) ) / r_denomenator;
+
+	double distanceLine = fabs(s)*sqrt(r_denomenator);
+
+	// (xx,yy) is the point on the lineSegment closest to (cx,cy)
+	double xx = px;
+	double yy = py;
+	UnsignedCoordinate coordOnSegment;
+	coordOnSegment.x = px;
+	coordOnSegment.y = py;
+	qDebug() << "\n";
+	qDebug() << (int)ax << (int)ay;
+	qDebug() << (int)bx << (int)by;
+	qDebug() << (int)px << (int)py;
+	qDebug() << "\n";
+	double distanceSegment = 0;
+	if ( (r >= 0) && (r <= 1) ){
+		distanceSegment = distanceLine;
+	}
+	else{
+		double dist1 = (cx-ax)*(cx-ax) + (cy-ay)*(cy-ay);
+		double dist2 = (cx-bx)*(cx-bx) + (cy-by)*(cy-by);
+		if (dist1 < dist2){
+			xx = ax;
+			yy = ay;
+			distanceSegment = sqrt(dist1);
+			}
+		else{
+			xx = bx;
+			yy = by;
+			distanceSegment = sqrt(dist2);
+		}
+	}
+
+	return coordOnSegment;
+}
+*/
+
+/*
+UnsignedCoordinate RoutingLogic::coordOnSegment( int NodeId, UnsignedCoordinate newSource )
+{
 	// Vector magic adapted from
 	// http://benc45.wordpress.com/2008/05/08/point-line-segment-distance/
+
+	double ax = d->pathNodes[NodeId - 1].coordinate.x;
+	double ay = d->pathNodes[NodeId - 1].coordinate.y;
+	double bx = d->pathNodes[NodeId].coordinate.x;
+	double by = d->pathNodes[NodeId].coordinate.y;
+	// double cx = d->source.x;
+	// double cy = d->source.y;
+	double cx = newSource.x;
+	double cy = newSource.y;
+
 	double r_numerator = (cx-ax)*(bx-ax) + (cy-ay)*(by-ay);
 	double r_denomenator = (bx-ax)*(bx-ax) + (by-ay)*(by-ay);
 	double r = r_numerator / r_denomenator;
@@ -481,7 +601,7 @@ UnsignedCoordinate RoutingLogic::unsignedOnSegment( int NodeId )
 	unsignedOnSeg.y = py;
 	return unsignedOnSeg;
 }
-
+*/
 
 void RoutingLogic::dataLoaded()
 {

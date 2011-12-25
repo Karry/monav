@@ -89,7 +89,7 @@ public slots:
 	void setWaypoints( QVector< UnsignedCoordinate > waypoints );
 	// If the coordinate is not valid the waypoint id is removed
 	void setWaypoint( int id, UnsignedCoordinate coordinate );
-	void setSource( UnsignedCoordinate coordinate );
+	void setClickedSource( UnsignedCoordinate coordinate );
 	// sets the target coordine == last waypoint. Inserts a waypoint if necessary.
 	void setTarget( UnsignedCoordinate target );
 	// Unlinks the source coordinate from the GPS subsystem, so clicking routes on the map becomes possible.
@@ -102,12 +102,13 @@ protected:
 
 	RoutingLogic();
 	~RoutingLogic();
-	bool onTrack();
-	UnsignedCoordinate unsignedOnSegment( int NodeId );
+	// bool onTrack();
+	// UnsignedCoordinate coordOnSegment( int NodeId, UnsignedCoordinate newSource );
 	void truncateRoute( int maxIndex );
 	void computeRoute();
 	void updateInstructions();
 	void clearRoute();
+	void setSource( UnsignedCoordinate coordinate );
 
 	struct PrivateImplementation;
 	PrivateImplementation* const d;

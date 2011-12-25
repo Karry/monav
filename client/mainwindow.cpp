@@ -906,7 +906,7 @@ void MainWindow::alterRoute( UnsignedCoordinate coordinate )
 		return;
 
 	if ( d->applicationMode == PrivateImplementation::Source ) {
-		RoutingLogic::instance()->setSource( coordinate );
+		RoutingLogic::instance()->setClickedSource( coordinate );
 		return;
 	}
 	if ( d->applicationMode != PrivateImplementation::Target ){

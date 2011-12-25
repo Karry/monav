@@ -284,17 +284,17 @@ void InstructionGenerator::requestSpeech(){
 	}
 
 	if ( distanceToBranch > speechDistance() ){
-		qDebug() << "Distance to branch" << distanceToBranch << "greater" << speechDistance();
+		// qDebug() << "Distance to branch" << distanceToBranch << "greater" << speechDistance();
 		return;
 	}
 
 	if ( edges[nextBranchEdgeIndex].audiofileIndex < 0 || edges[0].audiofileIndex >= m_audioFilenames.size() ){
-		qDebug() << "Audio file index out of range:" << edges[nextBranchEdgeIndex].audiofileIndex;
+		// qDebug() << "Audio file index out of range:" << edges[nextBranchEdgeIndex].audiofileIndex;
 		return;
 	}
 
 	if ( edges[nextBranchEdgeIndex].spoken ){
-		qDebug() << "Edge already announced:" << edges[nextBranchEdgeIndex].typeString << edges[nextBranchEdgeIndex].nameString;
+		// qDebug() << "Edge already announced:" << edges[nextBranchEdgeIndex].typeString << edges[nextBranchEdgeIndex].nameString;
 		return;
 	}
 
