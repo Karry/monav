@@ -103,7 +103,8 @@ protected:
 	RoutingLogic();
 	~RoutingLogic();
 	// bool onTrack();
-	// UnsignedCoordinate coordOnSegment( int NodeId, UnsignedCoordinate newSource );
+	UnsignedCoordinate coordOnSegment( int NodeId, UnsignedCoordinate newSource );
+	// void testCoordOnSegment();
 	void truncateRoute( int maxIndex );
 	void computeRoute();
 	void updateInstructions();

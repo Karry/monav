@@ -278,11 +278,22 @@ void RoutingLogic::setClickedSource( UnsignedCoordinate coordinate )
 }
 
 
+/*
 void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 {
-	// TODO: Use vector maths to determine whether the position is still on track, and whether the position moves with or opposite to the route.
+	// Task: Use vector maths to determine whether the position is still on track, and whether the position moves with or opposite to the route.
+	UnsignedCoordinate result = coordOnSegment( 0, coordinate );
+	bool sourceBehind = false;
+	if ( d->pathNodes[0].coordinate.x == result.x && d->pathNodes[0].coordinate.y == result.y ){
+		sourceBehind = true;
+	}
+
+	// qDebug() << sourceBehind;
+	// qDebug() << d->pathNodes[0].coordinate.x << d->pathNodes[0].coordinate.y;
+	// qDebug() << result.x << result.y;
+
+
 	d->source = coordinate;
-	emit sourceChanged();
 
 	if ( route().size() < 1 ){
 		return;
@@ -300,42 +311,45 @@ void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 			break;
 		}
 	}
+
 	if ( nodeToKeep > -1 ){
 		truncateRoute( nodeToKeep );
 	}
 	else{
 		computeRoute();
 	}
+
+	emit sourceChanged();
 	emit routeChanged();
+
+
 }
+	*/
 
 
-
-/*
-Did not do the job due to coordOnSegment failing
 void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 {
 	if ( route().size() < 1 ){
 		d->source = coordinate;
 		emit sourceChanged();
+		// TODO: Ensure the logger always gets the coordinate from the GPS subsystem
 		return;
 	}
-	qDebug() << "Source coords:" << coordinate.x << coordinate.y;
 
 	double distToNearestSegment = std::numeric_limits< double >::max();
 	double currentDistance = std::numeric_limits< double >::max();
 	UnsignedCoordinate coordOnNearestSeg;
 	UnsignedCoordinate currentCoord;
-	int nodeToKeep = 0;
+	int nodeToKeep = -1;
 
-	for ( int i = 1; i <= d->pathNodes.size(); i++ ){
+	for ( int i = 0; i < d->pathNodes.size() -1; i++ ){
 		currentCoord = coordOnSegment( i, coordinate );
+		// coordOnSegment() already knows the distance, but it's computed based on unsigned coordinates
 		currentDistance = currentCoord.ToGPSCoordinate().ApproximateDistance( coordinate.ToGPSCoordinate() );
-		qDebug() << currentDistance;
 		if ( currentDistance <= distToNearestSegment ){
 			distToNearestSegment = currentDistance;
 			coordOnNearestSeg = currentCoord;
-			nodeToKeep = i -1;
+			nodeToKeep = i;
 		}
 		// Assuming the segment nearest to the new source position was the former one
 		else{
@@ -348,6 +362,7 @@ void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 		sourceNearRoute = true;
 	}
 
+	// TODO: coordOnSegment() already computed this bool
 	bool oppositeHeading = false;
 	if ( coordOnNearestSeg.x == d->pathNodes[nodeToKeep].coordinate.x && coordOnNearestSeg.y == d->pathNodes[nodeToKeep].coordinate.y ){
 		oppositeHeading = true;
@@ -373,7 +388,7 @@ void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 	emit sourceChanged();
 	// qDebug() << "\n";
 }
-*/
+
 
 void RoutingLogic::setTarget( UnsignedCoordinate target )
 {
@@ -506,102 +521,62 @@ void RoutingLogic::clearRoute()
 	emit routeChanged();
 }
 
-/*
-Did not work as expected
 UnsignedCoordinate RoutingLogic::coordOnSegment( int NodeId, UnsignedCoordinate newSource )
 {
-	double ax = d->pathNodes[NodeId - 1].coordinate.x;
-	double ay = d->pathNodes[NodeId - 1].coordinate.y;
-	double bx = d->pathNodes[NodeId].coordinate.x;
-	double by = d->pathNodes[NodeId].coordinate.y;
-	double cx = newSource.x;
-	double cy = newSource.y;
+	double ax = d->pathNodes[NodeId].coordinate.x;
+	double ay = d->pathNodes[NodeId].coordinate.y;
+	double bx = d->pathNodes[NodeId +1].coordinate.x;
+	double by = d->pathNodes[NodeId +1].coordinate.y;
+	double px = newSource.x;
+	double py = newSource.y;
 
-
-	// Example coords where the third one should have its nearest point on the line at the 2nd coord:
-	// 562530383 367550754
-	// 562531311 367552386
-	// 562532175 367553922
-	// Unfortunately they don't.
-
-	// ax = 562530383;
-	// ay = 367550754;
-	// bx = 562531311;
-	// by = 367552386;
-	// cx = 562532175;
-	// cy = 367553922;
-
-	double r_numerator = (cx-ax)*(bx-ax) + (cy-ay)*(by-ay);
-	double r_denomenator = (bx-ax)*(bx-ax) + (by-ay)*(by-ay);
-	double r = r_numerator / r_denomenator;
-
-	double px = ax + r*(bx-ax);
-	double py = ay + r*(by-ay);
-	double s =  ((ay-cy)*(bx-ax)-(ax-cx)*(by-ay) ) / r_denomenator;
-
-	double distanceLine = fabs(s)*sqrt(r_denomenator);
-
-	// (xx,yy) is the point on the lineSegment closest to (cx,cy)
-	double xx = px;
-	double yy = py;
-	UnsignedCoordinate coordOnSegment;
-	coordOnSegment.x = px;
-	coordOnSegment.y = py;
-	qDebug() << "\n";
-	qDebug() << (int)ax << (int)ay;
-	qDebug() << (int)bx << (int)by;
-	qDebug() << (int)px << (int)py;
-	qDebug() << "\n";
-	double distanceSegment = 0;
-	if ( (r >= 0) && (r <= 1) ){
-		distanceSegment = distanceLine;
+	// http://vb-helper.com/howto_distance_point_to_line.html
+	double dx = bx - ax;
+	double dy = by - ay;
+	double near_x = 0;
+	double near_y = 0;
+	double DistToSegment = 0;
+	if ( dx == 0 && dy == 0 ){
+		// Line length == 0
+		dx = px - ax;
+		dy = py - ay;
+		near_x = ax;
+		near_y = ay;
+		DistToSegment = sqrt(dx * dx + dy * dy);
 	}
 	else{
-		double dist1 = (cx-ax)*(cx-ax) + (cy-ay)*(cy-ay);
-		double dist2 = (cx-bx)*(cx-bx) + (cy-by)*(cy-by);
-		if (dist1 < dist2){
-			xx = ax;
-			yy = ay;
-			distanceSegment = sqrt(dist1);
-			}
-		else{
-			xx = bx;
-			yy = by;
-			distanceSegment = sqrt(dist2);
+		// Calculate the t that minimizes the distance.
+		double t = ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy);
+
+		// Check whether this represents one of the segment's
+		// end points or a point somewhere between both points.
+		if ( t < 0 ){
+			dx = px - ax;
+			dy = py - ay;
+			near_x = ax;
+			near_y = ay;
 		}
+		else if( t > 1 ){
+			dx = px - bx;
+			dy = py - by;
+			near_x = bx;
+			near_y = by;
+		}
+		else{
+			near_x = ax + t * dx;
+			near_y = ay + t * dy;
+			dx = px - near_x;
+			dy = py - near_y;
+		}
+		DistToSegment = sqrt(dx * dx + dy * dy);
 	}
 
-	return coordOnSegment;
+	UnsignedCoordinate resultingCoord;
+	resultingCoord.x = near_x;
+	resultingCoord.y = near_y;
+	return resultingCoord;
 }
-*/
 
-/*
-UnsignedCoordinate RoutingLogic::coordOnSegment( int NodeId, UnsignedCoordinate newSource )
-{
-	// Vector magic adapted from
-	// http://benc45.wordpress.com/2008/05/08/point-line-segment-distance/
-
-	double ax = d->pathNodes[NodeId - 1].coordinate.x;
-	double ay = d->pathNodes[NodeId - 1].coordinate.y;
-	double bx = d->pathNodes[NodeId].coordinate.x;
-	double by = d->pathNodes[NodeId].coordinate.y;
-	// double cx = d->source.x;
-	// double cy = d->source.y;
-	double cx = newSource.x;
-	double cy = newSource.y;
-
-	double r_numerator = (cx-ax)*(bx-ax) + (cy-ay)*(by-ay);
-	double r_denomenator = (bx-ax)*(bx-ax) + (by-ay)*(by-ay);
-	double r = r_numerator / r_denomenator;
-	double px = ax + r*(bx-ax);
-	double py = ay + r*(by-ay);
-
-	UnsignedCoordinate unsignedOnSeg;
-	unsignedOnSeg.x = px;
-	unsignedOnSeg.y = py;
-	return unsignedOnSeg;
-}
-*/
 
 void RoutingLogic::dataLoaded()
 {
