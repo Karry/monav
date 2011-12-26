@@ -71,16 +71,19 @@ void Audio::initialize()
 void Audio::speak( QString fileName )
 {
 	if ( m_audioFile.isOpen() ){
-		qDebug() << "Audio file already open - cannot speak.";
+		qWarning() << "Audio file already open - cannot speak.";
 		return;
 	}
 
 	m_audioFile.setFileName( fileName );
 	if ( !m_audioFile.open( QIODevice::ReadOnly ) ){
-		qDebug() << "Cannot open file" << fileName;
+		qWarning() << "Cannot open file" << fileName;
 		return;
 	}
 
+	// Stolen form the audiooutput example shipped with QT 4.7
+	delete m_audioOut;
+	m_audioOut = 0;
 	m_audioOut = new QAudioOutput( m_format, this );
 	connect(m_audioOut,SIGNAL(stateChanged(QAudio::State)),SLOT(finishedPlayback(QAudio::State)));
 	m_audioOut->start( &m_audioFile );
@@ -89,16 +92,9 @@ void Audio::speak( QString fileName )
 
 void Audio::finishedPlayback( QAudio::State state )
 {
-	QStringList states;
-	states << "Processing" << "Suspended" << "Closed" << "Idle";
-	qDebug() << "Audio Out changed state to" << states.at( state );
-
 	if ( state == QAudio::IdleState ){
 		m_audioOut->stop();
-		// qDebug() << "Audio Out stopped.";
 		m_audioFile.close();
-		// qDebug() << "Audio File closed.";
-		// delete m_audioOut;
 	}
 }
 

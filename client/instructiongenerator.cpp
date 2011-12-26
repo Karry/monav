@@ -267,7 +267,7 @@ void InstructionGenerator::requestSpeech(){
 	QString audioFilename = m_audioFilenames[ edges[0].audiofileIndex ];
 
 	audioFilename.prepend( "/" );
-	audioFilename.prepend( "m_language" );
+	audioFilename.prepend( m_language );
 	audioFilename.prepend( ":/audio/" );
 	audioFilename.append( ".wav" );
 	Audio::instance()->speak( audioFilename );
