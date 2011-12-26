@@ -39,6 +39,7 @@ Audio* Audio::instance()
 
 void Audio::initialize()
 {
+	m_audioOut = 0L;
 	// The files are RIFF (little-endian), WAVE audio, Microsoft PCM, Signed 16 bit, stereo 8000 Hz
 	m_format.setFrequency(8000);
 	m_format.setChannels(2);
@@ -68,22 +69,36 @@ void Audio::initialize()
 	}
 }
 
-void Audio::speak( QString fileName )
+void Audio::speak( QStringList fileNames )
 {
-	if ( m_audioFile.isOpen() ){
-		qWarning() << "Audio file already open - cannot speak.";
-		return;
+	m_audioFilenames.append( fileNames );
+	if ( !m_audioFile.isOpen() && m_audioFilenames.size() > 0 ){
+		process( m_audioFilenames[0] );
+		m_audioFilenames.pop_front();
 	}
+}
 
-	m_audioFile.setFileName( fileName );
+
+void Audio::process( QString audioFilename )
+{
+	m_audioFile.setFileName( audioFilename );
 	if ( !m_audioFile.open( QIODevice::ReadOnly ) ){
-		qWarning() << "Cannot open file" << fileName;
-		return;
+		qDebug() << "Cannot open file" << audioFilename;
+		if ( m_audioFilenames.size() > 0 ){
+			m_audioFilenames.pop_front();
+			if ( m_audioFilenames.size() > 0 ){
+				process( m_audioFilenames[0] );
+			}
+			return;
+		}
 	}
 
-	// Stolen form the audiooutput example shipped with QT 4.7
-	delete m_audioOut;
-	m_audioOut = 0;
+	// See the audio output example shipped with QT 4.7
+	if ( m_audioOut != 0L ){
+		delete m_audioOut;
+		m_audioOut = 0L;
+	}
+
 	m_audioOut = new QAudioOutput( m_format, this );
 	connect(m_audioOut,SIGNAL(stateChanged(QAudio::State)),SLOT(finishedPlayback(QAudio::State)));
 	m_audioOut->start( &m_audioFile );
@@ -95,6 +110,10 @@ void Audio::finishedPlayback( QAudio::State state )
 	if ( state == QAudio::IdleState ){
 		m_audioOut->stop();
 		m_audioFile.close();
+		if ( m_audioFilenames.size() > 0 ){
+			process( m_audioFilenames[0] );
+			m_audioFilenames.pop_front();
+		}
 	}
 }
 

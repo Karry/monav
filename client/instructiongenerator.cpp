@@ -264,13 +264,21 @@ void InstructionGenerator::requestSpeech(){
 		return;
 	}
 
-	QString audioFilename = m_audioFilenames[ edges[0].audiofileIndex ];
+	QStringList audioFilenames;
+	audioFilenames << "instructions-announce";
+	audioFilenames << m_audioFilenames[ edges[0].audiofileIndex ];
 
-	audioFilename.prepend( "/" );
-	audioFilename.prepend( m_language );
-	audioFilename.prepend( ":/audio/" );
-	audioFilename.append( ".wav" );
-	Audio::instance()->speak( audioFilename );
+	// QString announceFilename = "instructions-announce";
+	// QString audioFilename = m_audioFilenames[ edges[0].audiofileIndex ];
+
+	for ( int i = 0; i < audioFilenames.size(); i++ ){
+		audioFilenames[i].prepend( "/" );
+		audioFilenames[i].prepend( m_language );
+		audioFilenames[i].prepend( ":/audio/" );
+		audioFilenames[i].append( ".wav" );
+	}
+
+	Audio::instance()->speak( audioFilenames );
 	edges[0].speechRequired = false;
 }
 

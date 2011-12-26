@@ -36,7 +36,7 @@ public:
 
 	static Audio* instance();
 	~Audio();
-	void speak( QString fileName );
+	void speak( QStringList fileNames );
 
 public slots:
 
@@ -46,9 +46,11 @@ public slots:
 protected:
 
 	explicit Audio( QObject* parent = 0 );
+	void process( QString audioFilename );
 	QAudioFormat m_format;
 	QFile m_audioFile;
 	QAudioOutput* m_audioOut;
+	QStringList m_audioFilenames;
 };
 
 #endif // AUDIO_H

@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
+        <file>audio/en/instructions-announce.wav</file>
+        <file>audio/en/instructions-and-then.wav</file>
         <file>audio/en/instructions-head-straightforward.wav</file>
         <file>audio/en/instructions-roundabout_01.wav</file>
         <file>audio/en/instructions-roundabout_02.wav</file>
@@ -22,6 +24,8 @@
         <file>audio/en/instructions-leave-trunk.wav</file>
         <file>audio/en/instructions-take-motorway-ramp.wav</file>
         <file>audio/en/instructions-take-trunk-ramp.wav</file>
+        <file>audio/de/instructions-announce.wav</file>
+        <file>audio/de/instructions-and-then.wav</file>
         <file>audio/de/instructions-head-straightforward.wav</file>
         <file>audio/de/instructions-roundabout_01.wav</file>
         <file>audio/de/instructions-roundabout_02.wav</file>
