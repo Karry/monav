@@ -268,9 +268,8 @@ void InstructionGenerator::requestSpeech(){
 	if ( edges.size() < 1 ){
 		return;
 	}
-	// qDebug() << edges[0].branchingPossible;
-	// qDebug() << "Amount of edges:" << edges.size();
-	// Determining the next edge to announce.
+
+	// Anticipate the next edge to announce.
 	// This is necessary for short edges often occuring on crossings
 	int nextBranchEdgeIndex = -1;
 	double distanceToBranch = 0.0;
@@ -284,17 +283,18 @@ void InstructionGenerator::requestSpeech(){
 	}
 
 	if ( distanceToBranch > speechDistance() ){
-		// qDebug() << "Distance to branch" << distanceToBranch << "greater" << speechDistance();
+		qDebug() << "Distance to branch" << distanceToBranch << "greater" << speechDistance();
 		return;
 	}
 
+	// Safety net
 	if ( edges[nextBranchEdgeIndex].audiofileIndex < 0 || edges[0].audiofileIndex >= m_audioFilenames.size() ){
-		// qDebug() << "Audio file index out of range:" << edges[nextBranchEdgeIndex].audiofileIndex;
+		qDebug() << "Audio file index out of range:" << edges[nextBranchEdgeIndex].audiofileIndex;
 		return;
 	}
 
 	if ( edges[nextBranchEdgeIndex].spoken ){
-		// qDebug() << "Edge already announced:" << edges[nextBranchEdgeIndex].typeString << edges[nextBranchEdgeIndex].nameString;
+		qDebug() << "Edge already announced:" << edges[nextBranchEdgeIndex].typeString << edges[nextBranchEdgeIndex].nameString;
 		return;
 	}
 
@@ -306,6 +306,7 @@ void InstructionGenerator::requestSpeech(){
 	audioFilename.append( ".wav" );
 	Audio::instance()->speak( audioFilename );
 	edges[nextBranchEdgeIndex].spoken = true;
+	qDebug() << "Edge spoken:" << nextBranchEdgeIndex;
 }
 
 

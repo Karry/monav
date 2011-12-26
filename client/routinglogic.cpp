@@ -218,15 +218,9 @@ QVector< IRouter::Node > RoutingLogic::route() const
 
 double RoutingLogic::routeDistance()
 {
-	// TODO: Change this, as the route meanwhile contains the edge's lengths
 	double distance = 0.0;
-	GPSCoordinate current;
-	GPSCoordinate next;
-	for( int i = 0; i < d->pathNodes.size() -1; i++ ){
-		// TODO: Better use an iterator?
-		current = d->pathNodes[i].coordinate.ToGPSCoordinate();
-		next = d->pathNodes[i +1].coordinate.ToGPSCoordinate();
-		distance += current.Distance( next );
+	for( int i = 0; i < d->pathEdges.size(); i++ ){
+		distance += d->pathEdges[i].distance;
 	}
 	return distance;
 }
@@ -278,55 +272,6 @@ void RoutingLogic::setClickedSource( UnsignedCoordinate coordinate )
 }
 
 
-/*
-void RoutingLogic::setSource( UnsignedCoordinate coordinate )
-{
-	// Task: Use vector maths to determine whether the position is still on track, and whether the position moves with or opposite to the route.
-	UnsignedCoordinate result = coordOnSegment( 0, coordinate );
-	bool sourceBehind = false;
-	if ( d->pathNodes[0].coordinate.x == result.x && d->pathNodes[0].coordinate.y == result.y ){
-		sourceBehind = true;
-	}
-
-	// qDebug() << sourceBehind;
-	// qDebug() << d->pathNodes[0].coordinate.x << d->pathNodes[0].coordinate.y;
-	// qDebug() << result.x << result.y;
-
-
-	d->source = coordinate;
-
-	if ( route().size() < 1 ){
-		return;
-	}
-
-	double currentDistance = std::numeric_limits< double >::max();
-	UnsignedCoordinate currentCoord;
-	int nodeToKeep = -1;
-
-	for ( int i = 0; i < route().size(); i++ ){
-		currentCoord = route()[i].coordinate;
-		currentDistance = currentCoord.ToGPSCoordinate().ApproximateDistance( coordinate.ToGPSCoordinate() );
-		if ( currentDistance < 60 ){
-			nodeToKeep = i;
-			break;
-		}
-	}
-
-	if ( nodeToKeep > -1 ){
-		truncateRoute( nodeToKeep );
-	}
-	else{
-		computeRoute();
-	}
-
-	emit sourceChanged();
-	emit routeChanged();
-
-
-}
-	*/
-
-
 void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 {
 	if ( route().size() < 1 ){
@@ -370,14 +315,17 @@ void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 
 	if ( oppositeHeading && sourceNearRoute ){
 		d->source = coordinate;
+		qDebug() << "Wrong direction";
 	}
 	else if ( oppositeHeading && !sourceNearRoute ){
 		d->source = coordinate;
 		computeRoute();
+		qDebug() << "Route recomputed";
 		emit routeChanged();
 	}
 	else if ( !oppositeHeading ){
 		truncateRoute( nodeToKeep );
+		qDebug() << "Route truncated";
 		if ( d->pathNodes.size() > 1 ){
 			d->pathNodes[0] = coordOnNearestSeg;
 		}
