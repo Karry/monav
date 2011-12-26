@@ -338,6 +338,8 @@ void InstructionGenerator::instructions( QStringList* labels, QStringList* icons
 
 
 int InstructionGenerator::angle( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third ) {
+	// TODO: It would be *very* useful to take more than one node of an edge into account.
+	// There are too many occasions where the current approach either leads to no or to too much instructions.
 	double x1 = ( double ) second.x - first.x; // a = (x1,y1)
 	double y1 = ( double ) second.y - first.y;
 	double x2 = ( double ) third.x - second.x; // b = (x2, y2 )
