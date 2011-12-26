@@ -203,10 +203,11 @@ const RoutingLogic::GPSInfo RoutingLogic::gpsInfo() const
 }
 
 
-QVector< IRouter::Edge > RoutingLogic::edges()
+QVector< IRouter::Edge >& RoutingLogic::edges()
 {
-	// TODO: Pass a const reference?
-	return d->pathEdges;
+	// TODO: Pass a reference
+	QVector< IRouter::Edge >& edgeReference = d->pathEdges;
+	return edgeReference;
 }
 
 

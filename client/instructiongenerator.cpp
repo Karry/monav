@@ -228,8 +228,7 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 
 void InstructionGenerator::instructions( QStringList* labels, QStringList* icons, int maxSeconds )
 {
-	// TODO: Use a reference
-	QVector< IRouter::Edge > edges = RoutingLogic::instance()->edges();
+	QVector< IRouter::Edge >& edges = RoutingLogic::instance()->edges();
 	if ( edges.size() < 1 ){
 		return;
 	}
@@ -263,8 +262,7 @@ void InstructionGenerator::requestSpeech(){
 		return;
 	}
 
-	// TODO: Use a reference
-	QVector< IRouter::Edge > edges = RoutingLogic::instance()->edges();
+	QVector< IRouter::Edge >& edges = RoutingLogic::instance()->edges();
 	if ( edges.size() < 1 ){
 		return;
 	}

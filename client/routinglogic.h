@@ -74,7 +74,7 @@ public:
 	// driving instruction for the current route
 	// TODO: Obsolete since the introduction of InstructionGenerator
 	void instructions( QStringList* labels, QStringList* icons, int maxSeconds = std::numeric_limits< int >::max() );
-	QVector< IRouter::Edge > edges();
+	QVector< IRouter::Edge >& edges();
 
 
 signals:
