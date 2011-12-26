@@ -39,26 +39,25 @@ Audio* Audio::instance()
 
 void Audio::initialize()
 {
-	QAudioFormat format;
 	// The files are RIFF (little-endian), WAVE audio, Microsoft PCM, Signed 16 bit, stereo 8000 Hz
-	format.setFrequency(8000);
-	format.setChannels(2);
-	format.setSampleSize(16);
-	format.setCodec("audio/pcm");
-	format.setByteOrder(QAudioFormat::LittleEndian);
-	format.setSampleType(QAudioFormat::SignedInt);
+	m_format.setFrequency(8000);
+	m_format.setChannels(2);
+	m_format.setSampleSize(16);
+	m_format.setCodec("audio/pcm");
+	m_format.setByteOrder(QAudioFormat::LittleEndian);
+	m_format.setSampleType(QAudioFormat::SignedInt);
 
-	QAudioDeviceInfo deviceInfo(QAudioDeviceInfo::defaultOutputDevice());
-	if (!deviceInfo.isFormatSupported(format))
+	QAudioDeviceInfo deviceInfo( QAudioDeviceInfo::defaultOutputDevice() );
+	if ( !deviceInfo.isFormatSupported( m_format ) )
 	{
 		qDebug()<< "raw audio format not supported by backend, cannot play audio.";
 		qDebug()<< "\nDevice" << deviceInfo.deviceName() << "prefers:";
-		qDebug()<<"Byte Order:" << deviceInfo.preferredFormat().byteOrder() << ", found" << format.byteOrder();
-		qDebug()<<"Channel:" << deviceInfo.preferredFormat().channels() << ", found" << format.channels();
-		qDebug()<<"Codec:" << deviceInfo.preferredFormat().codec() << ", found" << format.codec();
-		qDebug()<<"Frequency:" << deviceInfo.preferredFormat().frequency() << ", found" << format.frequency();
-		qDebug()<<"Sample Size:" << deviceInfo.preferredFormat().sampleSize() << ", found" << format.sampleSize();
-		qDebug()<<"Sample Type:" << deviceInfo.preferredFormat().sampleType() << ", found" << format.sampleType();
+		qDebug()<<"Byte Order:" << deviceInfo.preferredFormat().byteOrder() << ", found" << m_format.byteOrder();
+		qDebug()<<"Channel:" << deviceInfo.preferredFormat().channels() << ", found" << m_format.channels();
+		qDebug()<<"Codec:" << deviceInfo.preferredFormat().codec() << ", found" << m_format.codec();
+		qDebug()<<"Frequency:" << deviceInfo.preferredFormat().frequency() << ", found" << m_format.frequency();
+		qDebug()<<"Sample Size:" << deviceInfo.preferredFormat().sampleSize() << ", found" << m_format.sampleSize();
+		qDebug()<<"Sample Type:" << deviceInfo.preferredFormat().sampleType() << ", found" << m_format.sampleType();
 		qDebug()<< "\nDevice" << deviceInfo.deviceName() << "supports:";
 		qDebug()<<"Byte Orders:" << deviceInfo.supportedByteOrders();
 		qDebug()<<"Channels:" << deviceInfo.supportedChannels();
@@ -67,38 +66,39 @@ void Audio::initialize()
 		qDebug()<<"Sample Sizes:" << deviceInfo.supportedSampleSizes();
 		qDebug()<<"Sample Types:" << deviceInfo.supportedSampleTypes();
 	}
-
-	m_audioOut = new QAudioOutput(format, this);
-	connect(m_audioOut,SIGNAL(stateChanged(QAudio::State)),SLOT(finishedPlayback(QAudio::State)));
 }
 
 void Audio::speak( QString fileName )
 {
 	if ( m_audioFile.isOpen() ){
-		return;
-	}
-
-	if ( fileName == "" ){
+		qDebug() << "Audio file already open - cannot speak.";
 		return;
 	}
 
 	m_audioFile.setFileName( fileName );
-
-	if ( !m_audioFile.open( QIODevice::ReadOnly ) )
-	{
+	if ( !m_audioFile.open( QIODevice::ReadOnly ) ){
+		qDebug() << "Cannot open file" << fileName;
 		return;
 	}
 
+	m_audioOut = new QAudioOutput( m_format, this );
+	connect(m_audioOut,SIGNAL(stateChanged(QAudio::State)),SLOT(finishedPlayback(QAudio::State)));
 	m_audioOut->start( &m_audioFile );
 }
 
 
 void Audio::finishedPlayback( QAudio::State state )
 {
-	if( state == QAudio::IdleState )
-	{
+	QStringList states;
+	states << "Processing" << "Suspended" << "Closed" << "Idle";
+	qDebug() << "Audio Out changed state to" << states.at( state );
+
+	if ( state == QAudio::IdleState ){
 		m_audioOut->stop();
+		// qDebug() << "Audio Out stopped.";
 		m_audioFile.close();
+		// qDebug() << "Audio File closed.";
+		// delete m_audioOut;
 	}
 }
 

@@ -110,6 +110,7 @@ protected:
 	void updateInstructions();
 	void clearRoute();
 	void setSource( UnsignedCoordinate coordinate );
+	void calculateEdgeDistance( int index );
 
 	struct PrivateImplementation;
 	PrivateImplementation* const d;

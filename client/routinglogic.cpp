@@ -316,7 +316,7 @@ void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 
 	if ( oppositeHeading && sourceNearRoute ){
 		d->source = coordinate;
-		qDebug() << "Wrong direction";
+		// qDebug() << "Opposite direction";
 	}
 	else if ( oppositeHeading && !sourceNearRoute ){
 		d->source = coordinate;
@@ -326,11 +326,11 @@ void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 	}
 	else if ( !oppositeHeading ){
 		truncateRoute( nodeToKeep );
-		qDebug() << "Route truncated";
 		if ( d->pathNodes.size() > 1 ){
 			d->pathNodes[0] = coordOnNearestSeg;
 		}
 		d->source = coordOnNearestSeg;
+		calculateEdgeDistance( 0 );
 		emit routeChanged();
 	}
 
@@ -369,6 +369,16 @@ void RoutingLogic::truncateRoute( int nodeToKeep )
 		}
 		d->pathNodes.pop_front();
 	}
+}
+
+
+void RoutingLogic::calculateEdgeDistance( int index ){
+	// TODO: Recyle this for all edges
+	d->pathEdges[index].distance = 0;
+	for ( int i = 0; i < d->pathEdges[index].length; i++ ){
+		d->pathEdges[index].distance += d->pathNodes[i].coordinate.ToGPSCoordinate().ApproximateDistance( d->pathNodes[i +1].coordinate.ToGPSCoordinate() );
+	}
+	// qDebug() << "Calculated edge distance" << d->pathEdges[index].distance;
 }
 
 
@@ -436,7 +446,7 @@ void RoutingLogic::computeRoute()
 
 		Timer time;
 		bool found = router->GetRoute( &travelTime, &nodes, &edges, gps[i - 1], gps[i] );
-		// qDebug() << "Routing:" << time.elapsed() << "ms";
+		// qDebug() << "Route recomputed in" << time.elapsed() << "ms";
 
 		if ( found ) {
 			if ( i == 1 ) {
@@ -455,6 +465,8 @@ void RoutingLogic::computeRoute()
 		}
 	}
 
+	// TODO: Each segment meanwhile knows its distance, thus d->distance could be filled much more precise.
+	// TODO: Adjust distance() accordingly - IMO it's not necessary anymore to keep the distance in the private implementation struct
 	d->distance = waypoints.first().ToGPSCoordinate().ApproximateDistance( waypoints.last().ToGPSCoordinate() );
 	InstructionGenerator::instance()->createInstructions( d->pathEdges, d->pathNodes );
 	emit routeChanged();
@@ -480,6 +492,7 @@ UnsignedCoordinate RoutingLogic::coordOnSegment( int NodeId, UnsignedCoordinate 
 	double py = newSource.y;
 
 	// http://vb-helper.com/howto_distance_point_to_line.html
+	// Reused with kind permission of Rod Stephens to Christoph Eckert 2011-12-26. Thanks!
 	double dx = bx - ax;
 	double dy = by - ay;
 	double near_x = 0;

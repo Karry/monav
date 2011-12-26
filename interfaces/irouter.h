@@ -61,7 +61,7 @@ public:
 		int direction;
 		int exitNumber;
 		double distance;
-		bool spoken;
+		bool speechRequired;
 		QString typeString;
 		QString nameString;
 	};
