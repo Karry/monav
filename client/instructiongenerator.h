@@ -41,7 +41,7 @@ public:
 	void createInstructions( QVector< IRouter::Edge >&, QVector< IRouter::Node >& );
 	void setSpeechEnabled( bool enabled );
 	bool speechEnabled();
-	void instructions( QStringList* labels, QStringList* icons, int maxSeconds = std::numeric_limits< int >::max() );
+	void instructions( QStringList* labels, QStringList* icons, int instructionAmount = std::numeric_limits< int >::max() );
 
 public slots:
 
@@ -61,8 +61,8 @@ protected:
 	double speechDistance();
 	QString distanceString( double distance );
 	QStringList m_audioFilenames;
-	QStringList m_labels;
-	QStringList m_icons;
+	QStringList m_instructionStrings;
+	QStringList m_iconFilenames;
 	QString m_language;
 	bool m_speechEnabled;
 

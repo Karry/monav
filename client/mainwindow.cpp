@@ -624,7 +624,7 @@ void MainWindow::displayInstructions()
 	QStringList label;
 	QStringList icon;
 
-	InstructionGenerator::instance()->instructions( &label, &icon, 60 );
+	InstructionGenerator::instance()->instructions( &label, &icon, 2 );
 
 	m_ui->infoWidget->setHidden( label.empty() );
 

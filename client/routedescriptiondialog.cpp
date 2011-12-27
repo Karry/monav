@@ -44,7 +44,7 @@ void RouteDescriptionWidget::displayInstructions()
 	QStringList labels;
 	QStringList icons;
 	// RoutingLogic::instance()->instructions( &labels, &icons );
-	InstructionGenerator::instance()->instructions( &labels, &icons, 60 );
+	InstructionGenerator::instance()->instructions( &labels, &icons, std::numeric_limits< double >::max() );
 	assert( icons.size() == labels.size() );
 	for ( int entry = 0; entry < icons.size(); entry++ ) {
 		new QListWidgetItem( QIcon( icons[entry] ), labels[entry], m_ui->descriptionList );

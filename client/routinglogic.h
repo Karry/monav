@@ -73,7 +73,7 @@ public:
 	void clear();
 	// driving instruction for the current route
 	// TODO: Obsolete since the introduction of InstructionGenerator
-	void instructions( QStringList* labels, QStringList* icons, int maxSeconds = std::numeric_limits< int >::max() );
+	// void instructions( QStringList* labels, QStringList* icons, int instructionAmount = std::numeric_limits< int >::max() );
 	QVector< IRouter::Edge >& edges();
 
 
@@ -107,7 +107,7 @@ protected:
 	// void testCoordOnSegment();
 	void truncateRoute( int maxIndex );
 	void computeRoute();
-	void updateInstructions();
+	// void updateInstructions();
 	void clearRoute();
 	void setSource( UnsignedCoordinate coordinate );
 	void calculateEdgeDistance( int index );

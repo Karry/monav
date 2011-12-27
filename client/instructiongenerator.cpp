@@ -29,88 +29,88 @@ InstructionGenerator::InstructionGenerator()
 	m_speechEnabled = settings.value( "SpeechEnabled", true ).toBool();
 
 	m_audioFilenames.append( "instructions-head-straightforward" );
-	m_labels.append( tr( "Head straightforward" ) );
-	m_icons.append( "forward" );
+	m_instructionStrings.append( tr( "Head straightforward" ) );
+	m_iconFilenames.append( "forward" );
 
 	m_audioFilenames.append( "instructions-turn-slightly-right" );
-	m_labels.append( tr( "Turn slightly right" ) );
-	m_icons.append( "slightly_right" );
+	m_instructionStrings.append( tr( "Turn slightly right" ) );
+	m_iconFilenames.append( "slightly_right" );
 
 	m_audioFilenames.append( "instructions-turn-right" );
-	m_labels.append( tr( "Turn right" ) );
-	m_icons.append( "right" );
+	m_instructionStrings.append( tr( "Turn right" ) );
+	m_iconFilenames.append( "right" );
 
 	m_audioFilenames.append( "instructions-turn-sharply-right" );
-	m_labels.append( tr( "Turn sharply right" ) );
-	m_icons.append( "sharply_right" );
+	m_instructionStrings.append( tr( "Turn sharply right" ) );
+	m_iconFilenames.append( "sharply_right" );
 
 	m_audioFilenames.append( "instructions-turn-u" );
-	m_labels.append( tr( "Take a U-turn" ) );
-	m_icons.append( "backward" );
+	m_instructionStrings.append( tr( "Take a U-turn" ) );
+	m_iconFilenames.append( "backward" );
 
 	m_audioFilenames.append( "instructions-turn-sharply-left" );
-	m_labels.append( tr( "Turn sharply left" ) );
-	m_icons.append( "sharply_left" );
+	m_instructionStrings.append( tr( "Turn sharply left" ) );
+	m_iconFilenames.append( "sharply_left" );
 
 	m_audioFilenames.append( "instructions-turn-left" );
-	m_labels.append( tr( "Turn left" ) );
-	m_icons.append( "left" );
+	m_instructionStrings.append( tr( "Turn left" ) );
+	m_iconFilenames.append( "left" );
 
 	m_audioFilenames.append( "instructions-turn-slightly-left" );
-	m_labels.append( tr( "Turn slightly left" ) );
-	m_icons.append( "slightly_left" );
+	m_instructionStrings.append( tr( "Turn slightly left" ) );
+	m_iconFilenames.append( "slightly_left" );
 
 	m_audioFilenames.append( "instructions-roundabout_01" );
-	m_labels.append( tr( "Take the 1st exit" ) );
-	m_icons.append( "roundabout" );
+	m_instructionStrings.append( tr( "Take the 1st exit" ) );
+	m_iconFilenames.append( "roundabout" );
 
 	m_audioFilenames.append( "instructions-roundabout_02" );
-	m_labels.append( tr( "Take the 2nd exit" ) );
-	m_icons.append( "roundabout" );
+	m_instructionStrings.append( tr( "Take the 2nd exit" ) );
+	m_iconFilenames.append( "roundabout" );
 
 	m_audioFilenames.append( "instructions-roundabout_03" );
-	m_labels.append( tr( "Take the 3rd exit" ) );
-	m_icons.append( "roundabout" );
+	m_instructionStrings.append( tr( "Take the 3rd exit" ) );
+	m_iconFilenames.append( "roundabout" );
 
 	m_audioFilenames.append( "instructions-roundabout_04" );
-	m_labels.append( tr( "Take the 4th exit" ) );
-	m_icons.append( "roundabout" );
+	m_instructionStrings.append( tr( "Take the 4th exit" ) );
+	m_iconFilenames.append( "roundabout" );
 
 	m_audioFilenames.append( "instructions-roundabout_05" );
-	m_labels.append( tr( "Take the 5th exit" ) );
-	m_icons.append( "roundabout" );
+	m_instructionStrings.append( tr( "Take the 5th exit" ) );
+	m_iconFilenames.append( "roundabout" );
 
 	m_audioFilenames.append( "instructions-roundabout_06" );
-	m_labels.append( tr( "Take the 6th exit" ) );
-	m_icons.append( "roundabout" );
+	m_instructionStrings.append( tr( "Take the 6th exit" ) );
+	m_iconFilenames.append( "roundabout" );
 
 	m_audioFilenames.append( "instructions-roundabout_07" );
-	m_labels.append( tr( "Take the 7th exit" ) );
-	m_icons.append( "roundabout" );
+	m_instructionStrings.append( tr( "Take the 7th exit" ) );
+	m_iconFilenames.append( "roundabout" );
 
 	m_audioFilenames.append( "instructions-roundabout_08" );
-	m_labels.append( tr( "Take the 8th exit" ) );
-	m_icons.append( "roundabout" );
+	m_instructionStrings.append( tr( "Take the 8th exit" ) );
+	m_iconFilenames.append( "roundabout" );
 
 	m_audioFilenames.append( "instructions-roundabout_09" );
-	m_labels.append( tr( "Take the 9th exit" ) );
-	m_icons.append( "roundabout" );
+	m_instructionStrings.append( tr( "Take the 9th exit" ) );
+	m_iconFilenames.append( "roundabout" );
 
 	m_audioFilenames.append( "instructions-leave-motorway" );
-	m_labels.append( tr( "Leave the motorway" ) );
-	m_icons.append( "slightly_right" );
+	m_instructionStrings.append( tr( "Leave the motorway" ) );
+	m_iconFilenames.append( "slightly_right" );
 
 	m_audioFilenames.append( "instructions-leave-trunk" );
-	m_labels.append( tr( "Leave the trunk" ) );
-	m_icons.append( "slightly_right" );
+	m_instructionStrings.append( tr( "Leave the trunk" ) );
+	m_iconFilenames.append( "slightly_right" );
 
 	m_audioFilenames.append( "instructions-take-motorway-ramp" );
-	m_labels.append( tr( "Take the ramp to the motorway" ) );
-	m_icons.append( "slightly_right" );
+	m_instructionStrings.append( tr( "Take the ramp to the motorway" ) );
+	m_iconFilenames.append( "slightly_right" );
 
 	m_audioFilenames.append( "instructions-take-trunk-ramp" );
-	m_labels.append( tr( "Take the ramp to the trunk" ) );
-	m_icons.append( "slightly_right" );
+	m_instructionStrings.append( tr( "Take the ramp to the trunk" ) );
+	m_iconFilenames.append( "slightly_right" );
 
 	QLocale DefaultLocale;
 	m_language = DefaultLocale.name();
@@ -144,7 +144,7 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 	// Compute edges' lenths, directions, type and name strings.
 	for ( int i = 0; i < edges.size(); i++ ){
 
-		edges[i].audiofileIndex = -1;
+		// edges[i].audiofileIndex = -1;
 		edges[i].exitNumber = -1;
 		edges[i].distance = 0;
 		edges[i].speechRequired = false;
@@ -167,47 +167,55 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 		edges[i].nameString = nameString;
 	}
 
-	// Determine audio samples dependent on the edges' types
+	// Determine instructions dependent on the edges' types
 	for ( int i = 0; i < edges.size() -1; i++ ){
+		edges[i].speechRequired = true;
 		if ( edges[i].typeString == "roundabout" && edges[i].exitNumber < 1 ){
-			// qDebug() << "Roundabout edges are treated below";
-			edges[i].audiofileIndex = -1;
+			// qDebug() << "Roundabout edges are treated separately";
+			// edges[i].audiofileIndex = -1;
 			edges[i].speechRequired = false;
 		}
 		else if ( edges[i].typeString == "motorway" && edges[i +1].typeString == "motorway_link" ){
 			// qDebug() << "Leaving the motorway";
-			edges[i].audiofileIndex = 17;
-			edges[i].speechRequired = true;
+			edges[i].instructionFilenames.append( m_audioFilenames[17] );
+			edges[i].instructionString = m_instructionStrings[17];
+			edges[i].instructionIcon = m_iconFilenames[17];
 		}
 		else if ( edges[i].typeString == "trunk" && edges[i +1].typeString == "trunk_link" ){
 			// qDebug() << "Leaving the trunk";
-			edges[i].audiofileIndex = 18;
-			edges[i].speechRequired = true;
+			edges[i].instructionFilenames.append( m_audioFilenames[18] );
+			edges[i].instructionString = m_instructionStrings[18];
+			edges[i].instructionIcon = m_iconFilenames[18];
 		}
 		else if ( edges[i].typeString != "motorway" && edges[i].typeString != "motorway_link" && edges[i +1].typeString == "motorway_link" ){
 			// qDebug() << "Entering the motorway";
-			edges[i].audiofileIndex = 19;
-			edges[i].speechRequired = true;
+			edges[i].instructionFilenames.append( m_audioFilenames[19] );
+			edges[i].instructionString = m_instructionStrings[19];
+			edges[i].instructionIcon = m_iconFilenames[19];
 		}
 		else if ( edges[i].typeString != "trunk" && edges[i].typeString != "trunk_link" && edges[i +1].typeString == "trunk_link" ){
 			// qDebug() << "Entering the trunk";
-			edges[i].audiofileIndex = 20;
-			edges[i].speechRequired = true;
+			edges[i].instructionFilenames.append( m_audioFilenames[20] );
+			edges[i].instructionString = m_instructionStrings[20];
+			edges[i].instructionIcon = m_iconFilenames[20];
 		}
 		else if ( edges[i].branchingPossible && edges[i].direction == 0 && edges[i].typeString == "motorway_link" ){
 			// qDebug() << "Announcing a branch on motorway or trunk links";
-			edges[i].audiofileIndex = edges[i].direction;
-			edges[i].speechRequired = true;
+			edges[i].instructionFilenames.append( m_audioFilenames[edges[i].direction] );
+			edges[i].instructionString = m_instructionStrings[edges[i].direction];
+			edges[i].instructionIcon = m_iconFilenames[edges[i].direction];
 		}
 		else if ( edges[i].branchingPossible && edges[i].direction == 0 && edges[i].typeString == "trunk_link" ){
-			// qDebug() << "Announcing a branch on motorway or trunk links";
-			edges[i].audiofileIndex = edges[i].direction;
-			edges[i].speechRequired = true;
+			// qDebug() << "Announcing \"head straightforward\" on motorway or trunk links";
+			edges[i].instructionFilenames.append( m_audioFilenames[edges[i].direction] );
+			edges[i].instructionString = m_instructionStrings[edges[i].direction];
+			edges[i].instructionIcon = m_iconFilenames[edges[i].direction];
 		}
 		else if ( edges[i].branchingPossible && edges[i].direction != 0 ){
 			// qDebug() << "Announcing an ordinary turn";
-			edges[i].audiofileIndex = edges[i].direction;
-			edges[i].speechRequired = true;
+			edges[i].instructionFilenames.append( m_audioFilenames[edges[i].direction] );
+			edges[i].instructionString = m_instructionStrings[edges[i].direction];
+			edges[i].instructionIcon = m_iconFilenames[edges[i].direction];
 		}
 		else{
 			// qDebug() << "No speech required" << edges[i].branchingPossible;
@@ -233,16 +241,40 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 				firstRoundaboutEdge--;
 			}
 			edges[ firstRoundaboutEdge ].exitNumber = exitAmount;
-			edges[ firstRoundaboutEdge ].audiofileIndex = edges[firstRoundaboutEdge].exitNumber +7;
+			// edges[ firstRoundaboutEdge ].audiofileIndex = edges[firstRoundaboutEdge].exitNumber +7;
+			edges[i].instructionFilenames.append( m_audioFilenames[edges[firstRoundaboutEdge].exitNumber +7] );
 			edges[ firstRoundaboutEdge ].speechRequired = true;
 			exitAmount = 0;
 			firstRoundaboutEdge = -1;
+		}
+	}
+
+	// Prepending an announce sample
+	for ( int i = 0; i < edges.size(); i++ ){
+		if ( edges[i].instructionFilenames.size() > 0 ){
+			edges[i].instructionFilenames.prepend( "instructions-announce" );
+		}
+	}
+
+	// Completing the paths
+	for ( int i = 0; i < edges.size(); i++ ){
+		for ( int j = 0; j < edges[i].instructionFilenames.size(); j++ ){
+			qDebug() << edges[i].instructionFilenames.size() << i << j;
+			edges[i].instructionFilenames[j].prepend( "/" );
+			edges[i].instructionFilenames[j].prepend( m_language );
+			edges[i].instructionFilenames[j].prepend( ":/audio/" );
+			edges[i].instructionFilenames[j].append( ".wav" );
+		}
+		if ( edges[i].instructionIcon != "" ){
+			edges[i].instructionIcon.append( ".png" );
+			edges[i].instructionIcon.prepend( ":/images/directions/" );
 		}
 	}
 }
 
 
 void InstructionGenerator::requestSpeech(){
+
 	if ( !m_speechEnabled ){
 		qDebug() << "Speech is disabled.";
 		return;
@@ -264,21 +296,14 @@ void InstructionGenerator::requestSpeech(){
 		return;
 	}
 
-	QStringList audioFilenames;
-	audioFilenames << "instructions-announce";
-	audioFilenames << m_audioFilenames[ edges[0].audiofileIndex ];
+	// QStringList audioFilenames;
+	// audioFilenames << "instructions-announce";
+	// audioFilenames << m_audioFilenames[ edges[0].audiofileIndex ];
 
 	// QString announceFilename = "instructions-announce";
 	// QString audioFilename = m_audioFilenames[ edges[0].audiofileIndex ];
 
-	for ( int i = 0; i < audioFilenames.size(); i++ ){
-		audioFilenames[i].prepend( "/" );
-		audioFilenames[i].prepend( m_language );
-		audioFilenames[i].prepend( ":/audio/" );
-		audioFilenames[i].append( ".wav" );
-	}
-
-	Audio::instance()->speak( audioFilenames );
+	Audio::instance()->speak( edges[0].instructionFilenames );
 	edges[0].speechRequired = false;
 }
 
@@ -306,8 +331,9 @@ double InstructionGenerator::speechDistance() {
 }
 
 
-void InstructionGenerator::instructions( QStringList* labels, QStringList* icons, int maxSeconds )
+void InstructionGenerator::instructions( QStringList* labels, QStringList* icons, int instructionAmount )
 {
+
 	QVector< IRouter::Edge >& edges = RoutingLogic::instance()->edges();
 	if ( edges.size() < 1 ){
 		return;
@@ -316,19 +342,21 @@ void InstructionGenerator::instructions( QStringList* labels, QStringList* icons
 	QStringList instructions;
 	QStringList images;
 	double distance = 0;
+	int amount = instructionAmount;
+	if ( amount > edges.size() ){
+		amount = edges.size();
+	}
 
-	for ( int i = 0; i < edges.size(); i++ ){
+	for ( int i = 0; i < amount; i++ ){
 		distance += edges[i].distance;
-		if ( edges[i].audiofileIndex >= 0 && edges[i].audiofileIndex < m_labels.size() ){
-			instructions.append( m_labels[ edges[i].audiofileIndex ] );
+		if ( edges[i].speechRequired ){
+			instructions.append( edges[i].instructionString );
+			images.append( edges[i].instructionIcon );
 			if ( i < edges.size() -1 && edges[i +1].nameString != "" && edges[i +1].typeString != "roundabout" ){
-				instructions.last().append( tr( " into %1" ).arg( edges[i +1].nameString ) );
+				instructions.last().append( " " ).append( tr( "into %1" ).arg( edges[i +1].nameString ) );
 			}
-			instructions.last().append( distanceString( distance ) );
+			instructions.last().append( " " ).append( distanceString( distance ) );
 			distance = 0;
-			images.append( m_icons[ edges[i].audiofileIndex ] );
-			images.last().append( ".png" );
-			images.last().prepend( ":/images/directions/" );
 		}
 	}
 
