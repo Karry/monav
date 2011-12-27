@@ -345,7 +345,7 @@ void InstructionGenerator::instructions( QStringList* labels, QStringList* icons
 			if ( i < edges.size() -1 && edges[i +1].nameString != "" && edges[i +1].typeString != "roundabout" ){
 				instructions.last().append( " " ).append( tr( "into %1" ).arg( edges[i +1].nameString ) );
 			}
-			instructions.last().append( " " ).append( distanceString( distance ) );
+			instructions.last().append( distanceString( distance ) );
 			distance = 0;
 			amount++;
 			if ( amount == instructionAmount ){
@@ -413,7 +413,9 @@ QString InstructionGenerator::distanceString( double distance )
 			distanceString = QString( "%1km" ).arg( ( int ) distance / 1000 );
 	}
 	if ( distanceString != "" ){
-		distanceString.prepend( " in " );
+		distanceString.prepend( " " );
+		distanceString.prepend( tr( "in" ) );
+		distanceString.prepend( " " );
 	}
 	return distanceString;
 }

@@ -343,9 +343,18 @@
         <translation>Auf die Schnellstraße fahren</translation>
     </message>
     <message>
-        <location filename="../client/instructiongenerator.cpp" line="325"/>
-        <source> into %1</source>
+        <location filename="../client/instructiongenerator.cpp" line="346"/>
+        <source>into %1</source>
         <translation>Richtung %1</translation>
+    </message>
+    <message>
+        <location filename="../client/instructiongenerator.cpp" line="417"/>
+        <source>in</source>
+        <translation>nach</translation>
+    </message>
+    <message>
+        <source> into %1</source>
+        <translation type="obsolete">Richtung %1</translation>
     </message>
 </context>
 <context>
