@@ -276,32 +276,25 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 void InstructionGenerator::requestSpeech(){
 
 	if ( !m_speechEnabled ){
-		qDebug() << "Speech is disabled.";
+		// qDebug() << "Speech is disabled.";
 		return;
 	}
 
 	QVector< IRouter::Edge >& edges = RoutingLogic::instance()->edges();
 	if ( edges.size() < 1 ){
-		qDebug() << "No edges present.";
+		// qDebug() << "No edges present.";
 		return;
 	}
 
 	if ( !edges[0].speechRequired ){
-		qDebug() << "No speech necessary on" << edges[0].typeString << edges[0].nameString << edges[0].speechRequired;
+		// qDebug() << "No speech necessary on" << edges[0].typeString << edges[0].nameString << edges[0].speechRequired;
 		return;
 	}
 
 	if ( edges[0].distance > speechDistance() ){
-		qDebug() << edges[0].distance << "greater" << speechDistance();
+		// qDebug() << edges[0].distance << "greater" << speechDistance();
 		return;
 	}
-
-	// QStringList audioFilenames;
-	// audioFilenames << "instructions-announce";
-	// audioFilenames << m_audioFilenames[ edges[0].audiofileIndex ];
-
-	// QString announceFilename = "instructions-announce";
-	// QString audioFilename = m_audioFilenames[ edges[0].audiofileIndex ];
 
 	Audio::instance()->speak( edges[0].instructionFilenames );
 	edges[0].speechRequired = false;
@@ -342,12 +335,9 @@ void InstructionGenerator::instructions( QStringList* labels, QStringList* icons
 	QStringList instructions;
 	QStringList images;
 	double distance = 0;
-	int amount = instructionAmount;
-	if ( amount > edges.size() ){
-		amount = edges.size();
-	}
+	int amount = 0;
 
-	for ( int i = 0; i < amount; i++ ){
+	for ( int i = 0; i < edges.size(); i++ ){
 		distance += edges[i].distance;
 		if ( edges[i].speechRequired ){
 			instructions.append( edges[i].instructionString );
@@ -357,6 +347,10 @@ void InstructionGenerator::instructions( QStringList* labels, QStringList* icons
 			}
 			instructions.last().append( " " ).append( distanceString( distance ) );
 			distance = 0;
+			amount++;
+			if ( amount == instructionAmount ){
+				break;
+			}
 		}
 	}
 
