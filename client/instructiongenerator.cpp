@@ -177,27 +177,24 @@ void InstructionGenerator::requestSpeech(){
 		return;
 	}
 
-	qDebug() << edges[0].distance;
 	if ( edges[0].distance > speechDistance() ){
 		return;
 	}
 
-	// Instruction anticipation.
-	// Necessary as some edges might be very short, especially when it comes to primary crossings.
+	// Anticipation is necessary as some edges might be very short,
+	// resulting in instructions spoken too late.
 	int nextEdgeToAnnounce = 0;
-	double nextBranchDistance = 0;
+	double nextBranchDistance = edges[0].distance;
 
-	for ( int i = 0; i < edges.size(); i++ ){
+	for ( int i = 1; i < edges.size(); i++ ){
 		nextBranchDistance += edges[i].distance;
-		qDebug() << "i, current distance, Distance to next branch:" << i << edges[i].distance << nextBranchDistance;
-		// Do not preannounce the current edge, but it was necessary to add its distance
-		if ( i == 0 ){
-			continue;
+		if ( nextBranchDistance > speechDistance() || edges[i].preAnnounced ){
+			nextEdgeToAnnounce = 0;
+			nextBranchDistance = 0.0;
+			break;
 		}
-		if ( edges[i].speechRequired && nextBranchDistance < speechDistance() * 1.5 && !edges[nextEdgeToAnnounce].preAnnounced ){
+		else if ( edges[i].speechRequired && nextBranchDistance < speechDistance() ){
 			nextEdgeToAnnounce = i;
-			// edges[nextEdgeToAnnounce].preAnnounced = true;
-			// qDebug() << "Current edge and edge to preannounce:" << i << nextEdgeToAnnounce;
 			break;
 		}
 	}
@@ -207,10 +204,9 @@ void InstructionGenerator::requestSpeech(){
 		instructions.append( edges[0].instructionFilename );
 		edges[0].speechRequired = false;
 	}
-	qDebug() << "Announce edge, state, branch dist and speech dist:" << nextEdgeToAnnounce << edges[nextEdgeToAnnounce].preAnnounced << nextBranchDistance << speechDistance() * 1.5;
 	if ( nextEdgeToAnnounce > 0 && !edges[nextEdgeToAnnounce].preAnnounced ){
 		if ( instructions.size() > 0 ){
-			// "After the first turn..."
+			// Announce something like "After the first turn..."
 			instructions.append( m_audioFilenames[22] );
 		}
 		instructions.append( edges[nextEdgeToAnnounce].instructionFilename );
@@ -232,8 +228,7 @@ double InstructionGenerator::speechDistance() {
 	double currentSpeed = 0;
 
 	// Speed is in meters per second
-	// 10 m per second are equal to 36 km/h
-	currentSpeed = gpsInfo.position.IsValid() ? gpsInfo.groundSpeed : 10;
+	currentSpeed = gpsInfo.position.IsValid() ? gpsInfo.groundSpeed : 15;
 
 	// Some possibly reasonable values (0.2 seconds per km/h):
 	//  5s	  35m	 7m/s	 25km/h	residential areas
