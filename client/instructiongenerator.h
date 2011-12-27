@@ -60,6 +60,7 @@ protected:
 	int angle( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third );
 	double speechDistance();
 	QString distanceString( double distance );
+	void initialize();
 	QStringList m_audioFilenames;
 	QStringList m_instructionStrings;
 	QStringList m_iconFilenames;

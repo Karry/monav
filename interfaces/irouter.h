@@ -25,7 +25,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include "interfaces/igpslookup.h"
 #include <QtPlugin>
 #include <QVector>
-#include <QStringList>
+#include <QString>
 
 class IRouter
 {
@@ -58,13 +58,14 @@ public:
 		unsigned seconds;
 		// Added by ce for InstructionGenerator 2011-12-22
 		// int audiofileIndex;
-		QStringList instructionFilenames;
+		QString instructionFilename;
 		QString instructionString;
 		QString instructionIcon;
 		int direction;
 		int exitNumber;
 		double distance;
 		bool speechRequired;
+		bool preAnnounced;
 		QString typeString;
 		QString nameString;
 	};
