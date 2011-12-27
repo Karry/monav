@@ -77,7 +77,7 @@ protected slots:
 	void setModeInstructions();
 	void setModeless();
 
-	void showInstructions();
+	void showInstructionList();
 	// void displayInstructions();
 
 	void displayMapChooser();

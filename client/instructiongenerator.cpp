@@ -259,7 +259,6 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 	// Completing the paths
 	for ( int i = 0; i < edges.size(); i++ ){
 		for ( int j = 0; j < edges[i].instructionFilenames.size(); j++ ){
-			qDebug() << edges[i].instructionFilenames.size() << i << j;
 			edges[i].instructionFilenames[j].prepend( "/" );
 			edges[i].instructionFilenames[j].prepend( m_language );
 			edges[i].instructionFilenames[j].prepend( ":/audio/" );
@@ -339,7 +338,7 @@ void InstructionGenerator::instructions( QStringList* labels, QStringList* icons
 
 	for ( int i = 0; i < edges.size(); i++ ){
 		distance += edges[i].distance;
-		if ( edges[i].speechRequired ){
+		if ( edges[i].instructionString != "" ){
 			instructions.append( edges[i].instructionString );
 			images.append( edges[i].instructionIcon );
 			if ( i < edges.size() -1 && edges[i +1].nameString != "" && edges[i +1].typeString != "roundabout" ){

@@ -114,7 +114,7 @@ void GlobalSettings::setAutoRotation( bool autoRotation )
 	instance->d->autoRotation = autoRotation;
 }
 
-/*
+
 bool GlobalSettings::instructionsEnabled()
 {
 	GlobalSettings* instance = privateInstance();
@@ -126,7 +126,7 @@ void GlobalSettings::setInstructionsEnabled( bool displayInstructions )
 	GlobalSettings* instance = privateInstance();
 	instance->d->displayInstructions = displayInstructions;
 }
-*/
+
 
 void GlobalSettings::setDefaultIconsSize()
 {

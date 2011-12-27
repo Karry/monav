@@ -186,40 +186,45 @@
         <translation>Sprachausgabe</translation>
     </message>
     <message>
-        <location filename="../client/generalsettingsdialog.ui" line="154"/>
+        <location filename="../client/generalsettingsdialog.ui" line="140"/>
+        <source>Display Instructions</source>
+        <translation>Bildschirmausgabe</translation>
+    </message>
+    <message>
+        <location filename="../client/generalsettingsdialog.ui" line="161"/>
         <source>Logging</source>
         <translation>Aufzeichnung</translation>
     </message>
     <message>
-        <location filename="../client/generalsettingsdialog.ui" line="160"/>
-        <location filename="../client/generalsettingsdialog.ui" line="163"/>
+        <location filename="../client/generalsettingsdialog.ui" line="167"/>
+        <location filename="../client/generalsettingsdialog.ui" line="170"/>
         <source>The GPS position is logged to a file for later use.</source>
         <translation>Die GPS-Positionen werden zur Wiederverwendung in eine Datei gespeichert.</translation>
     </message>
     <message>
-        <location filename="../client/generalsettingsdialog.ui" line="166"/>
+        <location filename="../client/generalsettingsdialog.ui" line="173"/>
         <source>Enable Logging</source>
         <translation>Aufzeichnen</translation>
     </message>
     <message>
-        <location filename="../client/generalsettingsdialog.ui" line="176"/>
-        <location filename="../client/generalsettingsdialog.ui" line="179"/>
+        <location filename="../client/generalsettingsdialog.ui" line="183"/>
+        <location filename="../client/generalsettingsdialog.ui" line="186"/>
         <source>Click to select the logfile folder</source>
         <translation>Verzeichnis für die Logdatei wählen</translation>
     </message>
     <message utf8="true">
-        <location filename="../client/generalsettingsdialog.ui" line="182"/>
+        <location filename="../client/generalsettingsdialog.ui" line="189"/>
         <source>…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../client/generalsettingsdialog.ui" line="189"/>
-        <location filename="../client/generalsettingsdialog.ui" line="192"/>
+        <location filename="../client/generalsettingsdialog.ui" line="196"/>
+        <location filename="../client/generalsettingsdialog.ui" line="199"/>
         <source>Click to clear the tracklog</source>
         <translation>Klicken um die Aufzeichnungen zu löschen</translation>
     </message>
     <message>
-        <location filename="../client/generalsettingsdialog.ui" line="195"/>
+        <location filename="../client/generalsettingsdialog.ui" line="202"/>
         <location filename="../client/generalsettingsdialog.cpp" line="111"/>
         <source>Clear Tracklog</source>
         <translation>Aufzeichnungen löschen</translation>
@@ -403,213 +408,217 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="239"/>
+        <location filename="../client/mainwindow.cpp" line="243"/>
         <source>Source</source>
         <translation>Startort</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="241"/>
+        <location filename="../client/mainwindow.cpp" line="245"/>
         <source>Mode</source>
         <translation>Modus</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="242"/>
+        <location filename="../client/mainwindow.cpp" line="246"/>
         <source>Direct Route</source>
         <translation>Direkter Weg</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="243"/>
+        <location filename="../client/mainwindow.cpp" line="247"/>
         <source>Insert</source>
         <translation>Einfügen</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="244"/>
+        <location filename="../client/mainwindow.cpp" line="248"/>
         <source>Append</source>
         <translation>Anhängen</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="249"/>
+        <location filename="../client/mainwindow.cpp" line="253"/>
         <source>Target</source>
         <translation>Zielort</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="253"/>
         <source>Instructions</source>
-        <translation>Wegbeschreibung</translation>
+        <translation type="obsolete">Wegbeschreibung</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="255"/>
+        <location filename="../client/mainwindow.cpp" line="257"/>
+        <source>Lock to GPS</source>
+        <translation>An GPS ausrichten</translation>
+    </message>
+    <message>
+        <location filename="../client/mainwindow.cpp" line="259"/>
         <source>Bookmark</source>
         <translation>Wegmarken</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="256"/>
+        <location filename="../client/mainwindow.cpp" line="260"/>
         <source>Address</source>
         <translation>Adresse</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="257"/>
+        <location filename="../client/mainwindow.cpp" line="261"/>
         <source>GPS-Coordinate</source>
         <translation>Koordinateneingabe</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="258"/>
+        <location filename="../client/mainwindow.cpp" line="262"/>
         <source>Delete</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="260"/>
+        <location filename="../client/mainwindow.cpp" line="264"/>
         <source>Zoom In</source>
         <translation>Näher</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="261"/>
+        <location filename="../client/mainwindow.cpp" line="265"/>
         <source>Zoom Out</source>
         <translation>Weiter weg</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="263"/>
+        <location filename="../client/mainwindow.cpp" line="267"/>
         <source>Hide Controls</source>
         <translation>Symbole ausblenden</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="264"/>
+        <location filename="../client/mainwindow.cpp" line="268"/>
         <source>Map Packages</source>
         <translation>Kartenpakete</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="265"/>
+        <location filename="../client/mainwindow.cpp" line="269"/>
         <source>Map Modules</source>
         <translation>Kartenmodule</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="266"/>
+        <location filename="../client/mainwindow.cpp" line="270"/>
         <source>Trip Information</source>
         <translation>Reiseinformationen</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="267"/>
-        <location filename="../client/mainwindow.cpp" line="387"/>
+        <location filename="../client/mainwindow.cpp" line="271"/>
+        <location filename="../client/mainwindow.cpp" line="393"/>
         <source>Preferences</source>
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="268"/>
+        <location filename="../client/mainwindow.cpp" line="272"/>
         <source>Renderer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="269"/>
+        <location filename="../client/mainwindow.cpp" line="273"/>
         <source>Router</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="270"/>
+        <location filename="../client/mainwindow.cpp" line="274"/>
         <source>GPS-Lookup</source>
         <translation>GPS-Suche</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="271"/>
+        <location filename="../client/mainwindow.cpp" line="275"/>
         <source>Address Lookup</source>
         <translation>Adresssuche</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="272"/>
+        <location filename="../client/mainwindow.cpp" line="276"/>
         <source>GPS Receiver</source>
         <translation>GPS-Empfänger</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="274"/>
+        <location filename="../client/mainwindow.cpp" line="278"/>
         <source>About</source>
         <translation>Über MoNav</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="275"/>
+        <location filename="../client/mainwindow.cpp" line="279"/>
         <source>Homepage</source>
         <translation>Projektseite</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="308"/>
-        <location filename="../client/mainwindow.cpp" line="383"/>
+        <location filename="../client/mainwindow.cpp" line="313"/>
+        <location filename="../client/mainwindow.cpp" line="389"/>
         <source>File</source>
         <translation>Datei</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="309"/>
-        <location filename="../client/mainwindow.cpp" line="384"/>
+        <location filename="../client/mainwindow.cpp" line="314"/>
+        <location filename="../client/mainwindow.cpp" line="390"/>
         <source>Routing</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="311"/>
+        <location filename="../client/mainwindow.cpp" line="316"/>
         <source>Via Mode</source>
         <translation>Modus</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="316"/>
+        <location filename="../client/mainwindow.cpp" line="321"/>
         <source>Methods</source>
         <translation>Methoden</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="317"/>
+        <location filename="../client/mainwindow.cpp" line="322"/>
         <source>View</source>
         <translation>Ansicht</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="318"/>
+        <location filename="../client/mainwindow.cpp" line="323"/>
         <source>Settings</source>
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="319"/>
-        <location filename="../client/mainwindow.cpp" line="388"/>
+        <location filename="../client/mainwindow.cpp" line="324"/>
+        <location filename="../client/mainwindow.cpp" line="394"/>
         <source>Help</source>
         <translation>Hilfe</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="320"/>
+        <location filename="../client/mainwindow.cpp" line="325"/>
         <source>Maemo Menu</source>
         <translation>Maemo-Menü</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="385"/>
+        <location filename="../client/mainwindow.cpp" line="391"/>
         <source>Method</source>
         <translation>Methoden</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="386"/>
+        <location filename="../client/mainwindow.cpp" line="392"/>
         <source>Zoom</source>
         <translation>Vergrößerung</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="389"/>
+        <location filename="../client/mainwindow.cpp" line="395"/>
         <source>Maemo</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="976"/>
+        <location filename="../client/mainwindow.cpp" line="1017"/>
         <source>Route Removal</source>
         <translation>Route Löschen</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="976"/>
+        <location filename="../client/mainwindow.cpp" line="1017"/>
         <source>This will remove the entire route.
 Do you want to continue?</source>
         <translation>Das löscht die gesamte Route.
 Fortfahren?</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="1028"/>
+        <location filename="../client/mainwindow.cpp" line="1073"/>
         <source>About MoNav</source>
         <translation>Über MoNav</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="1028"/>
+        <location filename="../client/mainwindow.cpp" line="1073"/>
         <source>MoNav 0.4 is (c) 2012 by the MoNav authors and was released under the GNU GPL v3.</source>
         <translation>MoNav 0.4 steht seit 2011 unter Urheberrecht der Autoren und wird Ihnen zu den Bedingungen der GNU GPL v3 zur Verfügung gestellt.</translation>
     </message>
     <message>
-        <location filename="../client/mainwindow.cpp" line="1033"/>
+        <location filename="../client/mainwindow.cpp" line="1078"/>
         <source>http://monav.openstreetmap.de</source>
         <translation></translation>
     </message>

@@ -24,6 +24,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include "globalsettings.h"
 #include "logger.h"
 #include "instructiongenerator.h"
+#include "mainwindow.h"
 
 
 GeneralSettingsDialog::GeneralSettingsDialog( QWidget* parent ) :
@@ -43,10 +44,10 @@ GeneralSettingsDialog::GeneralSettingsDialog( QWidget* parent ) :
 	m_ui->magnification->setValue( GlobalSettings::magnification() );
 
 	connect( m_ui->defaultIconSize, SIGNAL(clicked()), this, SLOT(setDefaultIconSize()) );
-	// connect( m_ui->checkBoxInstructions, SIGNAL(clicked()), parent, SLOT(showInstructions()) );
+	// connect( m_ui->checkBoxInstructions, SIGNAL(clicked()), parent, SLOT(showInstructionList()) );
 
 	m_ui->checkBoxMapRotation->setChecked( GlobalSettings::autoRotation() );
-	// m_ui->checkBoxInstructions->setChecked( GlobalSettings::instructionsEnabled() );
+	m_ui->checkBoxInstructions->setChecked( GlobalSettings::instructionsEnabled() );
 	m_ui->checkBoxSpeech->setChecked( InstructionGenerator::instance()->speechEnabled() );
 	m_ui->checkBoxLogging->setChecked(Logger::instance()->loggingEnabled());
 	m_ui->lineEditPathLogging->setText(Logger::instance()->directory());
@@ -86,7 +87,7 @@ void GeneralSettingsDialog::fillSettings() const
 		GlobalSettings::setMenuMode( GlobalSettings::MenuPopup );
 
 	GlobalSettings::setAutoRotation( m_ui->checkBoxMapRotation->isChecked() );
-	// GlobalSettings::setInstructionsEnabled( m_ui->checkBoxInstructions->isChecked() );
+	GlobalSettings::setInstructionsEnabled( m_ui->checkBoxInstructions->isChecked() );
 	InstructionGenerator::instance()->setSpeechEnabled(m_ui->checkBoxSpeech->isChecked());
 	Logger::instance()->setLoggingEnabled(m_ui->checkBoxLogging->isChecked());
 	Logger::instance()->setDirectory(m_ui->lineEditPathLogging->text());

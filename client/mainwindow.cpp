@@ -91,10 +91,12 @@ struct MainWindow::PrivateImplementation {
 
 	QAction* actionSource;
 	QAction* actionViaModes;
+	QToolButton* buttonSourceModes;
 	QToolButton* buttonViaModes;
 	// This is a hack.
 	// When only creating one button, it disappears as soon it gets stuffed into more than one toolbar.
 	// This means currently we will need a button for each toolbar, e.g. desktop, maemo5, android and the like.
+	QToolButton* buttonSourceModesMaemo;
 	QToolButton* buttonViaModesMaemo;
 	QAction* actionViaNone;
 	QAction* actionViaInsert;
@@ -134,6 +136,7 @@ struct MainWindow::PrivateImplementation {
 	void resizeIcons();
 };
 
+
 MainWindow::MainWindow( QWidget* parent ) :
 		QMainWindow( parent ),
 		m_ui( new Ui::MainWindow )
@@ -144,7 +147,7 @@ MainWindow::MainWindow( QWidget* parent ) :
 	createActions();
 	populateMenus();
 	populateToolbars();
-	m_ui->infoWidget->hide();
+	// m_ui->infoWidget->hide();
 	m_ui->paintArea->setKeepPositionVisible( true );
 
 	// ensure that we're painting our background
@@ -181,6 +184,7 @@ MainWindow::MainWindow( QWidget* parent ) :
 	}
 }
 
+
 MainWindow::~MainWindow()
 {
 	QSettings settings( "MoNavClient" );
@@ -190,6 +194,7 @@ MainWindow::~MainWindow()
 	delete d;
 	delete m_ui;
 }
+
 
 void MainWindow::connectSlots()
 {
@@ -226,13 +231,14 @@ void MainWindow::connectSlots()
 	connect( m_ui->paintArea, SIGNAL(zoomChanged(int)), this, SLOT(setZoom(int)) );
 	connect( m_ui->paintArea, SIGNAL(mouseClicked(ProjectedCoordinate)), this, SLOT(mouseClicked(ProjectedCoordinate)) );
 
-	connect( m_ui->infoIcon1, SIGNAL(clicked()), this, SLOT(showInstructions()) );
-	connect( m_ui->infoIcon2, SIGNAL(clicked()), this, SLOT(showInstructions()) );
+	connect( m_ui->infoIcon1, SIGNAL(clicked()), this, SLOT(showInstructionList()) );
+	connect( m_ui->infoIcon2, SIGNAL(clicked()), this, SLOT(showInstructionList()) );
 
 	connect( mapData, SIGNAL(informationChanged()), this, SLOT(informationLoaded()) );
 	connect( mapData, SIGNAL(dataLoaded()), this, SLOT(dataLoaded()) );
 	connect( RoutingLogic::instance(), SIGNAL(routeChanged()), this, SLOT(displayInstructions()) );
 }
+
 
 void MainWindow::createActions()
 {
@@ -250,7 +256,7 @@ void MainWindow::createActions()
 	d->buttonViaModes->setDefaultAction( d->actionTarget );
 	d->buttonViaModesMaemo->setDefaultAction( d->actionTarget );
 
-	d->actionInstructions = new QAction( QIcon( ":/images/oxygen/emblem-unlocked.png" ), tr( "Instructions" ), this );
+	d->actionInstructions = new QAction( QIcon( ":/images/oxygen/emblem-unlocked.png" ), tr( "Lock to GPS" ), this );
 
 	d->actionBookmark = new QAction( QIcon( ":/images/oxygen/bookmarks.png" ), tr( "Bookmark" ), this );
 	d->actionAddress = new QAction( QIcon( ":/images/address.png" ), tr( "Address" ), this );
@@ -300,6 +306,7 @@ void MainWindow::createActions()
 	d->actionModules->setShortcut( Qt::Key_M );
 	d->actionTripinfo->setShortcut( Qt::Key_I );
 }
+
 
 void MainWindow::populateMenus()
 {
@@ -378,6 +385,7 @@ void MainWindow::populateMenus()
 #endif
 }
 
+
 void MainWindow::populateToolbars()
 {
 	d->toolBarFile = new QToolBar( tr( "File" ) );
@@ -442,6 +450,7 @@ void MainWindow::populateToolbars()
 	setContextMenuPolicy( Qt::CustomContextMenu );
 }
 
+
 void MainWindow::hideControls()
 {
 	// TODO: The following calls should determine whether there are any settings at all,
@@ -481,6 +490,7 @@ void MainWindow::hideControls()
 #endif
 }
 
+
 void MainWindow::resizeIcons()
 {
 	// a bit hackish right now
@@ -493,13 +503,15 @@ void MainWindow::resizeIcons()
 		button->setIconSize( QSize( iconSize, iconSize ) );
 }
 
-void MainWindow::showInstructions()
+
+void MainWindow::showInstructionList()
 {
 	RouteDescriptionWidget* widget = new RouteDescriptionWidget( this );
 	int index = m_ui->stacked->addWidget( widget );
 	m_ui->stacked->setCurrentIndex( index );
 	connect( widget, SIGNAL(closed()), widget, SLOT(deleteLater()) );
 }
+
 
 void MainWindow::displayMapChooser()
 {
@@ -510,6 +522,7 @@ void MainWindow::displayMapChooser()
 	setWindowTitle( "MoNav - Map Packages" );
 	connect( widget, SIGNAL(mapChanged()), this, SLOT(mapLoaded()) );
 }
+
 
 void MainWindow::displayModuleChooser()
 {
@@ -522,6 +535,7 @@ void MainWindow::displayModuleChooser()
 	connect( widget, SIGNAL(cancelled()), this, SLOT(modulesCancelled()) );
 }
 
+
 void MainWindow::displayTripinfo()
 {
 	TripinfoDialog* widget = new TripinfoDialog();
@@ -533,6 +547,7 @@ void MainWindow::displayTripinfo()
 	connect( RoutingLogic::instance(), SIGNAL(routeChanged()), widget, SLOT(updateInformation()) );
 	connect( Logger::instance(), SIGNAL(trackChanged()), widget, SLOT(updateInformation()) );
 }
+
 
 void MainWindow::mapLoaded()
 {
@@ -550,6 +565,7 @@ void MainWindow::mapLoaded()
 		displayModuleChooser();
 }
 
+
 void MainWindow::modulesCancelled()
 {
 	if ( m_ui->stacked->count() <= 1 )
@@ -564,6 +580,7 @@ void MainWindow::modulesCancelled()
 			displayMapChooser();
 	}
 }
+
 
 void MainWindow::tripinfoCancelled()
 {
@@ -582,6 +599,7 @@ void MainWindow::tripinfoCancelled()
 	this->setWindowTitle( mainWindowTitle );
 }
 
+
 void MainWindow::modulesLoaded()
 {
 	if ( m_ui->stacked->count() <= 1 )
@@ -591,6 +609,7 @@ void MainWindow::modulesLoaded()
 	widget->deleteLater();
 }
 
+
 void MainWindow::informationLoaded()
 {
 	MapData* mapData = MapData::instance();
@@ -599,6 +618,7 @@ void MainWindow::informationLoaded()
 
 	this->setWindowTitle( "MoNav - " + mapData->information().name );
 }
+
 
 void MainWindow::dataLoaded()
 {
@@ -616,33 +636,43 @@ void MainWindow::dataLoaded()
 	this->setWindowTitle( "MoNav - " + MapData::instance()->information().name );
 }
 
+
 void MainWindow::displayInstructions()
 {
-	if ( !d->fixed )
+
+	if ( !GlobalSettings::instructionsEnabled() ){
+		m_ui->infoWidget->setHidden( true );
 		return;
+	}
 
 	QStringList label;
 	QStringList icon;
 
 	InstructionGenerator::instance()->instructions( &label, &icon, 2 );
 
-	m_ui->infoWidget->setHidden( label.empty() );
-
-	if ( label.isEmpty() )
+	if ( label.isEmpty() ){
+		m_ui->infoWidget->setHidden( true );
 		return;
+	}
 
+	m_ui->infoWidget->show();
 	m_ui->infoLabel1->setText( label[0] );
 	m_ui->infoIcon1->setIcon( QIcon( icon[0] ) );
 
-	m_ui->infoIcon2->setHidden( label.size() == 1 );
-	m_ui->infoLabel2->setHidden( label.size() == 1 );
-
-	if ( label.size() == 1 )
+	if ( label.size() < 2 ){
+		m_ui->infoIcon2->setHidden( true );
+		m_ui->infoLabel2->setHidden( true );
 		return;
+	}
+	else{
+		m_ui->infoIcon2->show();
+		m_ui->infoLabel2->show();
+	}
 
 	m_ui->infoLabel2->setText( label[1] );
 	m_ui->infoIcon2->setIcon( QIcon( icon[1] ) );
 }
+
 
 void MainWindow::settingsGeneral()
 {
@@ -650,9 +680,11 @@ void MainWindow::settingsGeneral()
 	window->exec();
 	delete window;
 	resizeIcons();
-	// xxx
 	m_ui->paintArea->setVirtualZoom( GlobalSettings::magnification() );
+	// Just in case the user switched instructions on or off
+	displayInstructions();
 }
+
 
 void MainWindow::settingsRenderer()
 {
@@ -661,12 +693,14 @@ void MainWindow::settingsRenderer()
 		renderer->ShowSettings();
 }
 
+
 void MainWindow::settingsRouter()
 {
 	IRouter* router = MapData::instance()->router();
 	if ( router != NULL )
 		router->ShowSettings();
 }
+
 
 void MainWindow::settingsGPSLookup()
 {
@@ -675,6 +709,7 @@ void MainWindow::settingsGPSLookup()
 		gpsLookup->ShowSettings();
 }
 
+
 void MainWindow::settingsAddressLookup()
 {
 	IAddressLookup* addressLookup = MapData::instance()->addressLookup();
@@ -682,12 +717,14 @@ void MainWindow::settingsAddressLookup()
 		addressLookup->ShowSettings();
 }
 
+
 void MainWindow::settingsGPS()
 {
 	GPSDialog* window = new GPSDialog( this );
 	window->exec();
 	delete window;
 }
+
 
 void MainWindow::resizeEvent( QResizeEvent* event )
 {
@@ -698,6 +735,7 @@ void MainWindow::resizeEvent( QResizeEvent* event )
 	else
 		box->setDirection( QBoxLayout::TopToBottom );
 }
+
 
 #ifdef Q_WS_MAEMO_5
 void MainWindow::grabZoomKeys( bool grab )
@@ -735,6 +773,7 @@ void MainWindow::keyPressEvent( QKeyEvent* event )
 }
 #endif
 
+
 void MainWindow::setModeSourceSelection()
 {
 	if ( !d->actionSource->isChecked() ){
@@ -746,13 +785,14 @@ void MainWindow::setModeSourceSelection()
 	d->fixed = false;
 	m_ui->paintArea->setFixed( false );
 	m_ui->paintArea->setKeepPositionVisible( false );
-	m_ui->infoWidget->hide();
+	// m_ui->infoWidget->hide();
 
 	d->actionTarget->setChecked( false );
 	d->actionInstructions->setChecked( false );
 
 	d->toolBarMethods->setDisabled( false );
 }
+
 
 void MainWindow::setModeViaNone()
 {
@@ -762,6 +802,7 @@ void MainWindow::setModeViaNone()
 	d->viaMode = PrivateImplementation::ViaNone;
 }
 
+
 void MainWindow::setModeViaInsert()
 {
 	d->actionViaNone->setChecked( false );
@@ -770,6 +811,7 @@ void MainWindow::setModeViaInsert()
 	d->viaMode = PrivateImplementation::ViaInsert;
 }
 
+
 void MainWindow::setModeViaAppend()
 {
 	d->actionViaNone->setChecked( false );
@@ -777,6 +819,7 @@ void MainWindow::setModeViaAppend()
 	d->actionViaAppend->setChecked( true );
 	d->viaMode = PrivateImplementation::ViaAppend;
 }
+
 
 void MainWindow::setModeTargetSelection()
 {
@@ -789,13 +832,12 @@ void MainWindow::setModeTargetSelection()
 	d->fixed = false;
 	m_ui->paintArea->setFixed( false );
 	m_ui->paintArea->setKeepPositionVisible( false );
-	m_ui->infoWidget->hide();
-
+	// m_ui->infoWidget->hide();
 	d->actionSource->setChecked( false );
 	d->actionInstructions->setChecked( false );
-
 	d->toolBarMethods->setDisabled( false );
 }
+
 
 void MainWindow::setModeInstructions()
 {
@@ -808,35 +850,33 @@ void MainWindow::setModeInstructions()
 	d->fixed = true;
 	m_ui->paintArea->setFixed( true );
 	m_ui->paintArea->setKeepPositionVisible( true );
-	m_ui->infoWidget->show();
-
+	// m_ui->infoWidget->show();
 	d->actionSource->setChecked( false );
 	d->actionTarget->setChecked( false );
-
-
 	d->toolBarMethods->setDisabled( true );
-	displayInstructions();
+	// displayInstructions();
 }
+
 
 void MainWindow::setModeless()
 {
 	d->applicationMode = PrivateImplementation::Modeless;
 	d->fixed = false;
 	m_ui->paintArea->setFixed( false );
-	m_ui->infoWidget->hide();
-
+	// m_ui->infoWidget->hide();
 	d->actionSource->setChecked( false );
 	d->actionTarget->setChecked( false );
 	d->actionInstructions->setChecked( false );
-
 	d->toolBarMethods->setDisabled( false );
 }
+
 
 void MainWindow::mouseClicked( ProjectedCoordinate clickPos )
 {
 	UnsignedCoordinate coordinate( clickPos );
 	alterRoute( coordinate );
 }
+
 
 void MainWindow::bookmarks()
 {
@@ -848,6 +888,7 @@ void MainWindow::bookmarks()
 	m_ui->paintArea->setKeepPositionVisible( false );
 	m_ui->paintArea->setCenter( result.ToProjectedCoordinate() );
 }
+
 
 void MainWindow::addresses()
 {
@@ -861,6 +902,7 @@ void MainWindow::addresses()
 	m_ui->paintArea->setKeepPositionVisible( false );
 	m_ui->paintArea->setCenter( result.ToProjectedCoordinate() );
 }
+
 
 void MainWindow::gpsLocation()
 {
@@ -876,6 +918,7 @@ void MainWindow::gpsLocation()
 		return;
 	setZoom( renderer->GetMaxZoom() - 5 );
 }
+
 
 void MainWindow::gpsCoordinate()
 {
@@ -897,8 +940,8 @@ void MainWindow::gpsCoordinate()
 	if ( renderer == NULL )
 		return;
 	setZoom( renderer->GetMaxZoom() - 5 );
-
 }
+
 
 void MainWindow::alterRoute( UnsignedCoordinate coordinate )
 {
@@ -962,6 +1005,7 @@ void MainWindow::alterRoute( UnsignedCoordinate coordinate )
 	routingLogic->setWaypoints( waypoints );
 }
 
+
 void MainWindow::remove()
 {
 	QVector< UnsignedCoordinate > waypoints = RoutingLogic::instance()->waypoints();
@@ -998,15 +1042,18 @@ void MainWindow::remove()
 	RoutingLogic::instance()->setWaypoints( waypoints );
 }
 
+
 void MainWindow::addZoom()
 {
 	setZoom( GlobalSettings::zoomMainMap() + 1 );
 }
 
+
 void MainWindow::subtractZoom()
 {
 	setZoom( GlobalSettings::zoomMainMap() - 1 );
 }
+
 
 void MainWindow::setZoom( int zoom )
 {
@@ -1021,6 +1068,7 @@ void MainWindow::setZoom( int zoom )
 	m_ui->paintArea->setZoom( zoom );
 	GlobalSettings::setZoomMainMap( zoom );
 }
+
 
 void MainWindow::about()
 {
