@@ -165,6 +165,8 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 
 
 void InstructionGenerator::requestSpeech(){
+	// TODO: This is called by routinglogic::routechanged.
+	// Gain a reference to the route from it and make it a member variabl
 
 	if ( !m_speechEnabled ){
 		return;
@@ -242,6 +244,12 @@ double InstructionGenerator::speechDistance() {
 	// Which results in a factor of about 0.7
 	// Reduced to 0.6 due to reality check
 	double speechDistance = currentSpeed * currentSpeed * 0.6;
+	// This mainly serves for demonstration purposes on mobile devices.
+	// E.g. you can click the vehicle position at home and you will get turn
+	// instructions though your currentSpeed is 0.
+	if ( speechDistance < 15 ){
+		speechDistance = 15;
+	}
 	return speechDistance;
 }
 
@@ -292,7 +300,7 @@ int InstructionGenerator::direction( UnsignedCoordinate first, UnsignedCoordinat
 	// Counterclockwise angle
 	int angle = ( atan2( y1, x1 ) - atan2( y2, x2 ) ) * 180 / M_PI + 720;
 	angle %= 360;
-	qDebug() << "Angle:" << angle;
+	// qDebug() << "Angle:" << angle;
 	if ( angle > 8.0 && angle <= 45.0 ){
 		direction = 7;
 	}
