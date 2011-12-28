@@ -247,8 +247,8 @@ double InstructionGenerator::speechDistance() {
 	// This mainly serves for demonstration purposes on mobile devices.
 	// E.g. you can click the vehicle position at home and you will get turn
 	// instructions though your currentSpeed is 0.
-	if ( speechDistance < 15 ){
-		speechDistance = 15;
+	if ( speechDistance < 10 ){
+		speechDistance = 30;
 	}
 	return speechDistance;
 }

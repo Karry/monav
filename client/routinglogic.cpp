@@ -349,6 +349,7 @@ void RoutingLogic::setGPSLink( bool linked )
 		return;
 	d->linked = linked;
 	if ( d->gpsInfo.position.IsValid() ) {
+		// TODO: Better use setSource?
 		d->source = d->gpsInfo.position;
 		emit sourceChanged();
 		computeRoute();

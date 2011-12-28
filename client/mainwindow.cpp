@@ -785,7 +785,6 @@ void MainWindow::setModeSourceSelection()
 	d->fixed = false;
 	m_ui->paintArea->setFixed( false );
 	m_ui->paintArea->setKeepPositionVisible( false );
-	// m_ui->infoWidget->hide();
 
 	d->actionTarget->setChecked( false );
 	d->actionInstructions->setChecked( false );
@@ -832,7 +831,6 @@ void MainWindow::setModeTargetSelection()
 	d->fixed = false;
 	m_ui->paintArea->setFixed( false );
 	m_ui->paintArea->setKeepPositionVisible( false );
-	// m_ui->infoWidget->hide();
 	d->actionSource->setChecked( false );
 	d->actionInstructions->setChecked( false );
 	d->toolBarMethods->setDisabled( false );
@@ -848,13 +846,12 @@ void MainWindow::setModeInstructions()
 
 	d->applicationMode = PrivateImplementation::Instructions;
 	d->fixed = true;
+	RoutingLogic::instance()->setGPSLink( true );
 	m_ui->paintArea->setFixed( true );
 	m_ui->paintArea->setKeepPositionVisible( true );
-	// m_ui->infoWidget->show();
 	d->actionSource->setChecked( false );
 	d->actionTarget->setChecked( false );
 	d->toolBarMethods->setDisabled( true );
-	// displayInstructions();
 }
 
 
@@ -863,7 +860,6 @@ void MainWindow::setModeless()
 	d->applicationMode = PrivateImplementation::Modeless;
 	d->fixed = false;
 	m_ui->paintArea->setFixed( false );
-	// m_ui->infoWidget->hide();
 	d->actionSource->setChecked( false );
 	d->actionTarget->setChecked( false );
 	d->actionInstructions->setChecked( false );
