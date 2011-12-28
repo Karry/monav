@@ -47,7 +47,6 @@ public slots:
 
 	// destroys the object
 	// void cleanup();
-	// void routeChanged();
 	void requestSpeech();
 
 signals:
@@ -57,7 +56,7 @@ signals:
 protected:
 
 	InstructionGenerator();
-	int angle( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third );
+	int direction( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third );
 	double speechDistance();
 	QString distanceString( double distance );
 	void initialize();

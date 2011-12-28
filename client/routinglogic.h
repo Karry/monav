@@ -42,7 +42,6 @@ class RoutingLogic : public QObject
 
 public:
 
-	// GPS information
 	struct GPSInfo {
 		UnsignedCoordinate position;
 		double altitude;
@@ -71,9 +70,6 @@ public:
 	const GPSInfo gpsInfo() const;
 	// clears the waypoints, target, and route
 	void clear();
-	// driving instruction for the current route
-	// TODO: Obsolete since the introduction of InstructionGenerator
-	// void instructions( QStringList* labels, QStringList* icons, int instructionAmount = std::numeric_limits< int >::max() );
 	QVector< IRouter::Edge >& edges();
 
 
@@ -102,12 +98,9 @@ protected:
 
 	RoutingLogic();
 	~RoutingLogic();
-	// bool onTrack();
 	UnsignedCoordinate coordOnSegment( int NodeId, UnsignedCoordinate newSource );
-	// void testCoordOnSegment();
 	void truncateRoute( int maxIndex );
 	void computeRoute();
-	// void updateInstructions();
 	void clearRoute();
 	void setSource( UnsignedCoordinate coordinate );
 	void calculateEdgeDistance( int index );

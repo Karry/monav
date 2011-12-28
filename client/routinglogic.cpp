@@ -205,7 +205,6 @@ const RoutingLogic::GPSInfo RoutingLogic::gpsInfo() const
 
 QVector< IRouter::Edge >& RoutingLogic::edges()
 {
-	// TODO: Pass a reference
 	QVector< IRouter::Edge >& edgeReference = d->pathEdges;
 	return edgeReference;
 }
@@ -316,12 +315,11 @@ void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 
 	if ( oppositeHeading && sourceNearRoute ){
 		d->source = coordinate;
-		// qDebug() << "Opposite direction";
+		// TODO: Announce something like "You're heading in the wrong direction"
 	}
 	else if ( oppositeHeading && !sourceNearRoute ){
 		d->source = coordinate;
 		computeRoute();
-		qDebug() << "Route recomputed";
 		emit routeChanged();
 	}
 	else if ( !oppositeHeading ){
@@ -335,7 +333,6 @@ void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 	}
 
 	emit sourceChanged();
-	// qDebug() << "\n";
 }
 
 
@@ -378,7 +375,6 @@ void RoutingLogic::calculateEdgeDistance( int index ){
 	for ( int i = 0; i < d->pathEdges[index].length; i++ ){
 		d->pathEdges[index].distance += d->pathNodes[i].coordinate.ToGPSCoordinate().ApproximateDistance( d->pathNodes[i +1].coordinate.ToGPSCoordinate() );
 	}
-	// qDebug() << "Calculated edge distance" << d->pathEdges[index].distance;
 }
 
 
@@ -466,7 +462,8 @@ void RoutingLogic::computeRoute()
 	}
 
 	// TODO: Each segment meanwhile knows its distance, thus d->distance could be filled much more precise.
-	// TODO: Adjust distance() accordingly - IMO it's not necessary anymore to keep the distance in the private implementation struct
+	// TODO: Remove d->distance, as it does not seem it is used anywhere.
+	// TODO: The same for travelTime, but it's more difficult to remove.
 	d->distance = waypoints.first().ToGPSCoordinate().ApproximateDistance( waypoints.last().ToGPSCoordinate() );
 	InstructionGenerator::instance()->createInstructions( d->pathEdges, d->pathNodes );
 	emit routeChanged();

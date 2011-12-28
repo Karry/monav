@@ -65,7 +65,7 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 
 		endNode += edges[i].length;
 		if ( i < edges.size() -1 ){
-			edges[i].direction = angle( nodes[ endNode -1 ].coordinate, nodes[ endNode ].coordinate, nodes[ endNode +1 ].coordinate );
+			edges[i].direction = direction( nodes[ endNode -1 ].coordinate, nodes[ endNode ].coordinate, nodes[ endNode +1 ].coordinate );
 		}
 		else{
 			edges[i].direction = -1;
@@ -81,32 +81,31 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 	for ( int i = 0; i < edges.size() -1; i++ ){
 		if ( edges[i].typeString == "roundabout" && edges[i].exitNumber < 1 ){
 			// qDebug() << "Roundabout edges are treated separately";
-			// edges[i].audiofileIndex = -1;
 			edges[i].speechRequired = false;
 		}
 		else if ( edges[i].typeString == "motorway" && edges[i +1].typeString == "motorway_link" ){
-			// qDebug() << "Leaving the motorway";
+			// qDebug() << "Leaving a motorway";
 			edges[i].instructionFilename = ( m_audioFilenames[17] );
 			edges[i].instructionString = m_instructionStrings[17];
 			edges[i].instructionIcon = m_iconFilenames[17];
 			edges[i].speechRequired = true;
 		}
 		else if ( edges[i].typeString == "trunk" && edges[i +1].typeString == "trunk_link" ){
-			// qDebug() << "Leaving the trunk";
+			// qDebug() << "Leaving a trunk";
 			edges[i].instructionFilename = ( m_audioFilenames[18] );
 			edges[i].instructionString = m_instructionStrings[18];
 			edges[i].instructionIcon = m_iconFilenames[18];
 			edges[i].speechRequired = true;
 		}
 		else if ( edges[i].typeString != "motorway" && edges[i].typeString != "motorway_link" && edges[i +1].typeString == "motorway_link" ){
-			// qDebug() << "Entering the motorway";
+			// qDebug() << "Entering a motorway";
 			edges[i].instructionFilename = ( m_audioFilenames[19] );
 			edges[i].instructionString = m_instructionStrings[19];
 			edges[i].instructionIcon = m_iconFilenames[19];
 			edges[i].speechRequired = true;
 		}
 		else if ( edges[i].typeString != "trunk" && edges[i].typeString != "trunk_link" && edges[i +1].typeString == "trunk_link" ){
-			// qDebug() << "Entering the trunk";
+			// qDebug() << "Entering a trunk";
 			edges[i].instructionFilename = ( m_audioFilenames[20] );
 			edges[i].instructionString = m_instructionStrings[20];
 			edges[i].instructionIcon = m_iconFilenames[20];
@@ -134,7 +133,6 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 			edges[i].speechRequired = true;
 		}
 		else{
-			// qDebug() << "No speech required" << edges[i].branchingPossible;
 			edges[i].speechRequired = false;
 		}
 	}
@@ -205,6 +203,10 @@ void InstructionGenerator::requestSpeech(){
 		edges[0].speechRequired = false;
 	}
 	if ( nextEdgeToAnnounce > 0 && !edges[nextEdgeToAnnounce].preAnnounced ){
+		if ( instructions.size() < 1 ){
+			// Avoid to announce one single turn twice
+			edges[nextEdgeToAnnounce].speechRequired = false;
+		}
 		if ( instructions.size() > 0 ){
 			// Announce something like "After the first turn..."
 			instructions.append( m_audioFilenames[22] );
@@ -279,7 +281,7 @@ void InstructionGenerator::instructions( QStringList* labels, QStringList* icons
 }
 
 
-int InstructionGenerator::angle( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third ) {
+int InstructionGenerator::direction( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third ) {
 	// TODO: It would be *very* useful to take more than one node of an edge into account.
 	// There are too many occasions where the current approach either leads to no or to too much instructions.
 	double x1 = ( double ) second.x - first.x; // a = (x1,y1)
@@ -290,26 +292,26 @@ int InstructionGenerator::angle( UnsignedCoordinate first, UnsignedCoordinate se
 	// Counterclockwise angle
 	int angle = ( atan2( y1, x1 ) - atan2( y2, x2 ) ) * 180 / M_PI + 720;
 	angle %= 360;
-
-	if ( angle > 5.0 && angle <= 45.0 ){
+	qDebug() << "Angle:" << angle;
+	if ( angle > 8.0 && angle <= 45.0 ){
 		direction = 7;
 	}
 	else if ( angle > 45.0  && angle <= 135 ){
 		direction = 6;
 	}
-	else if ( angle > 135 && angle <= 175 ){
+	else if ( angle > 135 && angle <= 172 ){
 		direction = 5;
 	}
-	else if ( angle > 175 && angle <= 185 ){
+	else if ( angle > 172 && angle <= 188 ){
 		direction = 4;
 	}
-	else if ( angle > 185 && angle <= 225 ){
+	else if ( angle > 188 && angle <= 225 ){
 		direction = 3;
 	}
 	else if ( angle > 225 && angle <= 315 ){
 		direction = 2;
 	}
-	else if ( angle > 315 && angle <= 355.0 ){
+	else if ( angle > 315 && angle <= 352.0 ){
 		direction = 1;
 	}
 
