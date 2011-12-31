@@ -222,7 +222,9 @@ void InstructionGenerator::requestSpeech(){
 	}
 
 	instructions.prepend( m_audioFilenames[21] );
+	qDebug() << "Sending instructions to audio out";
 	Audio::instance()->speak( instructions );
+	qDebug() << "\nSpeech request processed.";
 }
 
 
@@ -231,25 +233,32 @@ double InstructionGenerator::speechDistance() {
 	const RoutingLogic::GPSInfo& gpsInfo = RoutingLogic::instance()->gpsInfo();
 	double currentSpeed = 0;
 
-	// Speed is in meters per second
-	currentSpeed = gpsInfo.position.IsValid() ? gpsInfo.groundSpeed : 15;
+	// Speed is in kilometers per hour.
+	// In case there is no GPS signal, emulate 50km/H.
+	currentSpeed = gpsInfo.position.IsValid() ? gpsInfo.groundSpeed : 50;
 
 	// Some possibly reasonable values (0.2 seconds per km/h):
+	//  1s	0.27m	1.4m/s	5km/h	pedestrian
+	// 2.5s	0.7m	3.5m/s	12.5km/h	cyclist
 	//  5s	  35m	 7m/s	 25km/h	residential areas
 	// 10s	 140m	14m/s	 50km/h	inner city
 	// 15s	 315m	21m/s	 75km/h	primaries
 	// 20s	 560m	28m/s	100km/h	trunks
 	// 30s	1260m	42m/s	150km/h	highways
 	// 40s	2240m	56m/s	200km/h	highways
-	// Which results in a factor of about 0.7
-	// Reduced to 0.6 due to reality check
-	double speechDistance = currentSpeed * currentSpeed * 0.6;
-	// This mainly serves for demonstration purposes on mobile devices.
-	// E.g. you can click the vehicle position at home and you will get turn
-	// instructions though your currentSpeed is 0.
-	if ( speechDistance < 10 ){
-		speechDistance = 30;
+
+	// 0.2 seconds per km/h, but at least 3 seconds respectively 10m before a branch
+	double speechTime = currentSpeed * 0.2;
+	if ( speechTime < 3.0 ){
+		speechTime = 3.0;
 	}
+	double speechDistance = 1000 / 3600 * currentSpeed * speechTime;
+
+	if ( speechDistance < 10 ){
+		speechDistance = 10;
+	}
+
+	qDebug() << "Speed, speech distance:" << gpsInfo.groundSpeed << speechDistance;
 	return speechDistance;
 }
 
