@@ -59,10 +59,12 @@ protected:
 	int direction( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third );
 	double speechDistance();
 	QString distanceString( double distance );
+	int distanceFileindex(double distance);
 	void initialize();
 	QStringList m_audioFilenames;
-	QStringList m_instructionStrings;
+	QStringList m_distanceFilenames;
 	QStringList m_iconFilenames;
+	QStringList m_instructionStrings;
 	QString m_language;
 	bool m_speechEnabled;
 

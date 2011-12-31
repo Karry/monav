@@ -201,11 +201,13 @@ void InstructionGenerator::requestSpeech(){
 
 	QStringList instructions;
 	if ( edges[0].speechRequired ){
+		instructions.append( m_distanceFilenames[distanceFileindex( edges[0].distance )] );
 		instructions.append( edges[0].instructionFilename );
 		edges[0].speechRequired = false;
 	}
 	if ( nextEdgeToAnnounce > 0 && !edges[nextEdgeToAnnounce].preAnnounced ){
 		// Avoid to announce one single turn twice
+		// TODO: Announce twice in case the distance is greater than x meters
 		if ( instructions.size() < 1 ){
 			edges[nextEdgeToAnnounce].speechRequired = false;
 		}
@@ -213,6 +215,7 @@ void InstructionGenerator::requestSpeech(){
 			// Announce something like "After the first turn..."
 			instructions.append( m_audioFilenames[22] );
 		}
+		instructions.append( m_distanceFilenames[distanceFileindex( edges[nextEdgeToAnnounce].distance )] );
 		instructions.append( edges[nextEdgeToAnnounce].instructionFilename );
 		edges[nextEdgeToAnnounce].preAnnounced = true;
 	}
@@ -235,7 +238,7 @@ double InstructionGenerator::speechDistance() {
 
 	// Speed is in kilometers per hour.
 	// In case there is no GPS signal, emulate 50km/H.
-	currentSpeed = gpsInfo.position.IsValid() ? gpsInfo.groundSpeed : 50;
+	currentSpeed = gpsInfo.position.IsValid() ? gpsInfo.groundSpeed : 100;
 
 	// Some possibly reasonable values (0.2 seconds per km/h):
 	//  1s	0.27m	1.4m/s	5km/h	pedestrian
@@ -245,20 +248,19 @@ double InstructionGenerator::speechDistance() {
 	// 15s	 315m	21m/s	 75km/h	primaries
 	// 20s	 560m	28m/s	100km/h	trunks
 	// 30s	1260m	42m/s	150km/h	highways
-	// 40s	2240m	56m/s	200km/h	highways
+	// 40s	2222m	56m/s	200km/h	highways
 
 	// 0.2 seconds per km/h, but at least 3 seconds respectively 10m before a branch
 	double speechTime = currentSpeed * 0.2;
 	if ( speechTime < 3.0 ){
 		speechTime = 3.0;
 	}
-	double speechDistance = 1000 / 3600 * currentSpeed * speechTime;
-
+	double speechDistance = currentSpeed * speechTime * 1000 / 3600;
 	if ( speechDistance < 10 ){
 		speechDistance = 10;
 	}
 
-	qDebug() << "Speed, speech distance:" << gpsInfo.groundSpeed << speechDistance;
+qDebug() << "Speed, speech distance:" << currentSpeed << speechDistance;
 	return speechDistance;
 }
 
@@ -357,6 +359,32 @@ QString InstructionGenerator::distanceString( double distance )
 		distanceString.prepend( " " );
 	}
 	return distanceString;
+}
+
+
+int InstructionGenerator::distanceFileindex( double distance )
+{
+	// TODO: i18n
+	int distanceFileindex = 0;
+
+	if ( distance < 35 )
+		distanceFileindex = 0;
+	else if ( distance < 75 )
+		distanceFileindex = 1;
+	else if ( distance < 150 )
+		distanceFileindex = 2;
+	else if ( distance < 350 )
+		distanceFileindex = 3;
+	else if ( distance < 650 )
+		distanceFileindex = 4;
+	else if ( distance < 900 )
+		distanceFileindex = 5;
+	else if ( distance < 1500 )
+		distanceFileindex = 6;
+	else
+		distanceFileindex = 7;
+
+	return distanceFileindex;
 }
 
 
@@ -473,9 +501,25 @@ void InstructionGenerator::initialize()
 	// index 22
 	m_audioFilenames.append( "instructions-and-then" );
 
+	m_distanceFilenames.append( "instructions-distance-now" );
+	m_distanceFilenames.append( "instructions-distance-50m" );
+	m_distanceFilenames.append( "instructions-distance-100m" );
+	m_distanceFilenames.append( "instructions-distance-200m" );
+	m_distanceFilenames.append( "instructions-distance-500m" );
+	m_distanceFilenames.append( "instructions-distance-800m" );
+	m_distanceFilenames.append( "instructions-distance-1km" );
+	m_distanceFilenames.append( "instructions-distance-2km" );
+	
 	QLocale DefaultLocale;
 	m_language = DefaultLocale.name();
 	m_language.truncate( 2 );
+
+	for ( int i = 0; i < m_distanceFilenames.size(); i++ ){
+		m_distanceFilenames[i].append( ".wav" );
+		m_distanceFilenames[i].prepend( "/" );
+		m_distanceFilenames[i].prepend( m_language );
+		m_distanceFilenames[i].prepend( ":/audio/" );
+	}
 
 	for ( int i = 0; i < m_audioFilenames.size(); i++ ){
 		m_audioFilenames[i].append( ".wav" );

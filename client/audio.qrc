@@ -24,6 +24,16 @@
         <file>audio/en/instructions-leave-trunk.wav</file>
         <file>audio/en/instructions-take-motorway-ramp.wav</file>
         <file>audio/en/instructions-take-trunk-ramp.wav</file>
+
+        <file>audio/en/instructions-distance-now.wav</file>
+        <file>audio/en/instructions-distance-50m.wav</file>
+        <file>audio/en/instructions-distance-100m.wav</file>
+        <file>audio/en/instructions-distance-200m.wav</file>
+        <file>audio/en/instructions-distance-500m.wav</file>
+        <file>audio/en/instructions-distance-800m.wav</file>
+        <file>audio/en/instructions-distance-1km.wav</file>
+        <file>audio/en/instructions-distance-2km.wav</file>
+
         <file>audio/de/instructions-announce.wav</file>
         <file>audio/de/instructions-and-then.wav</file>
         <file>audio/de/instructions-head-straightforward.wav</file>
@@ -48,5 +58,14 @@
         <file>audio/de/instructions-leave-trunk.wav</file>
         <file>audio/de/instructions-take-motorway-ramp.wav</file>
         <file>audio/de/instructions-take-trunk-ramp.wav</file>
+
+        <file>audio/de/instructions-distance-now.wav</file>
+        <file>audio/de/instructions-distance-50m.wav</file>
+        <file>audio/de/instructions-distance-100m.wav</file>
+        <file>audio/de/instructions-distance-200m.wav</file>
+        <file>audio/de/instructions-distance-500m.wav</file>
+        <file>audio/de/instructions-distance-800m.wav</file>
+        <file>audio/de/instructions-distance-1km.wav</file>
+        <file>audio/de/instructions-distance-2km.wav</file>
     </qresource>
 </RCC>
