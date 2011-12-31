@@ -89,7 +89,6 @@ void Audio::process( QString audioFilename )
 			if ( m_audioFilenames.size() > 0 ){
 				process( m_audioFilenames[0] );
 			}
-			return;
 		}
 	}
 

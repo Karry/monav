@@ -165,8 +165,8 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 
 
 void InstructionGenerator::requestSpeech(){
-	// TODO: This is called by routinglogic::routechanged.
-	// Gain a reference to the route from it and make it a member variabl
+	// This is called by routinglogic::routechanged.
+	// TODO: Make the reference to the route a member variable
 
 	if ( !m_speechEnabled ){
 		return;
@@ -205,8 +205,8 @@ void InstructionGenerator::requestSpeech(){
 		edges[0].speechRequired = false;
 	}
 	if ( nextEdgeToAnnounce > 0 && !edges[nextEdgeToAnnounce].preAnnounced ){
+		// Avoid to announce one single turn twice
 		if ( instructions.size() < 1 ){
-			// Avoid to announce one single turn twice
 			edges[nextEdgeToAnnounce].speechRequired = false;
 		}
 		if ( instructions.size() > 0 ){
