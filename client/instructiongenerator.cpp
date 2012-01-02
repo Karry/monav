@@ -305,7 +305,7 @@ double InstructionGenerator::currentSpeed() {
 	// In case there is no GPS signal, -1 is returned.
 	double currentSpeed = RoutingLogic::instance()->groundSpeed();
 	if ( currentSpeed < 0 ){
-		currentSpeed = 50;
+		currentSpeed = 80;
 	}
 	return currentSpeed;
 }
