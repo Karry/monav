@@ -56,7 +56,6 @@ void Logger::initialize()
 
 	QSettings settings( "MoNavClient" );
 	m_loggingEnabled = settings.value( "LoggingEnabled", false ).toBool();
-	// TODO: Use QDesktop Services
 	m_tracklogPath = settings.value( "LogFilePath", QDir::homePath() ).toString();
 	m_trackSegments.clear();
 	m_segmentLenghts.clear();
@@ -189,8 +188,7 @@ bool Logger::readGpxLog()
 		}
 		else if ( gpxReader.isStartElement() && fileStatus == insideTrackpoint && gpxReader.name().toString() == "time")
 		{
-			// TODO: See the writer, there are several time formats.
-			// Currently when using a tracklog from a Garmin eTrex, the timestamp gets lost
+			// TODO: Currently when using a tracklog from a Garmin eTrex, the timestamp gets lost due to its format
 			gpsInfo.timestamp = QDateTime::fromString( gpxReader.readElementText(), Qt::ISODate ); // 2011-05-07T15:37:42
 			continue;
 		}
@@ -218,19 +216,14 @@ void Logger::processGpsInfo( RoutingLogic::GPSInfo gpsInfo )
 	// As a tracklog does not provide accuracy, it gets set to 0 while reading the tracklog.
 	// Indoor results: Horizontal accuracy: 652.64 , Vertical accuracy: 32767.5
 	// Outdoor results: Horizontal accuracy: Between 27 and 37 , Vertical accuracy: Between 35 and 50
-	if ( gpsInfo.horizontalAccuracy > 40 )
+	if ( gpsInfo.horizontalAccuracy > 50 )
 		return;
-	if ( gpsInfo.verticalAccuracy > 40 )
+	if ( gpsInfo.verticalAccuracy > 50 )
 		gpsInfo.altitude = INVALIDELEVATIONVALUE;
-	// TODO: Replace this ugly string comparison by something more elegant.
-	// Unfortunately a quick search brought up that such checks depend on the compiler and platform used.
+
 	QString checkValue = QString::number( gpsInfo.altitude );
 	if( checkValue == "nan" || checkValue == "inf" )
 		gpsInfo.altitude = INVALIDELEVATIONVALUE;
-
-	// TODO: Maybe filter inaccurate data:
-	// Position and/or timestamp equal the last received event (which actually happens with AGPS)
-	// Probably the initial accuracy check already is sufficient?
 
 	// Filling cache variables
 	if( m_trackSegments.last().size() > 0 ){
@@ -311,11 +304,9 @@ bool Logger::writeGpxLog()
 				gpxWriter.writeStartElement( "trkpt" );
 				gpxWriter.writeAttribute( "lat", QString::number( currentSegment[i].position.ToGPSCoordinate().latitude, 'f', 6 ) );
 				gpxWriter.writeAttribute( "lon", QString::number( currentSegment[i].position.ToGPSCoordinate().longitude, 'f', 6 ) );
-				// TODO: See processGpsInfo(). An invalid altitude should not appear in the lists. Remove this section.
 				if( currentSegment[i].altitude != INVALIDELEVATIONVALUE )
 					gpxWriter.writeTextElement( "ele", QString::number( currentSegment[i].altitude, 'f', 0 ) );
-				// TODO: There are several flavours of the timestamp format, which describe UTC, local time, UTC+[hours] and the like
-				// See the reader method also. I recommend to write UTC.
+				// TODO: See the reader method for problems with different timestamp formats. I recommend to write UTC.
 				// http://www.routeconverter.de/forum/archive/index.php/thread-519.html
 				if( currentSegment[i].timestamp.isValid() )
 					gpxWriter.writeTextElement( "time", currentSegment[i].timestamp.toString( Qt::ISODate ) );

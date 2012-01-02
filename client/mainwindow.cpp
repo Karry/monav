@@ -455,6 +455,7 @@ void MainWindow::hideControls()
 {
 	// TODO: The following calls should determine whether there are any settings at all,
 	// e.g. MapData::instance()->settingsAvailable()
+	// In case not, no button should be displayed.
 /*
 	if ( MapData::instance()->renderer() == NULL )
 		d->actionPreferencesRenderer->setEnabled ( false );
@@ -1068,7 +1069,7 @@ void MainWindow::setZoom( int zoom )
 
 void MainWindow::about()
 {
-	// TODO: Create a better dialog displaying more details, and read some of the data from an include file or define.
+	// TODO: Create a better about dialog displaying more details, and read some of the data from an include file or define.
 	QMessageBox::about( this, tr("About MoNav"), tr( "MoNav 0.4 is (c) 2012 by the MoNav authors and was released under the GNU GPL v3." ) );
 }
 

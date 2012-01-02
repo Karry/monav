@@ -180,19 +180,13 @@ void InstructionGenerator::requestSpeech(){
 
 	double announceDistance1st = announceDistanceFirst();
 	double announceDistance2nd = announceDistanceSecond();
-	// qDebug() << announceDistance1st << announceDistance2nd;
 
 	// Determine the next two edges to announce
 	double branchDistance = 0;
-	// double nextBranchDistance = 0;
-	// int firstEdgeToAnnounce = 0;
-	// int nextEdgeToAnnounce = 0;
 	QVector<int> edgesToAnnounce;
 	QVector<double> branchDistances;
-	// TODO: Assert that edgesToAnnounce and branchDistances are of the same size
 	for ( int i = 0; i < edges.size(); i++ ){
 		branchDistance += edges[i].distance;
-		// nextBranchDistance += edges[i].distance;
 		if ( edges[i].speechRequired ){
 			edgesToAnnounce.append( i );
 			branchDistances.append( branchDistance );
@@ -205,6 +199,8 @@ void InstructionGenerator::requestSpeech(){
 			break;
 		}
 	}
+
+	assert( edgesToAnnounce.size() == branchDistances.size() );
 
 	if( edgesToAnnounce.size() == 0 ){
 		qDebug() << "No branches to announce foreseen\n";
@@ -221,6 +217,7 @@ void InstructionGenerator::requestSpeech(){
 	bool finalannounceFirst = edgesToAnnounce.size() > 0;
 	bool preannounceSecond = edgesToAnnounce.size() > 1;
 
+	// TODO: The following lines are write only - refactoring required.
 	// A couple of circumstances that prevent the first branch from being (pre)announced
 	if ( !edges[firstEdgeToAnnounce].speechRequired ){
 		preannounceFirst = false;

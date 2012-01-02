@@ -41,7 +41,6 @@ struct RoutingLogic::PrivateImplementation {
 	QVector< UnsignedCoordinate > waypoints;
 	QVector< IRouter::Node > pathNodes;
 	QVector< IRouter::Edge > pathEdges;
-	double distance;
 	double travelTime;
 	bool linked;
 #ifndef NOQTMOBILE
@@ -55,7 +54,6 @@ RoutingLogic::RoutingLogic() :
 		d( new PrivateImplementation )
 {
 	d->linked = true;
-	d->distance = -1;
 	d->travelTime = -1;
 
 	d->gpsInfo.altitude = -1;
@@ -277,7 +275,6 @@ void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 	if ( route().size() < 1 ){
 		d->source = coordinate;
 		emit sourceChanged();
-		// TODO: Ensure the logger always gets the coordinate from the GPS subsystem
 		return;
 	}
 
@@ -315,14 +312,10 @@ void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 
 	if ( oppositeHeading && sourceNearRoute ){
 		d->source = coordinate;
-		// TODO: Announce something like "You're heading in the wrong direction"
 	}
 	else if ( oppositeHeading && !sourceNearRoute ){
 		d->source = coordinate;
 		computeRoute();
-		// Already happens in computeRoute()
-		// TODO: emit routeRecomputed() instead?
-		// emit routeChanged();
 	}
 	else if ( !oppositeHeading ){
 		truncateRoute( nodeToKeep );
@@ -464,10 +457,8 @@ void RoutingLogic::computeRoute()
 		}
 	}
 
-	// TODO: Each segment meanwhile knows its distance, thus d->distance could be filled much more precise.
-	// TODO: Remove d->distance, as it does not seem it is used anywhere.
-	// TODO: The same for travelTime, but it's more difficult to remove.
-	d->distance = waypoints.first().ToGPSCoordinate().ApproximateDistance( waypoints.last().ToGPSCoordinate() );
+	// TODO: The edges distances are calculated by InstructionGenerator::createInstructions(),
+	// which should better happen here using calculateEdgeDistance( int edgeIndex )
 	InstructionGenerator::instance()->createInstructions( d->pathEdges, d->pathNodes );
 	emit routeChanged();
 }
@@ -475,7 +466,6 @@ void RoutingLogic::computeRoute()
 
 void RoutingLogic::clearRoute()
 {
-	d->distance = -1;
 	d->travelTime = -1;
 	d->pathEdges.clear();
 	d->pathNodes.clear();
