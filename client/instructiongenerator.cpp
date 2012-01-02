@@ -189,6 +189,7 @@ void InstructionGenerator::requestSpeech(){
 	// int nextEdgeToAnnounce = 0;
 	QVector<int> edgesToAnnounce;
 	QVector<double> branchDistances;
+	// TODO: Assert that edgesToAnnounce and branchDistances are of the same size
 	for ( int i = 0; i < edges.size(); i++ ){
 		branchDistance += edges[i].distance;
 		// nextBranchDistance += edges[i].distance;
@@ -220,35 +221,37 @@ void InstructionGenerator::requestSpeech(){
 	bool finalannounceFirst = edgesToAnnounce.size() > 0;
 	bool preannounceSecond = edgesToAnnounce.size() > 1;
 
-	// A couple of circumstances that prevent the current edge from being (pre)announced
+	// A couple of circumstances that prevent the first branch from being (pre)announced
 	if ( !edges[firstEdgeToAnnounce].speechRequired ){
 		preannounceFirst = false;
 		finalannounceFirst = false;
-		qDebug() << "The current edge does not require any speech output.";
+		qDebug() << "First branch does not require any speech output.";
 	}
 	else if ( edges[firstEdgeToAnnounce].preAnnounced ){
 		preannounceFirst = false;
-		qDebug() << "The current edge already got preannounced.";
+		qDebug() << "First branch already got preannounced.";
 	}
 	else if ( edges[firstEdgeToAnnounce].announced ){
 		finalannounceFirst = false;
-		qDebug() << "The current edge already got announced.";
+		qDebug() << "First branch already got announced.";
 	}
 	if ( edges[firstEdgeToAnnounce].announced ){
 		finalannounceFirst = false;
-		qDebug() << "The current edge already got announced.";
+		qDebug() << "First branch already got announced.";
 	}
-	if ( edges[firstEdgeToAnnounce].distance > announceDistance1st ){
+	if ( announceDistance1st < announceDistance2nd *3 ){
 		preannounceFirst = false;
-		qDebug() << "The current edge's preannounce distance was not reached yet.";
+		qDebug() << "First branch distance is too short for being preannounced.";
 	}
-	if ( edges[firstEdgeToAnnounce].distance > announceDistance2nd ){
+	if ( branchDistances[0] > announceDistance1st ){
+		preannounceFirst = false;
+		preannounceSecond = false;
+		qDebug() << "First branch's preannounce distance was not reached yet.";
+	}
+	if ( branchDistances[0] > announceDistance2nd ){
 		finalannounceFirst = false;
-		qDebug() << "The current edge's announce distance was not reached yet.";
-	}
-	if ( announceDistance1st < announceDistance2nd /* times 3*/ ){
-		preannounceFirst = false;
-		qDebug() << "The current edge is too short for being preannounced.";
+		preannounceSecond = false;
+		qDebug() << "First branch's announce distance was not reached yet.";
 	}
 
 	// A couple of circumstances that prevent the next edge from being announced
@@ -262,22 +265,22 @@ void InstructionGenerator::requestSpeech(){
 	}
 	if ( preannounceFirst ){
 		preannounceSecond = false;
-		qDebug() << "A possibly available second branch will not be preannounced as the current edge gets preannounced.";
+		qDebug() << "A possibly available second branch will not be preannounced as the first branch gets preannounced.";
 	}
 
 	QStringList instructions;
 	// qDebug() << edges[0].preAnnounced << edges[0].announced;
 	if ( preannounceFirst || finalannounceFirst ){
-		instructions.append( m_distanceFilenames[distanceFileindex( edges[0].distance )] );
+		instructions.append( m_distanceFilenames[distanceFileindex( branchDistances[0] )] );
 		instructions.append( edges[firstEdgeToAnnounce].instructionFilename );
 	}
 	if ( preannounceFirst ){
 		edges[firstEdgeToAnnounce].preAnnounced = true;
-		qDebug() << "Current edge being preannounced.";
+		qDebug() << "First branch being preannounced.";
 	}
-	if ( finalannounceFirst ){
+	if ( finalannounceFirst && !preannounceFirst ){
 		edges[firstEdgeToAnnounce].announced = true;
-		qDebug() << "Current edge being announced.";
+		qDebug() << "First branch being announced.";
 	}
 	if ( preannounceSecond ){
 		// Append something like "After the first turn…"
@@ -285,7 +288,7 @@ void InstructionGenerator::requestSpeech(){
 		instructions.append( m_distanceFilenames[distanceFileindex( edges[nextEdgeToAnnounce].distance )] );
 		instructions.append( edges[nextEdgeToAnnounce].instructionFilename );
 		edges[nextEdgeToAnnounce].preAnnounced = true;
-		qDebug() << "Forecast edge being announced.";
+		qDebug() << "Second branch being announced.";
 	}
 
 	if ( instructions.size() > 0 ){

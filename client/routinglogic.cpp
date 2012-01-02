@@ -320,7 +320,9 @@ void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 	else if ( oppositeHeading && !sourceNearRoute ){
 		d->source = coordinate;
 		computeRoute();
-		emit routeChanged();
+		// Already happens in computeRoute()
+		// TODO: emit routeRecomputed() instead?
+		// emit routeChanged();
 	}
 	else if ( !oppositeHeading ){
 		truncateRoute( nodeToKeep );
