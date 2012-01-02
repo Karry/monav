@@ -7,9 +7,6 @@ QT += svg xml
 DESTDIR = ../bin
 TARGET = monav
 
-# Activate this to run tests
-# DEFINES += CPPUNITLITE
-
 # Enable this to compile on desktop machines without QtMobility installed
 # DEFINES += NOQTMOBILE
 
@@ -105,25 +102,6 @@ FORMS += \
 	placechooser.ui \
 	streetchooser.ui \
 	tripinfodialog.ui
-
-# TDD stuff
-	SOURCES += \
-	../CppUnitLite/TestResult.cpp \
-	../CppUnitLite/TestRegistry.cpp \
-	../CppUnitLite/TestHarness.cpp \
-	../CppUnitLite/Test.cpp \
-	../CppUnitLite/SimpleString.cpp \
-	../CppUnitLite/Failure.cpp \
-	../CppUnitLite/CppUnitLite.cpp
-
-HEADERS  += \
-	../CppUnitLite/TestResult.h \
-	../CppUnitLite/TestRegistry.h \
-	../CppUnitLite/TestHarness.h \
-	../CppUnitLite/Test.h \
-	../CppUnitLite/SimpleString.h \
-	../CppUnitLite/Failure.h \
-	../CppUnitLite/CppUnitLite.h
 
 LIBS += -L../bin/plugins_client -lmapnikrendererclient -lcontractionhierarchiesclient -lgpsgridclient -losmrendererclient -lunicodetournamenttrieclient -lqtilerendererclient
 

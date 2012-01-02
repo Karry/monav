@@ -71,22 +71,6 @@ protected:
 	QStringList m_instructionStrings;
 	QString m_language;
 	bool m_speechEnabled;
-
-#ifdef CPPUNITLITE
-	void createInsideRoundabout();
-	void createStraightforwardTurn();
-	void createLeaveMotorway();
-	void createAnnounceRoundabout();
-	void createDontSpeakAgain();
-	void createMotorwayLinkBranch();
-	// Scheme: group, test, base class
-	friend class AudioIndex_InsideRoundaboutTest;
-	friend class AudioIndex_StraightforwardTurnTest;
-	friend class AudioIndex_LeaveMotorwayTest;
-	friend class AudioIndex_MotorwayLinkBranchTest;
-	friend class AudioIndex_AnnounceRoundaboutTest;
-	friend class SpeechRequired_DontSpeakAgainTest;
-#endif // CPPUNITLITE
 };
 
 #endif // INSTRUCTIONGENERATOR_H

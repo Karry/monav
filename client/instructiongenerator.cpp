@@ -353,7 +353,7 @@ double InstructionGenerator::announceDistance( double currentSpeed, int seconds 
 
 void InstructionGenerator::instructions( QStringList* labels, QStringList* icons, int instructionAmount )
 {
-
+	// TODO: Portions of this code do similar things as speechRequest() which should be unified.
 	QVector< IRouter::Edge >& edges = RoutingLogic::instance()->edges();
 	if ( edges.size() < 1 ){
 		return;

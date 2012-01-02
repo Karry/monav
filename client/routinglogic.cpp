@@ -471,8 +471,6 @@ void RoutingLogic::computeRoute()
 		calculateEdgeDistance( i );
 	}
 
-	// TODO: The edges distances are calculated by InstructionGenerator::createInstructions(),
-	// which should better happen here using calculateEdgeDistance( int edgeIndex )
 	InstructionGenerator::instance()->createInstructions( d->pathEdges, d->pathNodes );
 	emit routeChanged();
 }
