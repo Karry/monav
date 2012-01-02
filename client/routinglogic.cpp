@@ -282,7 +282,7 @@ void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 	double currentDistance = std::numeric_limits< double >::max();
 	UnsignedCoordinate coordOnNearestSeg;
 	UnsignedCoordinate currentCoord;
-	int nodeToKeep = -1;
+	int nodeToKeep = 0;
 
 	for ( int i = 0; i < d->pathNodes.size() -1; i++ ){
 		currentCoord = coordOnSegment( i, coordinate );
