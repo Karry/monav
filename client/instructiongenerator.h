@@ -57,7 +57,11 @@ protected:
 
 	InstructionGenerator();
 	int direction( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third );
-	double speechDistance();
+	// int nextEdgeToAnnounce();
+	double announceDistanceFirst();
+	double announceDistanceSecond();
+	double currentSpeed();
+	double announceDistance( double speed, int seconds );
 	QString distanceString( double distance );
 	int distanceFileindex(double distance);
 	void initialize();

@@ -57,6 +57,7 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 		edges[i].exitNumber = -1;
 		edges[i].distance = 0;
 		edges[i].speechRequired = false;
+		edges[i].announced = false;
 		edges[i].preAnnounced = false;
 
 		for ( int node = endNode; node < endNode + edges[i].length; node++ ){
@@ -165,80 +166,138 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 
 
 void InstructionGenerator::requestSpeech(){
-	// This is called by routinglogic::routechanged.
-	// TODO: Make the reference to the route a member variable
+	// This method is called by routinglogic::routeChanged().
 
 	if ( !m_speechEnabled ){
 		return;
 	}
 
+	// TODO: Make the reference to the route a member variable
 	QVector< IRouter::Edge >& edges = RoutingLogic::instance()->edges();
 	if ( edges.size() < 1 ){
 		return;
 	}
 
-	if ( edges[0].distance > speechDistance() ){
-		return;
-	}
+	double announceDistance1st = announceDistanceFirst();
+	double announceDistance2nd = announceDistanceSecond();
+	// qDebug() << announceDistance1st << announceDistance2nd;
 
-	// Anticipation is necessary as some edges might be very short,
-	// resulting in instructions spoken too late.
-	int nextEdgeToAnnounce = 0;
+	// Anticipation of edges past the current one
 	double nextBranchDistance = edges[0].distance;
-
+	int nextEdgeToAnnounce = 0;
 	for ( int i = 1; i < edges.size(); i++ ){
 		nextBranchDistance += edges[i].distance;
-		if ( nextBranchDistance > speechDistance() || edges[i].preAnnounced ){
-			nextEdgeToAnnounce = 0;
-			nextBranchDistance = 0.0;
-			break;
-		}
-		else if ( edges[i].speechRequired && nextBranchDistance < speechDistance() ){
+		if ( edges[i].speechRequired ){
 			nextEdgeToAnnounce = i;
+		}
+		// Avoid traversing the complete route
+		if ( nextBranchDistance > announceDistance1st ){
+			nextBranchDistance = 0.0;
+			nextEdgeToAnnounce = 0;
 			break;
 		}
+	}
+
+	bool preannounceCurrent = true;
+	bool announceCurrent = true;
+	bool preannounceNext = true;
+
+	// A couple of circumstances that prevent the current edge from being (pre)announced
+	if ( !edges[0].speechRequired ){
+		preannounceCurrent = false;
+		announceCurrent = false;
+		qDebug() << "The current edge does not require any speech output.";
+	}
+	else if ( edges[0].preAnnounced ){
+		preannounceCurrent = false;
+		qDebug() << "The current edge already got preannounced.";
+	}
+	else if ( edges[0].announced ){
+		announceCurrent = false;
+		qDebug() << "The current edge already got announced.";
+	}
+	if ( edges[0].announced ){
+		announceCurrent = false;
+		qDebug() << "The current edge already got announced.";
+	}
+	if ( edges[0].distance > announceDistance1st ){
+		preannounceCurrent = false;
+		qDebug() << "The current edge's preannounce distance was not reached yet.";
+	}
+	if ( edges[0].distance > announceDistance2nd ){
+		announceCurrent = false;
+		qDebug() << "The current edge's announce distance was not reached yet.";
+	}
+	if ( announceDistance1st < announceDistance2nd /* times 3*/ ){
+		preannounceCurrent = false;
+		qDebug() << "The current edge is too short for being preannounced.";
+	}
+
+	// A couple of circumstances that prevent the next edge from being announced
+	if ( nextEdgeToAnnounce < 1 ){
+		preannounceNext = false;
+		qDebug() << "Forecast edge not available yet.";
+	}
+	else if ( edges[nextEdgeToAnnounce].preAnnounced ){
+		preannounceNext = false;
+		qDebug() << "Forecast edge was already preannounced.";
+	}
+	if ( preannounceCurrent ){
+		preannounceNext = false;
+		qDebug() << "A possibly available forecast edge will not be preannounced as the current edge gets preannounced.";
 	}
 
 	QStringList instructions;
-	if ( edges[0].speechRequired ){
+	// qDebug() << edges[0].preAnnounced << edges[0].announced;
+	if ( preannounceCurrent || announceCurrent ){
 		instructions.append( m_distanceFilenames[distanceFileindex( edges[0].distance )] );
 		instructions.append( edges[0].instructionFilename );
-		edges[0].speechRequired = false;
 	}
-	if ( nextEdgeToAnnounce > 0 && !edges[nextEdgeToAnnounce].preAnnounced ){
-		// Avoid to announce one single turn twice
-		// TODO: Announce twice in case the distance is greater than x meters
-		if ( instructions.size() < 1 ){
-			edges[nextEdgeToAnnounce].speechRequired = false;
-		}
-		if ( instructions.size() > 0 ){
-			// Announce something like "After the first turn..."
-			instructions.append( m_audioFilenames[22] );
-		}
+	if ( preannounceCurrent ){
+		edges[0].preAnnounced = true;
+		qDebug() << "Current edge being preannounced.";
+	}
+	if ( announceCurrent ){
+		edges[0].announced = true;
+		qDebug() << "Current edge being announced.";
+	}
+	if ( preannounceNext ){
+		// Append something like "After the first turn…"
+		instructions.append( m_audioFilenames[22] );
 		instructions.append( m_distanceFilenames[distanceFileindex( edges[nextEdgeToAnnounce].distance )] );
 		instructions.append( edges[nextEdgeToAnnounce].instructionFilename );
 		edges[nextEdgeToAnnounce].preAnnounced = true;
+		qDebug() << "Forecast edge being announced.";
 	}
 
-	if ( instructions.size() == 0 ){
-		return;
+	if ( instructions.size() > 0 ){
+		// Add announcement jingle
+		instructions.prepend( m_audioFilenames[21] );
+		Audio::instance()->speak( instructions );
 	}
-
-	instructions.prepend( m_audioFilenames[21] );
-	qDebug() << "Sending instructions to audio out";
-	Audio::instance()->speak( instructions );
-	qDebug() << "\nSpeech request processed.";
+	else{
+				qDebug() << "No instructions have been generated.";
+	}
+	qDebug() << "\n--------";
 }
 
 
-double InstructionGenerator::speechDistance() {
+double InstructionGenerator::currentSpeed() {
+	// Speed is in kilometers per hour.
+	// In case there is no GPS signal, -1 is returned.
+	double currentSpeed = RoutingLogic::instance()->groundSpeed();
+	if ( currentSpeed < 0 ){
+		currentSpeed = 100;
+	}
+	return currentSpeed;
+}
 
-	const RoutingLogic::GPSInfo& gpsInfo = RoutingLogic::instance()->gpsInfo();
-	double currentSpeed = 0;
+
+double InstructionGenerator::announceDistanceFirst() {
 
 	// Speed is in kilometers per hour.
-	// In case there is no GPS signal, emulate 50km/H.
-	currentSpeed = gpsInfo.position.IsValid() ? gpsInfo.groundSpeed : 100;
+	// In case there is no GPS signal, -1 is returned.
+	double speed = currentSpeed();
 
 	// Some possibly reasonable values (0.2 seconds per km/h):
 	//  1s	0.27m	1.4m/s	5km/h	pedestrian
@@ -251,16 +310,30 @@ double InstructionGenerator::speechDistance() {
 	// 40s	2222m	56m/s	200km/h	highways
 
 	// 0.2 seconds per km/h, but at least 3 seconds respectively 10m before a branch
-	double speechTime = currentSpeed * 0.2;
-	if ( speechTime < 3.0 ){
-		speechTime = 3.0;
+	double seconds = speed * 0.2;
+	if ( seconds < 5.0 ){
+		seconds = 5.0;
 	}
-	double speechDistance = currentSpeed * speechTime * 1000 / 3600;
+
+	return announceDistance( speed, seconds );
+}
+
+
+double InstructionGenerator::announceDistanceSecond() {
+	return announceDistance( currentSpeed(), 5.0 );
+}
+
+
+double InstructionGenerator::announceDistance( double currentSpeed, int seconds ) {
+
+	// Speed is in kilometers per hour.
+	double speechDistance = currentSpeed * seconds * 1000 / 3600;
 	if ( speechDistance < 10 ){
 		speechDistance = 10;
 	}
 
-qDebug() << "Speed, speech distance:" << currentSpeed << speechDistance;
+// qDebug() << "Speed, speech distance:" << currentSpeed << speechDistance;
+
 	return speechDistance;
 }
 

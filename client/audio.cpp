@@ -71,6 +71,9 @@ void Audio::initialize()
 
 void Audio::speak( QStringList fileNames )
 {
+	if ( fileNames.size() == 0 ){
+		return;
+	}
 	m_audioFilenames.append( fileNames );
 	if ( !m_audioFile.isOpen() && m_audioFilenames.size() > 0 ){
 		process( m_audioFilenames[0] );

@@ -66,6 +66,7 @@ public:
 		double distance;
 		bool speechRequired;
 		bool preAnnounced;
+		bool announced;
 		QString typeString;
 		QString nameString;
 	};
