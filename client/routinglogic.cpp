@@ -366,9 +366,19 @@ void RoutingLogic::truncateRoute( int nodeToKeep )
 
 
 void RoutingLogic::calculateEdgeDistance( int index ){
-	// TODO: Recyle this for all edges
-	d->pathEdges[index].distance = 0;
-	for ( int i = 0; i < d->pathEdges[index].length; i++ ){
+
+	assert( index < d->pathEdges.size() );
+
+	int firstNodeIndex = 0;
+	int lastNodeIndex = 0;
+
+	for ( int i = 0; i <= index; i++ ){
+		lastNodeIndex += d->pathEdges[i].length;
+		firstNodeIndex = lastNodeIndex - d->pathEdges[i].length;
+	}
+
+	d->pathEdges[index].distance = 0.0;
+	for ( int i = firstNodeIndex; i < lastNodeIndex; i++ ){
 		d->pathEdges[index].distance += d->pathNodes[i].coordinate.ToGPSCoordinate().ApproximateDistance( d->pathNodes[i +1].coordinate.ToGPSCoordinate() );
 	}
 }
@@ -455,6 +465,10 @@ void RoutingLogic::computeRoute()
 			d->travelTime = -1;
 			break;
 		}
+	}
+
+	for ( int i = 0; i < d->pathEdges.size(); i++ ){
+		calculateEdgeDistance( i );
 	}
 
 	// TODO: The edges distances are calculated by InstructionGenerator::createInstructions(),

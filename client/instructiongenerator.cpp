@@ -52,17 +52,12 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 	QString nameString;
 	int endNode = 0;
 
-	// Compute edges' lenths, directions, type and name strings.
+	// Compute edges' directions, type and name strings.
 	for ( int i = 0; i < edges.size(); i++ ){
 		edges[i].exitNumber = -1;
-		edges[i].distance = 0;
 		edges[i].speechRequired = false;
 		edges[i].announced = false;
 		edges[i].preAnnounced = false;
-
-		for ( int node = endNode; node < endNode + edges[i].length; node++ ){
-			 edges[i].distance += nodes[ node ].coordinate.ToGPSCoordinate().ApproximateDistance( nodes[ node +1 ].coordinate.ToGPSCoordinate() );
-		}
 
 		endNode += edges[i].length;
 		if ( i < edges.size() -1 ){
@@ -366,19 +361,19 @@ void InstructionGenerator::instructions( QStringList* labels, QStringList* icons
 
 	QStringList instructions;
 	QStringList images;
-	double distance = 0;
+	double distance = 0.0;
 	int amount = 0;
 
 	for ( int i = 0; i < edges.size(); i++ ){
 		distance += edges[i].distance;
 		if ( edges[i].instructionString != "" ){
 			instructions.append( edges[i].instructionString );
-			images.append( edges[i].instructionIcon );
 			if ( i < edges.size() -1 && edges[i +1].nameString != "" && edges[i +1].typeString != "roundabout" ){
 				instructions.last().append( " " ).append( tr( "into %1" ).arg( edges[i +1].nameString ) );
 			}
 			instructions.last().append( distanceString( distance ) );
-			distance = 0;
+			images.append( edges[i].instructionIcon );
+			distance = 0.0;
 			amount++;
 			if ( amount == instructionAmount ){
 				break;
