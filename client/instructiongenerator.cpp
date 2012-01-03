@@ -177,6 +177,7 @@ void InstructionGenerator::requestSpeech(){
 	double announceDistance2nd = announceDistanceSecond();
 
 	// Determine the next two edges to announce
+	int exitAmount = 0;
 	double branchDistance = 0;
 	QVector<int> edgesToAnnounce;
 	QVector<double> branchDistances;
@@ -185,6 +186,12 @@ void InstructionGenerator::requestSpeech(){
 		if ( edges[i].speechRequired ){
 			edgesToAnnounce.append( i );
 			branchDistances.append( branchDistance );
+			edges[i].exitNumber = exitAmount;
+			branchDistance = 0;
+			exitAmount = 0;
+		}
+		if ( edges[i].branchingPossible ){
+			exitAmount++;
 		}
 		// Avoid traversing the complete route
 		if ( branchDistance > announceDistance1st ){
@@ -269,6 +276,15 @@ void InstructionGenerator::requestSpeech(){
 	if ( preannounceFirst ){
 		edges[firstEdgeToAnnounce].preAnnounced = true;
 		qDebug() << "First branch being preannounced.";
+
+		int crossingAmount = edges[firstEdgeToAnnounce].exitNumber;
+		qDebug() << crossingAmount;
+		if( crossingAmount > 0 && crossingAmount < 5 ){
+			instructions.append( m_crossingFilenames[ crossingAmount ] );
+		}
+		else if( crossingAmount >= 5 ){
+			instructions.append( m_crossingFilenames[ 0 ] );
+		}
 	}
 	if ( finalannounceFirst && !preannounceFirst ){
 		edges[firstEdgeToAnnounce].announced = true;
@@ -276,8 +292,8 @@ void InstructionGenerator::requestSpeech(){
 	}
 	if ( preannounceSecond ){
 		// Append something like "After the first turn…"
-		instructions.append( m_audioFilenames[22] );
-		instructions.append( m_distanceFilenames[distanceFileindex( branchDistances[0] )] );
+		instructions.append( m_audioFilenames[ 22 ] );
+		instructions.append( m_distanceFilenames[distanceFileindex( branchDistances[ 0 ] )] );
 		instructions.append( edges[nextEdgeToAnnounce].instructionFilename );
 		edges[nextEdgeToAnnounce].preAnnounced = true;
 		qDebug() << "Second branch being announced.";
@@ -285,7 +301,7 @@ void InstructionGenerator::requestSpeech(){
 
 	if ( instructions.size() > 0 ){
 		// Add announcement jingle
-		instructions.prepend( m_audioFilenames[21] );
+		instructions.prepend( m_audioFilenames[ 21 ] );
 		Audio::instance()->speak( instructions );
 	}
 }
@@ -590,7 +606,13 @@ void InstructionGenerator::initialize()
 	m_distanceFilenames.append( "instructions-distance-800m" );
 	m_distanceFilenames.append( "instructions-distance-1km" );
 	m_distanceFilenames.append( "instructions-distance-2km" );
-	
+
+	m_crossingFilenames.append( "instructions-crossing-many" );
+	m_crossingFilenames.append( "instructions-crossing-1" );
+	m_crossingFilenames.append( "instructions-crossing-2" );
+	m_crossingFilenames.append( "instructions-crossing-3" );
+	m_crossingFilenames.append( "instructions-crossing-4" );
+
 	QLocale DefaultLocale;
 	m_language = DefaultLocale.name();
 	m_language.truncate( 2 );
@@ -607,6 +629,13 @@ void InstructionGenerator::initialize()
 		m_audioFilenames[i].prepend( "/" );
 		m_audioFilenames[i].prepend( m_language );
 		m_audioFilenames[i].prepend( ":/audio/" );
+	}
+
+	for ( int i = 0; i < m_crossingFilenames.size(); i++ ){
+		m_crossingFilenames[i].append( ".wav" );
+		m_crossingFilenames[i].prepend( "/" );
+		m_crossingFilenames[i].prepend( m_language );
+		m_crossingFilenames[i].prepend( ":/audio/" );
 	}
 
 	for ( int i = 0; i < m_iconFilenames.size(); i++ ){

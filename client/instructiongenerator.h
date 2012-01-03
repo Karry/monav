@@ -67,6 +67,7 @@ protected:
 	void initialize();
 	QStringList m_audioFilenames;
 	QStringList m_distanceFilenames;
+	QStringList m_crossingFilenames;
 	QStringList m_iconFilenames;
 	QStringList m_instructionStrings;
 	QString m_language;

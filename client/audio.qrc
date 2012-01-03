@@ -34,6 +34,12 @@
         <file>audio/en/instructions-distance-1km.wav</file>
         <file>audio/en/instructions-distance-2km.wav</file>
 
+        <file>audio/en/instructions-crossing-1.wav</file>
+        <file>audio/en/instructions-crossing-2.wav</file>
+        <file>audio/en/instructions-crossing-3.wav</file>
+        <file>audio/en/instructions-crossing-4.wav</file>
+        <file>audio/en/instructions-crossing-many.wav</file>
+
         <file>audio/de/instructions-announce.wav</file>
         <file>audio/de/instructions-and-then.wav</file>
         <file>audio/de/instructions-head-straightforward.wav</file>
@@ -67,5 +73,11 @@
         <file>audio/de/instructions-distance-800m.wav</file>
         <file>audio/de/instructions-distance-1km.wav</file>
         <file>audio/de/instructions-distance-2km.wav</file>
+
+        <file>audio/de/instructions-crossing-1.wav</file>
+        <file>audio/de/instructions-crossing-2.wav</file>
+        <file>audio/de/instructions-crossing-3.wav</file>
+        <file>audio/de/instructions-crossing-4.wav</file>
+        <file>audio/de/instructions-crossing-many.wav</file>
     </qresource>
 </RCC>
