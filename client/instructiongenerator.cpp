@@ -54,7 +54,7 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 
 	// Compute edges' directions, type and name strings.
 	for ( int i = 0; i < edges.size(); i++ ){
-		edges[i].exitNumber = -1;
+		edges[i].exitNumber = 0;
 		edges[i].speechRequired = false;
 		edges[i].announced = false;
 		edges[i].preAnnounced = false;
@@ -208,6 +208,7 @@ void InstructionGenerator::requestSpeech(){
 	}
 
 	assert( edgesToAnnounce.size() == branchDistances.size() );
+
 	int firstEdgeToAnnounce = edgesToAnnounce[0];
 	int nextEdgeToAnnounce = 0;
 	if( edgesToAnnounce.size() > 1 ){
@@ -220,36 +221,29 @@ void InstructionGenerator::requestSpeech(){
 
 	// TODO: The following lines are write only - refactoring required.
 	// A couple of circumstances that prevent the first branch from being (pre)announced
-	if ( !edges[firstEdgeToAnnounce].speechRequired ){
+	if ( branchDistances[0] > announceDistance1st ){
 		preannounceFirst = false;
 		finalannounceFirst = false;
-		qDebug() << "First branch does not require any speech output.";
+		preannounceSecond = false;
+		qDebug() << "First branch's preannounce distance was not reached yet, so nothing to do.";
 	}
-	else if ( edges[firstEdgeToAnnounce].preAnnounced ){
+	else if ( branchDistances[0] <= announceDistance2nd ){
+		preannounceFirst = false;
+		qDebug() << "Approaching the branch, thus dropping the preannouncement.";
+	}
+	if ( edges[edgesToAnnounce[0]].exitNumber > 0 ){
+		finalannounceFirst = false;
+		preannounceSecond = false;
+		qDebug() << "Branching possible before the branch, thus no announcement of current and no preannouncement of the next branch.";
+	}
+
+	if ( edges[firstEdgeToAnnounce].preAnnounced ){
 		preannounceFirst = false;
 		qDebug() << "First branch already got preannounced.";
-	}
-	else if ( edges[firstEdgeToAnnounce].announced ){
-		finalannounceFirst = false;
-		qDebug() << "First branch already got announced.";
 	}
 	if ( edges[firstEdgeToAnnounce].announced ){
 		finalannounceFirst = false;
 		qDebug() << "First branch already got announced.";
-	}
-	if ( announceDistance1st < announceDistance2nd *3 ){
-		preannounceFirst = false;
-		qDebug() << "First branch distance is too short for being preannounced.";
-	}
-	if ( branchDistances[0] > announceDistance1st ){
-		preannounceFirst = false;
-		preannounceSecond = false;
-		qDebug() << "First branch's preannounce distance was not reached yet.";
-	}
-	if ( branchDistances[0] > announceDistance2nd ){
-		finalannounceFirst = false;
-		preannounceSecond = false;
-		qDebug() << "First branch's announce distance was not reached yet.";
 	}
 
 	// A couple of circumstances that prevent the next edge from being announced
@@ -267,17 +261,14 @@ void InstructionGenerator::requestSpeech(){
 	}
 
 	QStringList instructions;
-	// qDebug() << edges[0].preAnnounced << edges[0].announced;
-	if ( preannounceFirst || finalannounceFirst ){
-		instructions.append( m_distanceFilenames[distanceFileindex( branchDistances[0] )] );
-		instructions.append( edges[firstEdgeToAnnounce].instructionFilename );
-	}
 	if ( preannounceFirst ){
 		edges[firstEdgeToAnnounce].preAnnounced = true;
 		qDebug() << "First branch being preannounced.";
+		instructions.append( m_distanceFilenames[distanceFileindex( branchDistances[0] )] );
+		instructions.append( edges[firstEdgeToAnnounce].instructionFilename );
 
+		// TODO: exitNumber can be -1 - maybe the reason for some crash?
 		int crossingAmount = edges[firstEdgeToAnnounce].exitNumber;
-		qDebug() << crossingAmount;
 		if( crossingAmount > 0 && crossingAmount < 5 ){
 			instructions.append( m_crossingFilenames[ crossingAmount ] );
 		}
@@ -285,17 +276,19 @@ void InstructionGenerator::requestSpeech(){
 			instructions.append( m_crossingFilenames[ 0 ] );
 		}
 	}
-	if ( finalannounceFirst && !preannounceFirst ){
+	else if ( finalannounceFirst ){
 		edges[firstEdgeToAnnounce].announced = true;
 		qDebug() << "First branch being announced.";
+		instructions.append( m_audioFilenames[ 22 ] );
+		instructions.append( edges[firstEdgeToAnnounce].instructionFilename );
 	}
 	if ( preannounceSecond ){
-		// Append something like "After the first turn…"
-		instructions.append( m_audioFilenames[ 22 ] );
-		instructions.append( m_distanceFilenames[distanceFileindex( branchDistances[ 1 ] )] );
-		instructions.append( edges[nextEdgeToAnnounce].instructionFilename );
 		edges[nextEdgeToAnnounce].preAnnounced = true;
-		qDebug() << "Second branch being announced.";
+		qDebug() << "Second branch being preannounced.";
+		// Append something like "After the first turn…"
+		instructions.append( m_audioFilenames[ 23 ] );
+		instructions.append( m_distanceFilenames[distanceFileindex( branchDistances[1] )] );
+		instructions.append( edges[nextEdgeToAnnounce].instructionFilename );
 	}
 
 	if ( instructions.size() > 0 ){
@@ -311,7 +304,7 @@ double InstructionGenerator::currentSpeed() {
 	// In case there is no GPS signal, -1 is returned.
 	double currentSpeed = RoutingLogic::instance()->groundSpeed();
 	if ( currentSpeed < 0 ){
-		currentSpeed = 80;
+		currentSpeed = 65;
 	}
 	return currentSpeed;
 }
@@ -344,7 +337,7 @@ double InstructionGenerator::announceDistanceFirst() {
 
 
 double InstructionGenerator::announceDistanceSecond() {
-	return announceDistance( currentSpeed(), 5.0 );
+	return announceDistance( currentSpeed(), 3.0 );
 }
 
 
@@ -355,7 +348,6 @@ double InstructionGenerator::announceDistance( double currentSpeed, int seconds 
 	if ( speechDistance < 20 ){
 		speechDistance = 20;
 	}
-
 	return speechDistance;
 }
 
@@ -595,6 +587,8 @@ void InstructionGenerator::initialize()
 	// index 21
 	m_audioFilenames.append( "instructions-announce" );
 	// index 22
+	m_audioFilenames.append( "instructions-now" );
+	// index 23
 	m_audioFilenames.append( "instructions-and-then" );
 
 	m_distanceFilenames.append( "instructions-distance-now" );
