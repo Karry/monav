@@ -202,13 +202,12 @@ void InstructionGenerator::requestSpeech(){
 		}
 	}
 
-	assert( edgesToAnnounce.size() == branchDistances.size() );
-
 	if( edgesToAnnounce.size() == 0 ){
 		qDebug() << "No branches to announce foreseen\n";
 		return;
 	}
 
+	assert( edgesToAnnounce.size() == branchDistances.size() );
 	int firstEdgeToAnnounce = edgesToAnnounce[0];
 	int nextEdgeToAnnounce = 0;
 	if( edgesToAnnounce.size() > 1 ){
@@ -293,7 +292,7 @@ void InstructionGenerator::requestSpeech(){
 	if ( preannounceSecond ){
 		// Append something like "After the first turn…"
 		instructions.append( m_audioFilenames[ 22 ] );
-		instructions.append( m_distanceFilenames[distanceFileindex( branchDistances[ 0 ] )] );
+		instructions.append( m_distanceFilenames[distanceFileindex( branchDistances[ 1 ] )] );
 		instructions.append( edges[nextEdgeToAnnounce].instructionFilename );
 		edges[nextEdgeToAnnounce].preAnnounced = true;
 		qDebug() << "Second branch being announced.";
