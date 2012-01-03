@@ -277,7 +277,7 @@ void InstructionGenerator::requestSpeech(){
 	if ( preannounceSecond ){
 		// Append something like "After the first turn…"
 		instructions.append( m_audioFilenames[22] );
-		instructions.append( m_distanceFilenames[distanceFileindex( edges[nextEdgeToAnnounce].distance )] );
+		instructions.append( m_distanceFilenames[distanceFileindex( branchDistances[0] )] );
 		instructions.append( edges[nextEdgeToAnnounce].instructionFilename );
 		edges[nextEdgeToAnnounce].preAnnounced = true;
 		qDebug() << "Second branch being announced.";
@@ -288,10 +288,6 @@ void InstructionGenerator::requestSpeech(){
 		instructions.prepend( m_audioFilenames[21] );
 		Audio::instance()->speak( instructions );
 	}
-	else{
-				qDebug() << "No instructions have been generated.";
-	}
-	qDebug() << "\n--------";
 }
 
 
@@ -341,11 +337,9 @@ double InstructionGenerator::announceDistance( double currentSpeed, int seconds 
 
 	// Speed is in kilometers per hour.
 	double speechDistance = currentSpeed * seconds * 1000 / 3600;
-	if ( speechDistance < 10 ){
-		speechDistance = 10;
+	if ( speechDistance < 20 ){
+		speechDistance = 20;
 	}
-
-// qDebug() << "Speed, speech distance:" << currentSpeed << speechDistance;
 
 	return speechDistance;
 }
@@ -353,7 +347,8 @@ double InstructionGenerator::announceDistance( double currentSpeed, int seconds 
 
 void InstructionGenerator::instructions( QStringList* labels, QStringList* icons, int instructionAmount )
 {
-	// TODO: Portions of this code do similar things as speechRequest() which should be unified.
+	// TODO: Portions of this code do similar things as speechRequest()
+	// which should be unified to ensure the on-screen instructions are in sync with the speech instructions.
 	QVector< IRouter::Edge >& edges = RoutingLogic::instance()->edges();
 	if ( edges.size() < 1 ){
 		return;
