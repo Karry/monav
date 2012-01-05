@@ -41,12 +41,12 @@ public:
 public slots:
 
 	void initialize();
-	void finishedPlayback( QAudio::State );
+	void stateChanged( QAudio::State );
 
 protected:
 
 	explicit Audio( QObject* parent = 0 );
-	void process( QString audioFilename );
+	void process();
 	QAudioFormat m_format;
 	QFile m_audioFile;
 	QAudioOutput* m_audioOut;

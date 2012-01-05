@@ -39,7 +39,7 @@ Audio* Audio::instance()
 
 void Audio::initialize()
 {
-	m_audioOut = 0L;
+	// m_audioOut = 0L;
 	// The files are RIFF (little-endian), WAVE audio, Microsoft PCM, Signed 16 bit, stereo 8000 Hz
 	m_format.setFrequency(8000);
 	m_format.setChannels(2);
@@ -67,55 +67,51 @@ void Audio::initialize()
 		qDebug()<<"Sample Sizes:" << deviceInfo.supportedSampleSizes();
 		qDebug()<<"Sample Types:" << deviceInfo.supportedSampleTypes();
 	}
+	m_audioOut = new QAudioOutput( m_format, this );
+	connect(m_audioOut,SIGNAL(stateChanged(QAudio::State)),SLOT(stateChanged(QAudio::State)));
 }
 
 void Audio::speak( QStringList fileNames )
 {
-	if ( fileNames.size() == 0 ){
-		return;
-	}
 	m_audioFilenames.append( fileNames );
-	if ( !m_audioFile.isOpen() && m_audioFilenames.size() > 0 ){
-		process( m_audioFilenames[0] );
-		m_audioFilenames.pop_front();
-	}
+	process();
 }
 
 
-void Audio::process( QString audioFilename )
+void Audio::process()
 {
-	m_audioFile.setFileName( audioFilename );
+	if ( m_audioFilenames.size() < 1 ){
+		qDebug() << "No filenames to process.";
+		return;
+	}
+	else if ( m_audioOut->state() != QAudio::StoppedState ){
+		qDebug() << "QAudioOut still seems to be busy.";
+		return;
+	}
+	else if ( m_audioFile.isOpen() ){
+		qDebug() << "Cannot set another filename as the previous file still is open.";
+		return;
+	}
+
+	m_audioFile.setFileName( m_audioFilenames[0] );
+	m_audioFilenames.pop_front();
+
 	if ( !m_audioFile.open( QIODevice::ReadOnly ) ){
-		qDebug() << "Cannot open file" << audioFilename;
-		if ( m_audioFilenames.size() > 0 ){
-			m_audioFilenames.pop_front();
-			if ( m_audioFilenames.size() > 0 ){
-				process( m_audioFilenames[0] );
-			}
-		}
+		qDebug() << "Cannot open file" << m_audioFilenames[0];
+		return;
 	}
-
-	// See the audio output example shipped with QT 4.7
-	if ( m_audioOut != 0L ){
-		delete m_audioOut;
-		m_audioOut = 0L;
-	}
-
-	m_audioOut = new QAudioOutput( m_format, this );
-	connect(m_audioOut,SIGNAL(stateChanged(QAudio::State)),SLOT(finishedPlayback(QAudio::State)));
 	m_audioOut->start( &m_audioFile );
 }
 
 
-void Audio::finishedPlayback( QAudio::State state )
+void Audio::stateChanged( QAudio::State state )
 {
 	if ( state == QAudio::IdleState ){
 		m_audioOut->stop();
 		m_audioFile.close();
-		if ( m_audioFilenames.size() > 0 ){
-			process( m_audioFilenames[0] );
-			m_audioFilenames.pop_front();
-		}
+		process();
 	}
 }
+
+
 
