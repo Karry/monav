@@ -227,7 +227,7 @@ void InstructionGenerator::requestSpeech(){
 		preannounceSecond = false;
 		qDebug() << "First branch's preannounce distance was not reached yet, so nothing to do.";
 	}
-	else if ( branchDistances[0] <= announceDistance2nd ){
+	else if ( branchDistances[0] <= announceDistance2nd *2 ){
 		preannounceFirst = false;
 		qDebug() << "Approaching the branch, thus dropping the preannouncement.";
 	}
@@ -339,7 +339,7 @@ double InstructionGenerator::announceDistanceFirst() {
 
 
 double InstructionGenerator::announceDistanceSecond() {
-	return announceDistance( currentSpeed(), 3.0 );
+	return announceDistance( currentSpeed(), 8.0 );
 }
 
 
