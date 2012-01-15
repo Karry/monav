@@ -39,7 +39,6 @@ Audio* Audio::instance()
 
 void Audio::initialize()
 {
-	// m_audioOut = 0L;
 	// The files are RIFF (little-endian), WAVE audio, Microsoft PCM, Signed 16 bit, stereo 8000 Hz
 	m_format.setFrequency(8000);
 	m_format.setChannels(2);
@@ -113,10 +112,3 @@ void Audio::stateChanged( QAudio::State state )
 	}
 }
 
-
-/*
-QAudio::ActiveState	0	Audio data is being processed, this state is set after start() is called and while audio data is available to be processed.
-QAudio::SuspendedState	1	The audio device is in a suspended state, this state will only be entered after suspend() is called.
-QAudio::StoppedState	2	The audio device is closed, not processing any audio data
-QAudio::IdleState	3	The QIODevice passed in has no data and audio system's buffer is empty, this state is set after start() is called and while no audio data is available to be processed.
-*/
