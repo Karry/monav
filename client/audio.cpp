@@ -81,15 +81,6 @@ void Audio::speak( QStringList fileNames )
 void Audio::process()
 {
 	if ( m_audioFilenames.size() < 1 ){
-		qDebug() << "No filenames to process.";
-		return;
-	}
-	else if ( m_audioOut->state() != QAudio::StoppedState ){
-		qDebug() << "QAudioOut still seems to be busy.";
-		return;
-	}
-	else if ( m_audioFile.isOpen() ){
-		qDebug() << "Cannot set another filename as the previous file still is open.";
 		return;
 	}
 
@@ -97,21 +88,35 @@ void Audio::process()
 	m_audioFilenames.pop_front();
 
 	if ( !m_audioFile.open( QIODevice::ReadOnly ) ){
-		qDebug() << "Cannot open file" << m_audioFilenames[0];
 		return;
 	}
-	m_audioOut->start( &m_audioFile );
+
+	if ( m_audioOut->state() == QAudio::StoppedState ){
+		m_audioOut->start( &m_audioFile );
+	}
+	else if ( m_audioOut->state() == QAudio::SuspendedState ){
+		m_audioOut->resume();
+	}
 }
 
 
 void Audio::stateChanged( QAudio::State state )
 {
 	if ( state == QAudio::IdleState ){
-		m_audioOut->stop();
 		m_audioFile.close();
-		process();
+		if ( m_audioFilenames.size() < 1 ){
+			m_audioOut->stop();
+		}
+		else {
+			process();
+		}
 	}
 }
 
 
-
+/*
+QAudio::ActiveState	0	Audio data is being processed, this state is set after start() is called and while audio data is available to be processed.
+QAudio::SuspendedState	1	The audio device is in a suspended state, this state will only be entered after suspend() is called.
+QAudio::StoppedState	2	The audio device is closed, not processing any audio data
+QAudio::IdleState	3	The QIODevice passed in has no data and audio system's buffer is empty, this state is set after start() is called and while no audio data is available to be processed.
+*/

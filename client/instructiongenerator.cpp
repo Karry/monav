@@ -294,10 +294,10 @@ void InstructionGenerator::requestSpeech(){
 	if ( instructions.size() > 0 ){
 		// Add announcement jingle
 		instructions.prepend( m_audioFilenames[ 21 ] );
-		qDebug() << "About to pass the filenames to Audio out.";
+		// qDebug() << "About to pass the filenames to Audio out.";
 		Audio::instance()->speak( instructions );
 	}
-qDebug() << "requestSpeech() passed successfully.\n----\n";
+// qDebug() << "requestSpeech() passed successfully.\n----\n";
 }
 
 
@@ -339,7 +339,7 @@ double InstructionGenerator::announceDistanceFirst() {
 
 
 double InstructionGenerator::announceDistanceSecond() {
-	return announceDistance( currentSpeed(), 8.0 );
+	return announceDistance( currentSpeed(), 8 );
 }
 
 
