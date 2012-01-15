@@ -83,6 +83,10 @@ void Audio::process()
 		return;
 	}
 
+	if ( m_audioFile.isOpen() ){
+		return;
+	}
+
 	m_audioFile.setFileName( m_audioFilenames[0] );
 	m_audioFilenames.pop_front();
 
