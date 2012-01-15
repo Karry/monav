@@ -328,10 +328,10 @@ double InstructionGenerator::announceDistanceFirst() {
 	// 30s	1260m	42m/s	150km/h	highways
 	// 40s	2222m	56m/s	200km/h	highways
 
-	// 0.2 seconds per km/h, but at least 3 seconds respectively 10m before a branch
-	double seconds = speed * 0.2;
-	if ( seconds < 5.0 ){
-		seconds = 5.0;
+	// 0.2 seconds per km/h, but at least x seconds respectively y m before a branch
+	double seconds = speed * 0.3;
+	if ( seconds < 6 ){
+		seconds = 6;
 	}
 
 	return announceDistance( speed, seconds );
@@ -339,7 +339,7 @@ double InstructionGenerator::announceDistanceFirst() {
 
 
 double InstructionGenerator::announceDistanceSecond() {
-	return announceDistance( currentSpeed(), 8 );
+	return announceDistance( currentSpeed(), 5 );
 }
 
 
