@@ -362,6 +362,7 @@ void RoutingLogic::truncateRoute( int nodeToKeep )
 		}
 		d->pathNodes.pop_front();
 	}
+	// TODO: Check whether the destination was reached.
 }
 
 

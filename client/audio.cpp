@@ -79,6 +79,7 @@ void Audio::speak( QStringList fileNames )
 
 void Audio::process()
 {
+	qDebug() << "Start processing files:" << m_audioFile.fileName();
 	if ( m_audioFilenames.size() < 1 ){
 		return;
 	}
@@ -100,6 +101,7 @@ void Audio::process()
 	else if ( m_audioOut->state() == QAudio::SuspendedState ){
 		m_audioOut->resume();
 	}
+	qDebug() << "End processing files.\n----\n\n";
 }
 
 

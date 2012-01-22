@@ -173,8 +173,8 @@ void InstructionGenerator::requestSpeech(){
 		return;
 	}
 
-	double announceDistance1st = announceDistanceFirst();
-	double announceDistance2nd = announceDistanceSecond();
+	double announceDistance1st = announceDistance( 0.3 );
+	double announceDistance2nd = announceDistance( 0.1 );
 
 	// Determine the next two edges to announce
 	int exitAmount = 0;
@@ -203,7 +203,7 @@ void InstructionGenerator::requestSpeech(){
 	}
 
 	if( edgesToAnnounce.size() == 0 ){
-		qDebug() << "No branches to announce foreseen\n";
+		// qDebug() << "No branches to announce foreseen\n";
 		return;
 	}
 
@@ -225,45 +225,45 @@ void InstructionGenerator::requestSpeech(){
 		preannounceFirst = false;
 		finalannounceFirst = false;
 		preannounceSecond = false;
-		qDebug() << "First branch's preannounce distance was not reached yet, so nothing to do.";
+		// qDebug() << "First branch's preannounce distance was not reached yet, so nothing to do.";
 	}
 	else if ( branchDistances[0] <= announceDistance2nd *2 ){
 		preannounceFirst = false;
-		qDebug() << "Approaching the branch, thus dropping the preannouncement.";
+		// qDebug() << "Approaching the branch, thus dropping the preannouncement.";
 	}
 	if ( edges[edgesToAnnounce[0]].exitNumber > 0 ){
 		finalannounceFirst = false;
 		preannounceSecond = false;
-		qDebug() << "Branching possible before the branch, thus no announcement of current and no preannouncement of the next branch.";
+		// qDebug() << "Branching possible before the branch, thus no announcement of current and no preannouncement of the next branch.";
 	}
 
 	if ( edges[firstEdgeToAnnounce].preAnnounced ){
 		preannounceFirst = false;
-		qDebug() << "First branch already got preannounced.";
+		// qDebug() << "First branch already got preannounced.";
 	}
 	if ( edges[firstEdgeToAnnounce].announced ){
 		finalannounceFirst = false;
-		qDebug() << "First branch already got announced.";
+		// qDebug() << "First branch already got announced.";
 	}
 
 	// A couple of circumstances that prevent the next edge from being announced
 	if ( nextEdgeToAnnounce < 1 ){
 		preannounceSecond = false;
-		qDebug() << "Second branch not available yet.";
+		// qDebug() << "Second branch not available yet.";
 	}
 	else if ( edges[nextEdgeToAnnounce].preAnnounced ){
 		preannounceSecond = false;
-		qDebug() << "Second branch was already preannounced.";
+		// qDebug() << "Second branch was already preannounced.";
 	}
 	if ( preannounceFirst ){
 		preannounceSecond = false;
-		qDebug() << "A possibly available second branch will not be preannounced as the first branch gets preannounced.";
+		// qDebug() << "A possibly available second branch will not be preannounced as the first branch gets preannounced.";
 	}
 
 	QStringList instructions;
 	if ( preannounceFirst ){
 		edges[firstEdgeToAnnounce].preAnnounced = true;
-		qDebug() << "First branch being preannounced.";
+		// qDebug() << "First branch being preannounced.";
 		instructions.append( m_distanceFilenames[distanceFileindex( branchDistances[0] )] );
 		instructions.append( edges[firstEdgeToAnnounce].instructionFilename );
 
@@ -278,13 +278,13 @@ void InstructionGenerator::requestSpeech(){
 	}
 	else if ( finalannounceFirst ){
 		edges[firstEdgeToAnnounce].announced = true;
-		qDebug() << "First branch being announced.";
+		// qDebug() << "First branch being announced.";
 		instructions.append( m_audioFilenames[ 22 ] );
 		instructions.append( edges[firstEdgeToAnnounce].instructionFilename );
 	}
 	if ( preannounceSecond ){
 		edges[nextEdgeToAnnounce].preAnnounced = true;
-		qDebug() << "Second branch being preannounced.";
+		// qDebug() << "Second branch being preannounced.";
 		// Append something like "After the first turn…"
 		instructions.append( m_audioFilenames[ 23 ] );
 		instructions.append( m_distanceFilenames[distanceFileindex( branchDistances[1] )] );
@@ -306,12 +306,12 @@ double InstructionGenerator::currentSpeed() {
 	// In case there is no GPS signal, -1 is returned.
 	double currentSpeed = RoutingLogic::instance()->groundSpeed();
 	if ( currentSpeed < 0 ){
-		currentSpeed = 65;
+		currentSpeed = 50;
 	}
 	return currentSpeed;
 }
 
-
+/*
 double InstructionGenerator::announceDistanceFirst() {
 
 	// Speed is in kilometers per hour.
@@ -341,12 +341,13 @@ double InstructionGenerator::announceDistanceFirst() {
 double InstructionGenerator::announceDistanceSecond() {
 	return announceDistance( currentSpeed(), 5 );
 }
+*/
 
+double InstructionGenerator::announceDistance( double secondsPerKmh ) {
 
-double InstructionGenerator::announceDistance( double currentSpeed, int seconds ) {
-
+	// double currentSpeed = currentSpeed();
 	// Speed is in kilometers per hour.
-	double speechDistance = currentSpeed * seconds * 1000 / 3600;
+	double speechDistance = currentSpeed() * secondsPerKmh * 1000 / 3600;
 	if ( speechDistance < 20 ){
 		speechDistance = 20;
 	}
