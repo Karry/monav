@@ -173,8 +173,10 @@ void InstructionGenerator::requestSpeech(){
 		return;
 	}
 
-	double announceDistance1st = announceDistance( 0.3 );
-	double announceDistance2nd = announceDistance( 0.1 );
+	// (Pre)announce a turn x seconds per km/h before the crossing
+	double preannounceDistance = announceDistance( 0.3 );
+	// Speak turn instruction y seconds per km/h before the crossing
+	double instructionDistance = announceDistance( 0.1 );
 
 	// Determine the next two edges to announce
 	int exitAmount = 0;
@@ -194,9 +196,10 @@ void InstructionGenerator::requestSpeech(){
 			exitAmount++;
 		}
 		// Avoid traversing the complete route
-		if ( branchDistance > announceDistance1st ){
+		if ( branchDistance > preannounceDistance ){
 			break;
 		}
+		// Enough information was collected
 		else if ( edgesToAnnounce.size() == 2 ){
 			break;
 		}
@@ -220,14 +223,14 @@ void InstructionGenerator::requestSpeech(){
 	bool preannounceSecond = edgesToAnnounce.size() > 1;
 
 	// TODO: The following lines are write only - refactoring required.
-	// A couple of circumstances that prevent the first branch from being (pre)announced
-	if ( branchDistances[0] > announceDistance1st ){
+	// A couple of circumstances that prevent the first branch from being preannounced
+	if ( branchDistances[0] > preannounceDistance ){
 		preannounceFirst = false;
 		finalannounceFirst = false;
 		preannounceSecond = false;
 		// qDebug() << "First branch's preannounce distance was not reached yet, so nothing to do.";
 	}
-	else if ( branchDistances[0] <= announceDistance2nd *2 ){
+	else if ( branchDistances[0] <= instructionDistance *2 ){
 		preannounceFirst = false;
 		// qDebug() << "Approaching the branch, thus dropping the preannouncement.";
 	}
@@ -311,37 +314,6 @@ double InstructionGenerator::currentSpeed() {
 	return currentSpeed;
 }
 
-/*
-double InstructionGenerator::announceDistanceFirst() {
-
-	// Speed is in kilometers per hour.
-	// In case there is no GPS signal, -1 is returned.
-	double speed = currentSpeed();
-
-	// Some possibly reasonable values (0.2 seconds per km/h):
-	//  1s	0.27m	1.4m/s	5km/h	pedestrian
-	// 2.5s	0.7m	3.5m/s	12.5km/h	cyclist
-	//  5s	  35m	 7m/s	 25km/h	residential areas
-	// 10s	 140m	14m/s	 50km/h	inner city
-	// 15s	 315m	21m/s	 75km/h	primaries
-	// 20s	 560m	28m/s	100km/h	trunks
-	// 30s	1260m	42m/s	150km/h	highways
-	// 40s	2222m	56m/s	200km/h	highways
-
-	// 0.2 seconds per km/h, but at least x seconds respectively y m before a branch
-	double seconds = speed * 0.3;
-	if ( seconds < 6 ){
-		seconds = 6;
-	}
-
-	return announceDistance( speed, seconds );
-}
-
-
-double InstructionGenerator::announceDistanceSecond() {
-	return announceDistance( currentSpeed(), 5 );
-}
-*/
 
 double InstructionGenerator::announceDistance( double secondsPerKmh ) {
 

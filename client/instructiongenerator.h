@@ -57,9 +57,6 @@ protected:
 
 	InstructionGenerator();
 	int direction( UnsignedCoordinate first, UnsignedCoordinate second, UnsignedCoordinate third );
-	// int nextEdgeToAnnounce();
-	// double announceDistanceFirst();
-	// double announceDistanceSecond();
 	double currentSpeed();
 	double announceDistance( double secondsPerKmh );
 	QString distanceString( double distance );
