@@ -116,7 +116,7 @@ maemo5 {
 	QT += maemo5
 }
 
-unix:!symbian {
+unix:!symbian:!simulator {
 	maemo5 {
 		target.path = /opt/usr/bin
 	} else {
