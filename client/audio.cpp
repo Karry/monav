@@ -79,7 +79,7 @@ void Audio::speak( QStringList fileNames )
 
 void Audio::process()
 {
-	qDebug() << "Start processing files:" << m_audioFile.fileName();
+	qDebug() << "Start processing files:" << m_audioFilenames[0];
 	if ( m_audioFilenames.size() < 1 ){
 		return;
 	}
