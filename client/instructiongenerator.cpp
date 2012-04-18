@@ -173,10 +173,10 @@ void InstructionGenerator::requestSpeech(){
 		return;
 	}
 
-	// (Pre)announce a turn x seconds per km/h before the crossing
-	double preannounceDistance = announceDistance( 0.3 );
-	// Speak turn instruction y seconds per km/h before the crossing
-	double instructionDistance = announceDistance( 0.1 );
+	// (Pre)announce a turn x seconds before the crossing
+	double preannounceDistance = announceDistance( 15.0 );
+	// Speak turn instruction y seconds before the crossing
+	double instructionDistance = announceDistance( 5.0 );
 
 	// Determine the next two edges to announce
 	int exitAmount = 0;
@@ -315,11 +315,9 @@ double InstructionGenerator::currentSpeed() {
 }
 
 
-double InstructionGenerator::announceDistance( double secondsPerKmh ) {
-
-	// double currentSpeed = currentSpeed();
+double InstructionGenerator::announceDistance( double seconds ) {
 	// Speed is in kilometers per hour.
-	double speechDistance = currentSpeed() * secondsPerKmh * 1000 / 3600;
+	double speechDistance = currentSpeed() * seconds * 1000 / 3600;
 	if ( speechDistance < 20 ){
 		speechDistance = 20;
 	}
