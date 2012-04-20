@@ -175,8 +175,10 @@ void InstructionGenerator::requestSpeech(){
 
 	// (Pre)announce a turn x seconds before the crossing
 	double preannounceDistance = announceDistance( 15.0 );
+	// qDebug() << "preannounceDistance " << preannounceDistance;
 	// Speak turn instruction y seconds before the crossing
 	double instructionDistance = announceDistance( 5.0 );
+	// qDebug() << "instructionDistance " << instructionDistance;
 
 	// Determine the next two edges to announce
 	int exitAmount = 0;
@@ -223,7 +225,11 @@ void InstructionGenerator::requestSpeech(){
 	bool preannounceSecond = edgesToAnnounce.size() > 1;
 
 	// TODO: The following lines are write only - refactoring required.
-	// A couple of circumstances that prevent the first branch from being preannounced
+	if ( branchDistances[0] > instructionDistance ){
+		finalannounceFirst = false;
+		// qDebug() << "Branch too far for final announcement.";
+	}
+
 	if ( branchDistances[0] > preannounceDistance ){
 		preannounceFirst = false;
 		finalannounceFirst = false;
@@ -234,6 +240,12 @@ void InstructionGenerator::requestSpeech(){
 		preannounceFirst = false;
 		// qDebug() << "Approaching the branch, thus dropping the preannouncement.";
 	}
+
+	if ( (branchDistances.size() > 1) && ( (branchDistances[0] + branchDistances[1]) > preannounceDistance) ) {
+		preannounceSecond = false;
+		// qDebug() << "Second branch too far for preannouncement.";
+	}
+
 	if ( edges[edgesToAnnounce[0]].exitNumber > 0 ){
 		finalannounceFirst = false;
 		preannounceSecond = false;
@@ -244,6 +256,7 @@ void InstructionGenerator::requestSpeech(){
 		preannounceFirst = false;
 		// qDebug() << "First branch already got preannounced.";
 	}
+
 	if ( edges[firstEdgeToAnnounce].announced ){
 		finalannounceFirst = false;
 		// qDebug() << "First branch already got announced.";
@@ -258,9 +271,14 @@ void InstructionGenerator::requestSpeech(){
 		preannounceSecond = false;
 		// qDebug() << "Second branch was already preannounced.";
 	}
+
 	if ( preannounceFirst ){
 		preannounceSecond = false;
 		// qDebug() << "A possibly available second branch will not be preannounced as the first branch gets preannounced.";
+	}
+	else if ( !finalannounceFirst ){
+		preannounceSecond = false;
+		// qDebug() << "Don't preannounce the second branch because the first branch is not being announced.";
 	}
 
 	QStringList instructions;
@@ -285,6 +303,7 @@ void InstructionGenerator::requestSpeech(){
 		instructions.append( m_audioFilenames[ 22 ] );
 		instructions.append( edges[firstEdgeToAnnounce].instructionFilename );
 	}
+
 	if ( preannounceSecond ){
 		edges[nextEdgeToAnnounce].preAnnounced = true;
 		// qDebug() << "Second branch being preannounced.";
@@ -293,6 +312,8 @@ void InstructionGenerator::requestSpeech(){
 		instructions.append( m_distanceFilenames[distanceFileindex( branchDistances[1] )] );
 		instructions.append( edges[nextEdgeToAnnounce].instructionFilename );
 	}
+
+	// qDebug() << instructions;
 
 	if ( instructions.size() > 0 ){
 		// Add announcement jingle
