@@ -190,10 +190,10 @@ void InstructionGenerator::requestSpeech(){
 	}
 
 	// (Pre)announce a turn x seconds before the crossing
-	double preannounceDistance = announceDistance( 15.0 );
+	double preannounceDistance = announceDistance( 20.0 );
 	// qDebug() << "preannounceDistance " << preannounceDistance;
 	// Speak turn instruction y seconds before the crossing
-	double instructionDistance = announceDistance( 5.0 );
+	double instructionDistance = announceDistance( 7.0 );
 	// qDebug() << "instructionDistance " << instructionDistance;
 
 	// Determine the next two edges to announce
@@ -354,8 +354,8 @@ double InstructionGenerator::currentSpeed() {
 double InstructionGenerator::announceDistance( double seconds ) {
 	// Speed is in kilometers per hour.
 	double speechDistance = currentSpeed() * seconds * 1000 / 3600;
-	if ( speechDistance < 20 ){
-		speechDistance = 20;
+	if ( speechDistance < 35 ){
+		speechDistance = 35;
 	}
 	return speechDistance;
 }
