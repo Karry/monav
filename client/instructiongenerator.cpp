@@ -22,6 +22,8 @@ along with MoNav. If not, see <http://www.gnu.org/licenses/>.
 #include "instructiongenerator.h"
 #include "audio.h"
 
+#include <QDateTime>
+
 
 InstructionGenerator::InstructionGenerator()
 {
@@ -161,9 +163,23 @@ void InstructionGenerator::createInstructions( QVector< IRouter::Edge >& edges, 
 
 
 void InstructionGenerator::requestSpeech(){
-	// This method is called by routinglogic::routeChanged().
+	// This method is called by routinglogic::sourceChanged().
 
 	if ( !m_speechEnabled ){
+		return;
+	}
+
+	if ( RoutingLogic::instance()->isHeadingOpposite() ){
+		static qint64 lastUTurnTime = 0;
+		const qint64 now = QDateTime::currentMSecsSinceEpoch();
+
+		if ( (now - lastUTurnTime) >= 30000 ){
+			QStringList instructions;
+			instructions.append( m_audioFilenames[ 21 ] );
+			instructions.append( m_audioFilenames[ 4 ] );
+			Audio::instance()->speak( instructions );
+			lastUTurnTime = now;
+		}
 		return;
 	}
 
@@ -346,7 +362,7 @@ double InstructionGenerator::announceDistance( double seconds ) {
 }
 
 
-void InstructionGenerator::instructions( QStringList* labels, QStringList* icons, int instructionAmount )
+void InstructionGenerator::instructions( QStringList* labels, QStringList* icons, int requestedAmount )
 {
 	// TODO: Portions of this code do similar things as speechRequest()
 	// which should be unified to ensure the on-screen instructions are in sync with the speech instructions.
@@ -358,9 +374,17 @@ void InstructionGenerator::instructions( QStringList* labels, QStringList* icons
 	QStringList instructions;
 	QStringList images;
 	double distance = 0.0;
-	int amount = 0;
+	int collectedAmount = 0;
 
-	for ( int i = 0; i < edges.size(); i++ ){
+	if ( RoutingLogic::instance()->isHeadingOpposite() ){
+		instructions.append( m_instructionStrings[4] );
+		images.append( m_iconFilenames[4] );
+		collectedAmount++;
+	}
+
+	for ( int i = 0;
+		( i < edges.size() ) && ( collectedAmount < requestedAmount );
+		i++ ){
 		distance += edges[i].distance;
 		if ( edges[i].instructionString != "" ){
 			instructions.append( edges[i].instructionString );
@@ -370,10 +394,7 @@ void InstructionGenerator::instructions( QStringList* labels, QStringList* icons
 			instructions.last().append( distanceString( distance ) );
 			images.append( edges[i].instructionIcon );
 			distance = 0.0;
-			amount++;
-			if ( amount == instructionAmount ){
-				break;
-			}
+			collectedAmount++;
 		}
 	}
 
@@ -507,7 +528,7 @@ void InstructionGenerator::initialize()
 	m_iconFilenames.append( "sharply_right" );
 
 	m_audioFilenames.append( "instructions-turn-u" );
-	m_instructionStrings.append( tr( "Take a U-turn" ) );
+	m_instructionStrings.append( tr( "Make a U-turn" ) );
 	m_iconFilenames.append( "backward" );
 
 	// index 5

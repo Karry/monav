@@ -43,6 +43,7 @@ struct RoutingLogic::PrivateImplementation {
 	QVector< IRouter::Edge > pathEdges;
 	double travelTime;
 	bool linked;
+	bool oppositeHeading;
 #ifndef NOQTMOBILE
 	// the current GPS source
 	QGeoPositionInfoSource* gpsSource;
@@ -55,6 +56,7 @@ RoutingLogic::RoutingLogic() :
 {
 	d->linked = true;
 	d->travelTime = -1;
+	d->oppositeHeading = false;
 
 	d->gpsInfo.altitude = -1;
 	d->gpsInfo.groundSpeed = -1;
@@ -100,7 +102,7 @@ RoutingLogic::RoutingLogic() :
 
 	connect( this, SIGNAL(gpsInfoChanged()), Logger::instance(), SLOT(positionChanged()) );
 	connect( MapData::instance(), SIGNAL(dataLoaded()), this, SLOT(dataLoaded()) );
-	connect( this, SIGNAL(routeChanged()), InstructionGenerator::instance(), SLOT(requestSpeech()) );
+	connect( this, SIGNAL(sourceChanged()), InstructionGenerator::instance(), SLOT(requestSpeech()) );
 	computeRoute();
 	emit waypointsChanged();
 }
@@ -230,6 +232,20 @@ double RoutingLogic::groundSpeed()
 }
 
 
+bool RoutingLogic::isHeadingOpposite() const
+{
+	return d->oppositeHeading;
+}
+
+
+bool RoutingLogic::isHeadingReliable()
+{
+	// Trying to tell apart real movement from inaccurate gps during standstill
+	// Should be tweaked and adapted to different GPS receivers
+	return ( ( d->gpsInfo.groundSpeed / d->gpsInfo.horizontalAccuracy )  > 0.3 );
+}
+
+
 void RoutingLogic::clear()
 {
 	d->waypoints.clear();
@@ -272,9 +288,15 @@ void RoutingLogic::setClickedSource( UnsignedCoordinate coordinate )
 
 void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 {
+	static UnsignedCoordinate previousCoord;
+	if ( coordinate == previousCoord ){
+		return;
+	}
+
 	if ( route().size() < 1 ){
 		d->source = coordinate;
 		emit sourceChanged();
+		previousCoord = coordinate;
 		return;
 	}
 
@@ -305,20 +327,22 @@ void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 	}
 
 	// TODO: coordOnSegment() already computed this bool
-	bool oppositeHeading = false;
-	if ( coordOnNearestSeg.x == d->pathNodes[nodeToKeep].coordinate.x && coordOnNearestSeg.y == d->pathNodes[nodeToKeep].coordinate.y ){
-		oppositeHeading = true;
+	bool backFromRoute = false;
+	if ( coordOnNearestSeg == d->pathNodes[nodeToKeep].coordinate ){
+		backFromRoute = true;
 	}
 
-	if ( oppositeHeading && sourceNearRoute ){
-		d->source = coordinate;
+	if ( d->oppositeHeading ){
+		bool oppositeHeading = calcOppositeHeading( d->pathNodes[nodeToKeep].coordinate,
+									  d->pathNodes[nodeToKeep + 1].coordinate,
+									  previousCoord, coordinate );
+		if ( !oppositeHeading && isHeadingReliable() ){
+			d->oppositeHeading = false;
+		}
 	}
-	else if ( oppositeHeading && !sourceNearRoute ){
-		d->source = coordinate;
-		computeRoute();
-	}
-	else if ( !oppositeHeading ){
-		truncateRoute( nodeToKeep );
+
+	if ( !backFromRoute && sourceNearRoute && !d->oppositeHeading ){
+		truncateRoute( nodeToKeep );      // ^^maybe not needed^^
 		if ( d->pathNodes.size() > 1 ){
 			d->pathNodes[0] = coordOnNearestSeg;
 		}
@@ -326,8 +350,48 @@ void RoutingLogic::setSource( UnsignedCoordinate coordinate )
 		calculateEdgeDistance( 0 );
 		emit routeChanged();
 	}
+	else if ( !sourceNearRoute ){
+		d->source = coordinate;
+		computeRoute();
+		if ( route().size() >= 2 ){
+			bool oppositeHeading = calcOppositeHeading( d->pathNodes[0].coordinate,
+										  d->pathNodes[1].coordinate,
+										  previousCoord, coordinate );
+			qDebug() << "new route oppositeHeading" << oppositeHeading;
+			d->oppositeHeading = oppositeHeading;
+		}
+	}
+	else{
+		d->source = coordinate;
+	}
 
+	previousCoord = coordinate;
 	emit sourceChanged();
+}
+
+
+bool RoutingLogic::calcOppositeHeading( UnsignedCoordinate firstFrom, UnsignedCoordinate firstTo,
+                                        UnsignedCoordinate secFrom, UnsignedCoordinate secTo )
+{
+	// Not sure about possible distortions of angle from the projection
+
+	ProjectedCoordinate firstFromP = firstFrom.ToProjectedCoordinate();
+	ProjectedCoordinate firstToP = firstTo.ToProjectedCoordinate();
+	ProjectedCoordinate secFromP = secFrom.ToProjectedCoordinate();
+	ProjectedCoordinate secToP = secTo.ToProjectedCoordinate();
+
+	double firstDx = firstToP.x - firstFromP.x;
+	double firstDy = firstToP.y - firstFromP.y;
+	double secDx = secToP.x - secFromP.x;
+	double secDy = secToP.y - secFromP.y;
+
+	double dotProduct = firstDx * secDx + firstDy * secDy;
+
+	if ( dotProduct < 0 ){
+		return true;
+	}
+
+	return false;
 }
 
 

@@ -236,7 +236,7 @@ void MainWindow::connectSlots()
 
 	connect( mapData, SIGNAL(informationChanged()), this, SLOT(informationLoaded()) );
 	connect( mapData, SIGNAL(dataLoaded()), this, SLOT(dataLoaded()) );
-	connect( RoutingLogic::instance(), SIGNAL(routeChanged()), this, SLOT(displayInstructions()) );
+	connect( RoutingLogic::instance(), SIGNAL(sourceChanged()), this, SLOT(displayInstructions()) );
 }
 
 

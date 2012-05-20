@@ -65,6 +65,10 @@ public:
 	double routeDistance();
 	// returns the speed according to the information of the GPS subsystem
 	double groundSpeed();
+	// are we going in the opposite direction?
+	bool isHeadingOpposite() const;
+	// heading is not reliable at slow speed and standstill, just a guess
+	bool isHeadingReliable();
 	// is the source linked to the GPS reciever?
 	bool gpsLink() const;
 	const GPSInfo gpsInfo() const;
@@ -103,6 +107,8 @@ protected:
 	void computeRoute();
 	void clearRoute();
 	void setSource( UnsignedCoordinate coordinate );
+	bool calcOppositeHeading( UnsignedCoordinate firstFrom, UnsignedCoordinate firstTo,
+	                          UnsignedCoordinate secFrom, UnsignedCoordinate secTo );
 	void calculateEdgeDistance( int index );
 
 	struct PrivateImplementation;

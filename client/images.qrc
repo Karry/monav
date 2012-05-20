@@ -2,6 +2,7 @@
     <qresource prefix="/">
         <file>../images/placeholder.png</file>
         <file>../images/directions/forward.png</file>
+        <file>../images/directions/backward.png</file>
         <file>../images/directions/left.png</file>
         <file>../images/directions/right.png</file>
         <file>../images/about.png</file>
