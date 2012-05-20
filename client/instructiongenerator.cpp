@@ -316,7 +316,6 @@ void InstructionGenerator::requestSpeech(){
 	else if ( finalannounceFirst ){
 		edges[firstEdgeToAnnounce].announced = true;
 		// qDebug() << "First branch being announced.";
-		instructions.append( m_audioFilenames[ 22 ] );
 		instructions.append( edges[firstEdgeToAnnounce].instructionFilename );
 	}
 
