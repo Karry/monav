@@ -1255,7 +1255,7 @@ void OSMImporter::readWay( OSMImporter::Way* way, const IEntityReader::Way& inpu
 				way->addFixed += mod.modificatorValue.toInt();
 				break;
 			case MoNav::WayModifyPercentage:
-				way->addPercentage = std::min( way->addPercentage, mod.modificatorValue.toInt() );
+				way->addPercentage = mod.modificatorValue.toInt();
 				break;
 			case MoNav::WayAccess:
 				way->access = mod.modificatorValue.toBool();
