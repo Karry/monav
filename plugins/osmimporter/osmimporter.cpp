@@ -1119,7 +1119,7 @@ void OSMImporter::readWay( OSMImporter::Way* way, const IEntityReader::Way& inpu
 	way->access = true;
 	way->accessPriority = m_profile.accessList.size();
 	way->addFixed = 0;
-	way->addPercentage = 0;
+	way->addPercentage = std::numeric_limits<int>::max();
 
 	for ( unsigned tag = 0; tag < inputWay.tags.size(); tag++ ) {
 		int key = inputWay.tags[tag].key;
@@ -1255,7 +1255,7 @@ void OSMImporter::readWay( OSMImporter::Way* way, const IEntityReader::Way& inpu
 				way->addFixed += mod.modificatorValue.toInt();
 				break;
 			case MoNav::WayModifyPercentage:
-				way->addPercentage = mod.modificatorValue.toInt();
+				way->addPercentage = std::min( way->addPercentage, mod.modificatorValue.toInt() );
 				break;
 			case MoNav::WayAccess:
 				way->access = mod.modificatorValue.toBool();
@@ -1268,6 +1268,10 @@ void OSMImporter::readWay( OSMImporter::Way* way, const IEntityReader::Way& inpu
 				break;
 			}
 		}
+	}
+
+	if ( way->addPercentage == std::numeric_limits<int>::max() ) {
+		way->addPercentage = 0;
 	}
 }
 
