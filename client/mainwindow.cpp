@@ -989,10 +989,13 @@ void MainWindow::alterRoute( UnsignedCoordinate coordinate )
 					nearest = i;
 				}
 			}
-			// Check whether the previous or next point is the nearest
-			distance = gpsPassed.Distance( routepoints[nearest - 1].ToGPSCoordinate() );
-			if ( gpsPassed.Distance( routepoints[nearest + 1].ToGPSCoordinate() ) < distance )
-				nearest +=1;
+			if ( ( nearest >= 1 ) && ( nearest <= ( routepoints.size() - 2 ) ) ) {
+				// Check whether the previous or next point is the nearest
+				distance = gpsPassed.Distance( routepoints[nearest - 1].ToGPSCoordinate() );
+				if ( gpsPassed.Distance( routepoints[nearest + 1].ToGPSCoordinate() ) < distance )
+					nearest +=1;
+			}
+
 			routepoints.insert( nearest, coordinate );
 			routepoints.pop_front();
 			waypoints = routepoints;
