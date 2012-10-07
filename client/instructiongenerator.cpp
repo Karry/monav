@@ -169,6 +169,12 @@ void InstructionGenerator::requestSpeech(){
 		return;
 	}
 
+	// TODO: Make the reference to the route a member variable
+	QVector< IRouter::Edge >& edges = RoutingLogic::instance()->edges();
+	if ( edges.size() < 1 ){
+		return;
+	}
+
 	if ( RoutingLogic::instance()->isHeadingOpposite() ){
 		static qint64 lastUTurnTime = 0;
 		const qint64 now = QDateTime::currentMSecsSinceEpoch();
@@ -180,12 +186,6 @@ void InstructionGenerator::requestSpeech(){
 			Audio::instance()->speak( instructions );
 			lastUTurnTime = now;
 		}
-		return;
-	}
-
-	// TODO: Make the reference to the route a member variable
-	QVector< IRouter::Edge >& edges = RoutingLogic::instance()->edges();
-	if ( edges.size() < 1 ){
 		return;
 	}
 
