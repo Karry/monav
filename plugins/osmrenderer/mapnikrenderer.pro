@@ -22,7 +22,7 @@ unix {
 		 -fopenmp
 }
 LIBS += -fopenmp \
-	 -lmapnik
+	 -lmapnik2
 
 !nogui {
 	FORMS += mrsettingsdialog.ui
