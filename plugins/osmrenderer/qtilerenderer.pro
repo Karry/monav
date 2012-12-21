@@ -8,6 +8,7 @@ PRE_TARGETDEPS += osmformat.pb.h fileformat.pb.h osmformat.pb.cc fileformat.pb.c
 
 CONFIG += link_pkgconfig
 INCLUDEPATH += ../.. ../osmimporter/
+unix:INCLUDEPATH += /usr/include/libxml2/
 PKGCONFIG += libxml-2.0
 
 HEADERS += qtilerenderer.h \
