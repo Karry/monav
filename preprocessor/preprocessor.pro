@@ -47,4 +47,4 @@ unix {
 		 -fopenmp
 }
 LIBS += -L../bin/plugins_preprocessor -lmapnikrenderer -lcontractionhierarchies -lgpsgrid -losmrenderer -lqtilerenderer -lunicodetournamenttrie -losmimporter -ltestimporter
-LIBS += -fopenmp -lmapnik2 -lbz2 -lz
+LIBS += -fopenmp -lmapnik2 -lbz2 -lz -lprotobuf
