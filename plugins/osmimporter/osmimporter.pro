@@ -7,6 +7,7 @@ include(../../utils/osm/protobuf.pri)
 PRE_TARGETDEPS += osmformat.pb.h fileformat.pb.h osmformat.pb.cc fileformat.pb.cc
 
 INCLUDEPATH += ../..
+unix:INCLUDEPATH += /usr/include/libxml2/
 
 CONFIG += link_pkgconfig
 PKGCONFIG += libxml-2.0
