@@ -21,20 +21,35 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #define DIRECTORYUNPACKER_H
 
 #include <QString>
+#include <QNetworkReply>
 
 // decompresses a .mmm file ( MoNav Map Module )
 // compressed by the DirectoryPacker class
-class DirectoryUnpacker
+class DirectoryUnpacker : public QObject
 {
+	Q_OBJECT
 
 public:
 
 	DirectoryUnpacker( QString filename, int bufferSize = 16 * 1024 );
+	DirectoryUnpacker( QString filename, QNetworkReply *reply, int bufferSize = 16 * 1024 );
 	~DirectoryUnpacker();
 
 	bool decompress( bool deleteFile = true );
 
+public slots:
+	void processNetworkData();
+
+signals:
+	void error();
+
+protected slots:
+	void processBlock();
+	void cleanUp();
+
 private:
+
+	enum STAGE { READY, FILEINFO, SETFILE, DECODE_HEADER, DECODE_CONTENT, FINISHED};
 
 	struct PrivateImplementation;
 	PrivateImplementation* d;

@@ -21,17 +21,18 @@ SOURCES += main.cpp \
 	gpsdialog.cpp \
 	generalsettingsdialog.cpp \
 	logger.cpp \
-    ../utils/directoryunpacker.cpp \
-    ../utils/lzma/LzmaDec.c \
-    mappackageswidget.cpp \
-    mainwindow.cpp \
-    mapmoduleswidget.cpp \
-    placechooser.cpp \
-    globalsettings.cpp \
-    streetchooser.cpp \
-	 gpsdpositioninfosource.cpp \
-	 json.cpp \
-    worldmapchooser.cpp
+	../utils/directoryunpacker.cpp \
+	../utils/lzma/LzmaDec.c \
+	mappackageswidget.cpp \
+	mainwindow.cpp \
+	mapmoduleswidget.cpp \
+	placechooser.cpp \
+	globalsettings.cpp \
+	streetchooser.cpp \
+	gpsdpositioninfosource.cpp \
+	json.cpp \
+	serverinputdialog.cpp \
+	serverlogic.cpp
 
 HEADERS += \
 	paintwidget.h \
@@ -53,17 +54,19 @@ HEADERS += \
 	gpsdialog.h \
 	generalsettingsdialog.h \
 	logger.h \
-    ../utils/directoryunpacker.h \
-    ../utils/lzma/LzmaDec.h \
-    mappackageswidget.h \
-    mainwindow.h \
-    mapmoduleswidget.h \
-    placechooser.h \
-    globalsettings.h \
-    streetchooser.h \
-	 json.h \
-	 gpsdpositioninfosource.h \
-    worldmapchooser.h
+	../utils/directoryunpacker.h \
+	../utils/lzma/LzmaDec.h \
+	mappackageswidget.h \
+	mainwindow.h \
+	mapmoduleswidget.h \
+	placechooser.h \
+	globalsettings.h \
+	streetchooser.h \
+	json.h \
+	gpsdpositioninfosource.h \
+	worldmapchooser.h \
+	serverinputdialog.h \
+	serverlogic.h
 
 FORMS += \
 	paintwidget.ui \
@@ -72,11 +75,12 @@ FORMS += \
 	routedescriptiondialog.ui \
 	gpsdialog.ui \
 	generalsettingsdialog.ui \
-    mappackageswidget.ui \
-    mainwindow.ui \
-    mapmoduleswidget.ui \
-    placechooser.ui \
-    streetchooser.ui
+	mappackageswidget.ui \
+	mainwindow.ui \
+	mapmoduleswidget.ui \
+	placechooser.ui \
+	streetchooser.ui \
+	serverinputdialog.ui
 
 DESTDIR = ../bin
 
@@ -94,11 +98,11 @@ maemo5 {
 RESOURCES += images.qrc
 
 win32 {
-    RC_FILE = ../images/WindowsResources.rc
+	RC_FILE = ../images/WindowsResources.rc
 }
 
 macx {
-    ICON = ../images/AppIcons.icns
+	ICON = ../images/AppIcons.icns
 }
 
 LIBS += -L../bin/plugins_client -lmapnikrendererclient -lcontractionhierarchiesclient -lgpsgridclient -losmrendererclient -lunicodetournamenttrieclient -lqtilerendererclient
@@ -111,10 +115,10 @@ MOBILITY += location
 # CONFIG += release
 
 unix:!symbian {
-    maemo5 {
-        target.path = /opt/usr/bin
-    } else {
-        target.path = /usr/local/bin
-    }
-    INSTALLS += target
+	maemo5 {
+		target.path = /opt/usr/bin
+	} else {
+		target.path = /usr/local/bin
+	}
+	INSTALLS += target
 }

@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>MapPackagesWidget</class>
  <widget class="QWidget" name="MapPackagesWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>701</width>
+    <height>244</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -15,7 +23,7 @@
    <item>
     <widget class="QTabWidget" name="tabs">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="installed">
       <attribute name="title">
@@ -87,7 +95,7 @@
      </widget>
      <widget class="QWidget" name="updatable">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <attribute name="title">
        <string>Update</string>
@@ -104,6 +112,9 @@
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
           <widget class="QPushButton" name="check">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
            <property name="text">
             <string>Check</string>
            </property>
@@ -111,6 +122,9 @@
          </item>
          <item>
           <widget class="QPushButton" name="update">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
            <property name="text">
             <string>Update</string>
            </property>
@@ -135,16 +149,16 @@
      </widget>
      <widget class="QWidget" name="downloadable">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <attribute name="title">
        <string>Download</string>
       </attribute>
-      <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,1,0">
+      <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0">
        <item>
         <widget class="QToolButton" name="back">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+          <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -158,13 +172,47 @@
         </widget>
        </item>
        <item>
-        <widget class="QListWidget" name="downloadBrowse"/>
-       </item>
-       <item>
-        <widget class="QListWidget" name="downloadList">
+        <widget class="QTreeWidget" name="downloadList">
+         <property name="showDropIndicator" stdset="0">
+          <bool>true</bool>
+         </property>
          <property name="selectionMode">
           <enum>QAbstractItemView::MultiSelection</enum>
          </property>
+         <property name="uniformRowHeights">
+          <bool>true</bool>
+         </property>
+         <property name="itemsExpandable">
+          <bool>true</bool>
+         </property>
+         <property name="allColumnsShowFocus">
+          <bool>true</bool>
+         </property>
+         <property name="expandsOnDoubleClick">
+          <bool>false</bool>
+         </property>
+         <property name="columnCount">
+          <number>2</number>
+         </property>
+         <attribute name="headerVisible">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="headerDefaultSectionSize">
+          <number>200</number>
+         </attribute>
+         <attribute name="headerStretchLastSection">
+          <bool>true</bool>
+         </attribute>
+         <column>
+          <property name="text">
+           <string notr="true">Available Packages</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string notr="true">Installed</string>
+          </property>
+         </column>
         </widget>
        </item>
        <item>
@@ -172,7 +220,11 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout">
            <item>
-            <widget class="QComboBox" name="server"/>
+            <widget class="QComboBox" name="server">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+            </widget>
            </item>
            <item>
             <widget class="QToolButton" name="addServer">
@@ -184,9 +236,22 @@
           </layout>
          </item>
          <item>
-          <widget class="QPushButton" name="download">
+          <widget class="QPushButton" name="loadList">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
-            <string>Download</string>
+            <string>Download List</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="loadPackages">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>Download Selected</string>
            </property>
           </widget>
          </item>
@@ -228,12 +293,12 @@
    <slot>setHidden(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>774</x>
-     <y>569</y>
+     <x>684</x>
+     <y>227</y>
     </hint>
     <hint type="destinationlabel">
-     <x>539</x>
-     <y>523</y>
+     <x>292</x>
+     <y>228</y>
     </hint>
    </hints>
   </connection>
@@ -244,12 +309,12 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>750</x>
-     <y>568</y>
+     <x>684</x>
+     <y>227</y>
     </hint>
     <hint type="destinationlabel">
-     <x>693</x>
-     <y>443</y>
+     <x>575</x>
+     <y>228</y>
     </hint>
    </hints>
   </connection>

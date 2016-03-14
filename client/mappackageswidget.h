@@ -21,6 +21,9 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #define MAPPACKAGESWIDGET_H
 
 #include <QWidget>
+#include <QUrl>
+
+#include "serverlogic.h"
 
 namespace Ui {
 	class MapPackagesWidget;
@@ -37,6 +40,7 @@ public:
 
 public slots:
 
+        void serverIndexChanged( int newIndex );
 	void mapSelectionChanged();
 	void updateSelectionChanged();
 	void downloadSelectionChanged();
@@ -50,15 +54,21 @@ protected slots:
 
 	void load();
 	void directory();
+	void downloadList();
+	void downloadPackages();
 	void check();
 	void update();
-	void download();
+	void editServerList();
+	void populateServerPackageList();
+	void updateProgress( QString text );
 	void selected( int id );
+	void cleanUp( ServerLogic::ERROR_TYPE, QString message = "" );
 
 protected:
 
 	virtual void resizeEvent( QResizeEvent* event );
 	virtual void showEvent( QShowEvent* event );
+	void setupNetworkAccess();
 
 	struct PrivateImplementation;
 	PrivateImplementation* d;
