@@ -1,0 +1,15 @@
+# CMake files
+CMakeCache.txt
+CMakeFiles
+Makefile
+cmake_install.cmake
+install_manifest.txt
+
+# netbeans project
+/nbproject
+
+# QT moc
+*.moc_parameters
+*.moc
+
+*.so
