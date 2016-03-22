@@ -22,7 +22,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "utils/config.h"
 #include "utils/coordinates.h"
-#include "utils/bithelpers.h"
+#include "helpers/bithelpers.h"
 #include "utils/edgeconnector.h"
 #include <vector>
 #include <algorithm>

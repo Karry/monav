@@ -19,7 +19,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "directoryunpacker.h"
 
-#include "utils/qthelpers.h"
+#include "utils/helpers/qthelpers.h"
 #include "utils/lzma/LzmaDec.h"
 
 #include <QFile>

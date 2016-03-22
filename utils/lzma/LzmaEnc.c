@@ -5,6 +5,7 @@
 
 /* #define SHOW_STAT */
 /* #define SHOW_STAT2 */
+#define _7ZIP_ST
 
 #if defined(SHOW_STAT) || defined(SHOW_STAT2)
 #include <stdio.h>

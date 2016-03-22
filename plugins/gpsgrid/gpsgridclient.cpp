@@ -21,7 +21,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtDebug>
 #include <QHash>
 #include <algorithm>
-#include "utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 #ifndef NOGUI
 	#include <QInputDialog>
 #endif

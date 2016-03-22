@@ -22,7 +22,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "interfaces/iimporter.h"
 #include "compressedgraph.h"
-#include "utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 #include <limits>
 #include <QHash>
 #include <QtDebug>

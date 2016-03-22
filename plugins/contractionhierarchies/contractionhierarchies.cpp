@@ -21,7 +21,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include "compressedgraphbuilder.h"
 #include "contractor.h"
 #include "contractioncleanup.h"
-#include "utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 #ifndef NOGUI
 #include "chsettingsdialog.h"
 #endif

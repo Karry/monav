@@ -25,7 +25,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include "cell.h"
 #include "table.h"
 #include "utils/intersection.h"
-#include "utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 #include <vector>
 
 #include <QFile>

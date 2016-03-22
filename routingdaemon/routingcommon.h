@@ -27,7 +27,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "interfaces/irouter.h"
 #include "interfaces/igpslookup.h"
-#include "utils/directoryunpacker.h"
+#include "directory/directoryunpacker.h"
 
 #include "signals.h"
 #include "signals.pb.h"

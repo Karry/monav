@@ -28,7 +28,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include <omp.h>
 #endif
 #include <limits>
-#include "utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 #include "dynamicgraph.h"
 #include "binaryheap.h"
 #include "utils/config.h"

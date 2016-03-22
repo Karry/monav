@@ -20,7 +20,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include "directorypacker.h"
 #include "utils/lzma/Types.h"
 #include "utils/lzma/LzmaEnc.h"
-#include "utils/qthelpers.h"
+#include "utils/helpers/qthelpers.h"
 #include <QFile>
 #include <QDir>
 #include <QFileInfo>

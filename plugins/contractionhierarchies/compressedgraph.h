@@ -22,7 +22,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "interfaces/irouter.h"
 #include "utils/coordinates.h"
-#include "utils/bithelpers.h"
+#include "helpers/bithelpers.h"
 #include "blockcache.h"
 #include <QString>
 #include <QFile>
