@@ -46,12 +46,15 @@ find_package( Qt5 ${QT_MIN_VERSION}
               REQUIRED NO_MODULE COMPONENTS 
               Core
               Network
+              Widgets
 )
 
 find_package( Qt5 ${QT_MIN_VERSION}
               OPTIONAL_COMPONENTS
-              Widgets
               Gui
+              Positioning
+              Xml
+              Svg
 )
 
 find_package(Protobuf REQUIRED) # /usr/share/cmake-3.2/Modules/FindProtobuf.cmake
@@ -60,14 +63,27 @@ find_package(OpenMP REQUIRED)
 # ==================================================================================================
 # Dependencies Rules
 
+# TODO: modularize...
 
-if(Qt5_FOUND      AND
-  PROTOBUF_FOUND  AND
-  OPENMP_FOUND
- )
+if( Qt5_FOUND       AND
+    PROTOBUF_FOUND  AND
+    OPENMP_FOUND
+    )
     set(MONAV_ROUTINGDAEMON_CAN_BE_COMPILED true)
+
+    if (Qt5Xml_FOUND AND 
+        Qt5Svg_FOUND
+        )
+        set(MONAV_CLIENT_CAN_BE_COMPILED true)
+    else()
+        set(MONAV_CLIENT_CAN_BE_COMPILED false)
+    endif()
+
+    set(MONAV_CAN_BE_COMPILED true)
 else()
     set(MONAV_ROUTINGDAEMON_CAN_BE_COMPILED false)
+    set(MONAV_CLIENT_CAN_BE_COMPILED false)
+    set(MONAV_CAN_BE_COMPILED false)
 endif()
 
 
@@ -88,8 +104,12 @@ message(STATUS "MoNav ${MONAV_VERSION_STRING} build configuration results")
 message(STATUS "")
 message(STATUS "Requiered dependencies:")
 
-PRINT_LIBRARY_STATUS("libqt"                  "http://www.qtsoftware.com"                                        "(version >= ${QT_MIN_VERSION})"     Qt5_FOUND)
+PRINT_LIBRARY_STATUS("Qt5"                    "http://www.qtsoftware.com"                                        "(version >= ${QT_MIN_VERSION})"     Qt5_FOUND)
+PRINT_LIBRARY_STATUS("Qt5::Positioning"       "http://www.qtsoftware.com"                                        ""     Qt5Positioning_FOUND)
+PRINT_LIBRARY_STATUS("Qt5::Xml"               "http://www.qtsoftware.com"                                        ""     Qt5Xml_FOUND)
+PRINT_LIBRARY_STATUS("Qt5::Svg"               "http://www.qtsoftware.com"                                        ""     Qt5Svg_FOUND)
 PRINT_LIBRARY_STATUS("libprotobuf"            "https://github.com/google/protobuf"                               ""     PROTOBUF_FOUND)
+
 
 # PRINT_OPTIONAL_LIBRARY_STATUS("libmarble"         "https://projects.kde.org/projects/kde/kdeedu/marble"             "(version >= 0.22.0)"                  "digiKam will be compiled without geolocation maps support."                  MARBLE_FOUND)
 
@@ -98,10 +118,14 @@ message(STATUS "Monav components:")
 
 if (MONAV_ROUTINGDAEMON_CAN_BE_COMPILED)
     message(STATUS      " MoNav routing daemon..................... YES")
-    set(MONAV_CAN_BE_COMPILED true)
 else()
     message(FATAL_ERROR " MoNav routing daemon..................... NO  (Look README file for more details about dependencies)")
-    set(MONAV_CAN_BE_COMPILED false)
+endif()
+
+if (MONAV_CLIENT_CAN_BE_COMPILED)
+    message(STATUS      " MoNav client ............................ YES")
+else()
+    message(FATAL_ERROR " MoNav client ............................ NO  (Look README file for more details about dependencies)")
 endif()
 
 message(STATUS "")
@@ -147,6 +171,10 @@ if(MONAV_CAN_BE_COMPILED)
 
   if (MONAV_ROUTINGDAEMON_CAN_BE_COMPILED)
     add_subdirectory(routingdaemon)
+  endif()
+
+  if (MONAV_CLIENT_CAN_BE_COMPILED)
+    add_subdirectory(client)
   endif()
 
 endif()

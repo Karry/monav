@@ -10,6 +10,7 @@ include_directories(
   ${CMAKE_CURRENT_BINARY_DIR} # path with generated files
   ${Qt5Core_INCLUDE_DIRS}
   ${Qt5Network_INCLUDE_DIRS}
+  ${Qt5Widgets_INCLUDE_DIRS}
   ${PROTOBUF_INCLUDE_DIRS}
 )
 
