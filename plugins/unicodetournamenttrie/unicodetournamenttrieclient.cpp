@@ -18,7 +18,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "unicodetournamenttrieclient.h"
-#include "utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 #include <QtDebug>
 #include <algorithm>
 #ifndef NOGUI

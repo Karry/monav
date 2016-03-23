@@ -18,7 +18,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "unicodetournamenttrie.h"
-#include "utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 #include "utils/edgeconnector.h"
 #include "interfaces/iimporter.h"
 #ifndef NOGUI
