@@ -2,7 +2,7 @@
 include_directories(
   ${CMAKE_HOME_DIRECTORY} # ".."
   ${CMAKE_HOME_DIRECTORY}/utils
-  ${CMAKE_HOME_DIRECTORY}/client
+  ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR} # path with generated files
   ${Qt5Core_INCLUDE_DIRS}
   ${Qt5Network_INCLUDE_DIRS}
@@ -14,7 +14,7 @@ include_directories(
 if (Qt5Positioning_FOUND)
   include_directories(${Qt5Positioning_INCLUDE_DIRS})
 else()
-  set(NOQTMOBILE true) # TODO: check it
+  ADD_DEFINITIONS(-DNOQTMOBILE) # TODO: check it
 endif()
 
 qt5_generate_moc(addressdialog.h            moc_addressdialog.cpp)
@@ -115,11 +115,20 @@ add_executable (monav-client
 
 target_link_libraries(monav-client
     directory
+    contractionhierarchies
+    gpsgrid
+    unicodetournamenttrie
+    osmrenderer
 
     Qt5::Core 
     Qt5::Network
+    Qt5::Widgets
     Qt5::Xml
     Qt5::Svg
+
+    ${LIBMAPNIK_LIBRARIES}
+    ${LIBXML2_LIBRARIES}
+    ${PROTOBUF_LIBRARIES}
 )
 if (Qt5Positioning_FOUND)
     target_link_libraries(monav-client Qt5::Positioning)

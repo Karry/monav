@@ -26,6 +26,7 @@ cmake_minimum_required(VERSION 2.6)
 
 set(CMAKE_MIN_VERSION    "2.8.12")
 set(QT_MIN_VERSION       "5.2.0")
+set(MAPNIK_MIN_VERSION   "3.0.0")
 
 cmake_minimum_required(VERSION ${CMAKE_MIN_VERSION})
 
@@ -59,11 +60,15 @@ find_package( Qt5 ${QT_MIN_VERSION}
 
 find_package(Protobuf REQUIRED) # /usr/share/cmake-3.2/Modules/FindProtobuf.cmake
 find_package(OpenMP REQUIRED)
+find_package(Mapnik)
+find_package(LibXml2)
 
 # ==================================================================================================
 # Dependencies Rules
 
-# TODO: modularize...
+if (MAPNIK_VERSION VERSION_LESS MAPNIK_MIN_VERSION)
+  set(MAPNIK_FOUND false)
+endif()
 
 if( Qt5_FOUND       AND
     PROTOBUF_FOUND  AND
@@ -72,20 +77,26 @@ if( Qt5_FOUND       AND
     set(MONAV_ROUTINGDAEMON_CAN_BE_COMPILED true)
 
     if (Qt5Xml_FOUND AND 
-        Qt5Svg_FOUND
+        Qt5Svg_FOUND AND 
+        MAPNIK_FOUND AND 
+        LIBXML2_FOUND
         )
         set(MONAV_CLIENT_CAN_BE_COMPILED true)
     else()
         set(MONAV_CLIENT_CAN_BE_COMPILED false)
     endif()
-
-    set(MONAV_CAN_BE_COMPILED true)
 else()
     set(MONAV_ROUTINGDAEMON_CAN_BE_COMPILED false)
     set(MONAV_CLIENT_CAN_BE_COMPILED false)
-    set(MONAV_CAN_BE_COMPILED false)
 endif()
 
+if( MONAV_CLIENT_CAN_BE_COMPILED       OR
+    MONAV_ROUTINGDAEMON_CAN_BE_COMPILED
+  )
+    set(MONAV_CAN_BE_COMPILED true)
+else()
+    set(MONAV_CAN_BE_COMPILED false)
+endif()
 
 # ==================================================================================================
 # Print build configuration
@@ -104,28 +115,33 @@ message(STATUS "MoNav ${MONAV_VERSION_STRING} build configuration results")
 message(STATUS "")
 message(STATUS "Requiered dependencies:")
 
-PRINT_LIBRARY_STATUS("Qt5"                    "http://www.qtsoftware.com"                                        "(version >= ${QT_MIN_VERSION})"     Qt5_FOUND)
-PRINT_LIBRARY_STATUS("Qt5::Positioning"       "http://www.qtsoftware.com"                                        ""     Qt5Positioning_FOUND)
-PRINT_LIBRARY_STATUS("Qt5::Xml"               "http://www.qtsoftware.com"                                        ""     Qt5Xml_FOUND)
-PRINT_LIBRARY_STATUS("Qt5::Svg"               "http://www.qtsoftware.com"                                        ""     Qt5Svg_FOUND)
-PRINT_LIBRARY_STATUS("libprotobuf"            "https://github.com/google/protobuf"                               ""     PROTOBUF_FOUND)
+PRINT_LIBRARY_STATUS("Qt5"                    "http://www.qtsoftware.com"             "(version >= ${QT_MIN_VERSION})"     Qt5_FOUND)
+PRINT_LIBRARY_STATUS("libprotobuf"            "https://github.com/google/protobuf"    ""      PROTOBUF_FOUND)
+PRINT_LIBRARY_STATUS("OpenMP compiler support" "http://openmp.org/wp/openmp-compilers/" ""    OPENMP_FOUND)
 
 
-# PRINT_OPTIONAL_LIBRARY_STATUS("libmarble"         "https://projects.kde.org/projects/kde/kdeedu/marble"             "(version >= 0.22.0)"                  "digiKam will be compiled without geolocation maps support."                  MARBLE_FOUND)
+message(STATUS "")
+message(STATUS "Optional dependencies:")
+
+PRINT_OPTIONAL_LIBRARY_STATUS("Qt5::Positioning"       "http://www.qtsoftware.com"    "" " Positioning support will not be compiled" Qt5Positioning_FOUND)
+PRINT_OPTIONAL_LIBRARY_STATUS("Qt5::Xml"               "http://www.qtsoftware.com"    "" " Monav Client will not be compiled" Qt5Xml_FOUND)
+PRINT_OPTIONAL_LIBRARY_STATUS("Qt5::Svg"               "http://www.qtsoftware.com"    "" " Monav Client will not be compiled" Qt5Svg_FOUND)
+PRINT_OPTIONAL_LIBRARY_STATUS("libmapnik"              "http://mapnik.org/"           "(version >= ${MAPNIK_MIN_VERSION})" " Monav Client will not be compiled" MAPNIK_FOUND)
+PRINT_OPTIONAL_LIBRARY_STATUS("LibXML2"                "http://xmlsoft.org" "" " Monav Client and Preprocessor will not be compiled" LIBXML2_FOUND)
 
 message(STATUS "")
 message(STATUS "Monav components:")
 
 if (MONAV_ROUTINGDAEMON_CAN_BE_COMPILED)
-    message(STATUS      " MoNav routing daemon..................... YES")
+    message(STATUS      " Monav routing daemon..................... YES")
 else()
-    message(FATAL_ERROR " MoNav routing daemon..................... NO  (Look README file for more details about dependencies)")
+    message(WARNING " Monav routing daemon..................... NO  (Look README file for more details about dependencies)")
 endif()
 
 if (MONAV_CLIENT_CAN_BE_COMPILED)
-    message(STATUS      " MoNav client ............................ YES")
+    message(STATUS      " Monav client ............................ YES")
 else()
-    message(FATAL_ERROR " MoNav client ............................ NO  (Look README file for more details about dependencies)")
+    message(WARNING " Monav client ............................ NO  (Look README file for more details about dependencies)")
 endif()
 
 message(STATUS "")
@@ -150,6 +166,8 @@ if(MONAV_CAN_BE_COMPILED)
   # QT5 definitions
   add_definitions(${QT_DEFINITIONS})
   add_definitions(${Qt5Core_DEFINITIONS})
+
+  add_definitions(${LIBXML2_DEFINITIONS})
   
   # OpenMP definitions
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -164,16 +182,20 @@ if(MONAV_CAN_BE_COMPILED)
   remove_definitions(-std=c11)
   add_definitions(-std=c++11)
 
-  add_subdirectory(plugins/contractionhierarchies)
-  add_subdirectory(plugins/gpsgrid)
-  add_subdirectory(utils/directory)
-  add_subdirectory(utils/qtservice-2.6_1-opensource)
+  if (MONAV_ROUTINGDAEMON_CAN_BE_COMPILED OR MONAV_CLIENT_CAN_BE_COMPILED)
+    add_subdirectory(plugins/contractionhierarchies)
+    add_subdirectory(plugins/gpsgrid)
+    add_subdirectory(utils/directory)
+  endif()
 
   if (MONAV_ROUTINGDAEMON_CAN_BE_COMPILED)
+    add_subdirectory(utils/qtservice-2.6_1-opensource)
     add_subdirectory(routingdaemon)
   endif()
 
-  if (MONAV_CLIENT_CAN_BE_COMPILED)
+  if (MONAV_CLIENT_CAN_BE_COMPILED)    
+    add_subdirectory(plugins/osmrenderer)
+    add_subdirectory(plugins/unicodetournamenttrie)
     add_subdirectory(client)
   endif()
 

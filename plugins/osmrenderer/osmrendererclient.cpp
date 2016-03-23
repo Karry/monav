@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 #include <QNetworkReply>
 #include <QtDebug>
 #include <QDesktopServices>

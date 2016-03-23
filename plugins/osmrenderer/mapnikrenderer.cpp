@@ -18,13 +18,14 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "mapnikrenderer.h"
-#include "utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 #include "interfaces/iimporter.h"
 #ifndef NOGUI
 #include "mrsettingsdialog.h"
 #endif
 
 #include <mapnik/map.hpp>
+#include <mapnik/projection.hpp>
 #include <mapnik/datasource_cache.hpp>
 #include <mapnik/font_engine_freetype.hpp>
 #include <mapnik/agg_renderer.hpp>
@@ -36,6 +37,14 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtDebug>
 #include <QSettings>
 #include <stdlib.h>
+
+#include <mapnik/config_error.hpp>
+
+#include <mapnik/image.hpp>
+#include <mapnik/image_view_any.hpp>
+#include <mapnik/image_view.hpp>
+#define image_data_32 image_rgba8
+#define image_32 image_rgba8
 
 MapnikRenderer::MapnikRenderer()
 {
@@ -298,7 +307,14 @@ bool MapnikRenderer::Preprocess( IImporter* importer, QString dir )
 				for ( int subX = 0; subX < metaTileSizeX; ++subX ) {
 					for ( int subY = 0; subY < metaTileSizeY; ++subY ) {
 						int indexNumber = ( y + subY - info.minY ) * ( info.maxX - info.minX ) + x + subX - info.minX;
-						mapnik::image_view<mapnik::image_data_32> view = image.get_view( subX * m_settings.tileSize + m_settings.margin, subY * m_settings.tileSize + m_settings.margin, m_settings.tileSize, m_settings.tileSize );
+						mapnik::image_view_rgba8 view = mapnik::image_view_rgba8( 
+              subX * m_settings.tileSize + m_settings.margin, 
+              subY * m_settings.tileSize + m_settings.margin, 
+              m_settings.tileSize, 
+              m_settings.tileSize, 
+              image
+              );
+            
 						std::string result;
 						if ( !m_settings.deleteTiles || info.index[( x + subX - info.minX ) + ( y + subY - info.minY ) * ( info.maxX - info.minX )].size == 1 ) {
 							if ( m_settings.reduceColors )

@@ -18,7 +18,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "mapnikrendererclient.h"
-#include "utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 #include <QtDebug>
 
 MapnikRendererClient::MapnikRendererClient()

@@ -21,7 +21,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef NOGUI
 #include "orsettingsdialog.h"
 #endif
-#include "utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 #include <QFile>
 #include <QSettings>
 

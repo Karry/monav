@@ -6,7 +6,7 @@ Current issues:
     No text support - would be easy to add.
 */
 
-#include "../../utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 #include <QCache>
 #include <QMetaType>
 

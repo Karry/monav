@@ -23,7 +23,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include "ientityreader.h"
 #include "fileformat.pb.h"
 #include "osmformat.pb.h"
-#include "utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 #include <QHash>
 #include <QFile>
 #include <QtDebug>
