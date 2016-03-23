@@ -18,8 +18,8 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "mapdata.h"
-#include "utils/qthelpers.h"
-#include "utils/directoryunpacker.h"
+#include "helpers/qthelpers.h"
+#include "directory/directoryunpacker.h"
 #include <QSettings>
 #include <QPluginLoader>
 #include <QApplication>

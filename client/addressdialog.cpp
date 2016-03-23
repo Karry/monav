@@ -22,7 +22,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include "placechooser.h"
 #include "streetchooser.h"
 #include "mapdata.h"
-#include "utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 
 #include <QtDebug>
 

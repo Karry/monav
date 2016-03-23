@@ -19,7 +19,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "paintwidget.h"
 #include "ui_paintwidget.h"
-#include "utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 #include "mapdata.h"
 #include "routinglogic.h"
 #include "globalsettings.h"

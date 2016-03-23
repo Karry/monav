@@ -20,7 +20,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include "routinglogic.h"
 #include "descriptiongenerator.h"
 #include "mapdata.h"
-#include "utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 #include "logger.h"
 #ifndef NOQTMOBILE
 #include "gpsdpositioninfosource.h"

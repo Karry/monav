@@ -38,7 +38,7 @@ void GpsdPositionInfoSource::setAttribute(QGeoPositionInfo &info,
   QGeoPositionInfo::Attribute attr, const QMap<QString, QVariant> &map, const QString &name) {
 
   qreal value = getReal(map, name);
-  if(!isnan(value)) info.setAttribute(attr, value);
+  if(!std::isnan(value)) info.setAttribute(attr, value);
 }
 
 void GpsdPositionInfoSource::parse(const QString &str) {
@@ -94,7 +94,7 @@ void GpsdPositionInfoSource::parse(const QString &str) {
     qreal epx = getReal(map, "epx");
     qreal epy = getReal(map, "epy");
 
-    if(!isnan(epx) && !isnan(epy))
+    if(!std::isnan(epx) && !std::isnan(epy))
       m_lastKnown.setAttribute(QGeoPositionInfo::HorizontalAccuracy, epx>epy?epx:epy);
 
     QDateTime time;

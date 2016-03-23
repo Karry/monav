@@ -5,7 +5,7 @@
 #include <QDebug>
 
 #include "serverlogic.h"
-#include "utils/directoryunpacker.h"
+#include "directory/directoryunpacker.h"
 
 ServerLogic::ServerLogic()
 {
