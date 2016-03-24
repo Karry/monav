@@ -62,6 +62,9 @@ find_package(Protobuf REQUIRED) # /usr/share/cmake-3.2/Modules/FindProtobuf.cmak
 find_package(OpenMP REQUIRED)
 find_package(Mapnik)
 find_package(LibXml2)
+find_package(BZip2)
+find_package(ICU)
+find_package(ZLIB)
 
 # ==================================================================================================
 # Dependencies Rules
@@ -76,6 +79,13 @@ if( Qt5_FOUND       AND
     )
     set(MONAV_ROUTINGDAEMON_CAN_BE_COMPILED true)
 
+    if (BZIP2_FOUND AND 
+        ICU_FOUND AND 
+        ZLIB_FOUND
+    )
+      set(MONAV_PREPROCESSOR_CAN_BE_COMPILED true)
+    endif()
+
     if (Qt5Xml_FOUND AND 
         Qt5Svg_FOUND AND 
         MAPNIK_FOUND AND 
@@ -88,10 +98,12 @@ if( Qt5_FOUND       AND
 else()
     set(MONAV_ROUTINGDAEMON_CAN_BE_COMPILED false)
     set(MONAV_CLIENT_CAN_BE_COMPILED false)
+    set(MONAV_PREPROCESSOR_CAN_BE_COMPILED false)
 endif()
 
 if( MONAV_CLIENT_CAN_BE_COMPILED       OR
-    MONAV_ROUTINGDAEMON_CAN_BE_COMPILED
+    MONAV_ROUTINGDAEMON_CAN_BE_COMPILED OR
+    MONAV_PREPROCESSOR_CAN_BE_COMPILED
   )
     set(MONAV_CAN_BE_COMPILED true)
 else()
@@ -127,7 +139,11 @@ PRINT_OPTIONAL_LIBRARY_STATUS("Qt5::Positioning"       "http://www.qtsoftware.co
 PRINT_OPTIONAL_LIBRARY_STATUS("Qt5::Xml"               "http://www.qtsoftware.com"    "" " Monav Client will not be compiled" Qt5Xml_FOUND)
 PRINT_OPTIONAL_LIBRARY_STATUS("Qt5::Svg"               "http://www.qtsoftware.com"    "" " Monav Client will not be compiled" Qt5Svg_FOUND)
 PRINT_OPTIONAL_LIBRARY_STATUS("libmapnik"              "http://mapnik.org/"           "(version >= ${MAPNIK_MIN_VERSION})" " Monav Client will not be compiled" MAPNIK_FOUND)
-PRINT_OPTIONAL_LIBRARY_STATUS("LibXML2"                "http://xmlsoft.org" "" " Monav Client and Preprocessor will not be compiled" LIBXML2_FOUND)
+PRINT_OPTIONAL_LIBRARY_STATUS("LibXML2"                "http://xmlsoft.org"           "" " Monav Client and Preprocessor will not be compiled" LIBXML2_FOUND)
+PRINT_OPTIONAL_LIBRARY_STATUS("BZip2"                  "http://www.bzip.org"          "" " Monav Preprocessor will not be compiled" BZIP2_FOUND)
+PRINT_OPTIONAL_LIBRARY_STATUS("ICU"                    "http://www.icu-project.org"   "" " Monav Preprocessor will not be compiled" ICU_FOUND )
+PRINT_OPTIONAL_LIBRARY_STATUS("ZLIB"                   "http://zlib.net"              "" " Monav Preprocessor will not be compiled" ZLIB_FOUND )
+
 
 message(STATUS "")
 message(STATUS "Monav components:")
@@ -136,6 +152,12 @@ if (MONAV_ROUTINGDAEMON_CAN_BE_COMPILED)
     message(STATUS      " Monav routing daemon..................... YES")
 else()
     message(WARNING " Monav routing daemon..................... NO  (Look README file for more details about dependencies)")
+endif()
+
+if (MONAV_PREPROCESSOR_CAN_BE_COMPILED)
+    message(STATUS      " Monav preprocessor ...................... YES")
+else()
+    message(WARNING " Monav preprocessor ...................... NO  (Look README file for more details about dependencies)")
 endif()
 
 if (MONAV_CLIENT_CAN_BE_COMPILED)
@@ -182,20 +204,29 @@ if(MONAV_CAN_BE_COMPILED)
   remove_definitions(-std=c11)
   add_definitions(-std=c++11)
 
-  if (MONAV_ROUTINGDAEMON_CAN_BE_COMPILED OR MONAV_CLIENT_CAN_BE_COMPILED)
-    add_subdirectory(plugins/contractionhierarchies)
-    add_subdirectory(plugins/gpsgrid)
-    add_subdirectory(utils/directory)
+  add_subdirectory(utils/directory)
+  add_subdirectory(plugins/contractionhierarchies)
+  add_subdirectory(plugins/gpsgrid)
+
+  if (MONAV_PREPROCESSOR_CAN_BE_COMPILED OR MONAV_CLIENT_CAN_BE_COMPILED)
+    add_subdirectory(plugins/osmrenderer)
+    add_subdirectory(plugins/unicodetournamenttrie)
   endif()
+
 
   if (MONAV_ROUTINGDAEMON_CAN_BE_COMPILED)
     add_subdirectory(utils/qtservice-2.6_1-opensource)
     add_subdirectory(routingdaemon)
   endif()
 
+  if (MONAV_PREPROCESSOR_CAN_BE_COMPILED)
+    add_subdirectory(plugins/osmimporter)
+    add_subdirectory(plugins/testimporter)
+    add_subdirectory(utils/log)
+    add_subdirectory(preprocessor)
+  endif()
+
   if (MONAV_CLIENT_CAN_BE_COMPILED)    
-    add_subdirectory(plugins/osmrenderer)
-    add_subdirectory(plugins/unicodetournamenttrie)
     add_subdirectory(client)
   endif()
 

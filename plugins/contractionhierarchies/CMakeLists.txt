@@ -34,6 +34,7 @@ set(contractionhierarchies_SRCS
     contractionhierarchies.cpp  
 
     moc_chsettingsdialog.cpp
+    chsettingsdialog.cpp
 )
 
 add_library(contractionhierarchies STATIC 
@@ -42,4 +43,5 @@ add_library(contractionhierarchies STATIC
 )
 target_link_libraries(contractionhierarchies
     Qt5::Core 
+    Qt5::Widgets
 )

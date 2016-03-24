@@ -21,9 +21,9 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef NOGUI
 #include "oisettingsdialog.h"
 #endif
-#include "../../utils/osm/xmlreader.h"
-#include "../../utils/osm/pbfreader.h"
-#include "utils/qthelpers.h"
+#include "osm/xmlreader.h"
+#include "osm/pbfreader.h"
+#include "helpers/qthelpers.h"
 #include "utils/formattedoutput.h"
 #include <algorithm>
 #include <QtDebug>

@@ -5,8 +5,10 @@ ADD_DEFINITIONS(-DQT_PLUGIN)
 ADD_DEFINITIONS(-DQT_STATICPLUGIN)
 ADD_DEFINITIONS(${LIBMAPNIK_DEFINITIONS})
 
-file(GLOB OSM_PROTO_FILES "${CMAKE_HOME_DIRECTORY}/utils/osm/fileformat.proto")
-file(GLOB OSM_PROTO_FILES "${CMAKE_HOME_DIRECTORY}/utils/osm/osmformat.proto")
+file(GLOB OSM_PROTO_FILES 
+    "${CMAKE_HOME_DIRECTORY}/utils/osm/fileformat.proto"
+    "${CMAKE_HOME_DIRECTORY}/utils/osm/osmformat.proto"
+)
 
 protobuf_generate_cpp(OSM_PROTO_SOURCES OSM_PROTO_HEADERS ${OSM_PROTO_FILES})
 
@@ -21,6 +23,7 @@ include_directories(
   ${Qt5Widgets_INCLUDE_DIRS}
   ${LIBMAPNIK_INCLUDE_DIRS}
   ${LIBXML2_INCLUDE_DIR}
+  ${PROTOBUF_INCLUDE_DIRS}
 )
 
 qt5_generate_moc(brsettingsdialog.h     moc_brsettingsdialog.cpp)
@@ -47,6 +50,11 @@ set(osmrenderer_UIS
 )
 
 QT5_WRAP_UI( osmrenderer_UIS_H ${osmrenderer_UIS} )
+
+set(osmrenderer_RCCS
+    rendering_rules.qrc
+)
+QT5_ADD_RESOURCES(osmrenderer_RCC_SRCS ${osmrenderer_RCCS})
 
 set(osmrenderer_SRCS
     brsettingsdialog.cpp
@@ -83,9 +91,12 @@ add_library(osmrenderer STATIC
     ${osmrenderer_SRCS}    
     ${OSM_PROTO_SOURCES}
     ${osmrenderer_UIS_H}
+    ${osmrenderer_RCC_SRCS}
 )
 target_link_libraries(osmrenderer
     Qt5::Core 
+    Qt5::Widgets
+
     ${LIBMAPNIK_LIBRARIES}
     ${LIBXML2_LIBRARIES}
     ${PROTOBUF_LIBRARIES}

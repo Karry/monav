@@ -18,10 +18,10 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "pluginmanager.h"
-#include "utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 #include "preprocessingwindow.h"
 #include "ui_preprocessingwindow.h"
-#include "utils/logwindow.h"
+#include "log/logwindow.h"
 
 #include <omp.h>
 #include <QFileDialog>

@@ -1,5 +1,5 @@
 #include "types.h"
-#include "utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 #include <QTextStream>
 #include <QFile>
 #include <QSettings>

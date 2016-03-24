@@ -21,8 +21,8 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "interfaces/iimporter.h"
 #include "interfaces/ipreprocessor.h"
-#include "utils/qthelpers.h"
-#include "utils/directorypacker.h"
+#include "helpers/qthelpers.h"
+#include "directory/directorypacker.h"
 #include <QPluginLoader>
 #include <QDir>
 #include <QCoreApplication>

@@ -20,7 +20,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include "oisettingsdialog.h"
 #include "ui_oisettingsdialog.h"
 #include "speedprofiledialog.h"
-#include "utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 
 #include <QFileDialog>
 #include <QInputDialog>

@@ -19,7 +19,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "logwindow.h"
 #include "ui_logwindow.h"
-#include "utils/log.h"
+#include "log.h"
 
 #include <QSettings>
 

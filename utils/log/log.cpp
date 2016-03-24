@@ -18,7 +18,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "log.h"
-#include "utils/qthelpers.h"
+#include "helpers/qthelpers.h"
 #include <QSet>
 #include <QFile>
 #include <QMetaMethod>

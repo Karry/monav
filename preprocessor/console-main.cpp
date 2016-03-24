@@ -21,7 +21,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils/formattedoutput.h"
 #include "pluginmanager.h"
 #include "interfaces/iconsolesettings.h"
-#include "utils/log.h"
+#include "log/log.h"
 #include "omp.h"
 
 #include <QtPlugin>
