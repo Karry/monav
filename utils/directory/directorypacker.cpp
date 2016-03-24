@@ -148,7 +148,7 @@ struct DirectoryPacker::PrivateImplementation {
 
 	bool writeHeader()
 	{
-		if ( !outputFile.write( "MoNav Map Module" ) == strlen( "MoNav Map Module" ) )
+		if ( outputFile.write( "MoNav Map Module" ) != (qint64) strlen( "MoNav Map Module" ) )
 			return false;
 
 		return true;
