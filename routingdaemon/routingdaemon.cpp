@@ -43,6 +43,8 @@ void MessageBoxHandler(QtMsgType type, const QMessageLogContext &context, const 
 		servicePointer->logMessage( msg.toLocal8Bit().constData(), QtServiceBase::Error );
 		exit( -1 );
 		break;
+  default:
+    break;
 	}
 	if ( oldHandler != NULL )
 		oldHandler( type, context, msg.toLocal8Bit().constData() );

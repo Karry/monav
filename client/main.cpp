@@ -74,6 +74,9 @@ void MessageBoxHandler(QtMsgType type, const QMessageLogContext &context, const 
 			case QtFatalMsg:
 				QMessageBox::critical(0, "Fatal error", msg.toLocal8Bit().constData(), QMessageBox::Ok);
 				exit( -1 );
+        break;
+			default:
+        break;
 			}
 	#endif
 		}
