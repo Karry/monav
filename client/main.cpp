@@ -32,12 +32,12 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 	#include <QMaemo5InformationBox>
 #endif
 
-Q_IMPORT_PLUGIN( MapnikRendererClient );
-Q_IMPORT_PLUGIN( ContractionHierarchiesClient );
-Q_IMPORT_PLUGIN( GPSGridClient );
-Q_IMPORT_PLUGIN( UnicodeTournamentTrieClient );
-Q_IMPORT_PLUGIN( OSMRendererClient );
-Q_IMPORT_PLUGIN( QtileRendererClient );
+Q_IMPORT_PLUGIN( MapnikRendererClient )
+Q_IMPORT_PLUGIN( ContractionHierarchiesClient )
+Q_IMPORT_PLUGIN( GPSGridClient )
+Q_IMPORT_PLUGIN( UnicodeTournamentTrieClient )
+Q_IMPORT_PLUGIN( OSMRendererClient )
+Q_IMPORT_PLUGIN( QtileRendererClient )
 
 
 void MessageBoxHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)

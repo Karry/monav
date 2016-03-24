@@ -21,8 +21,8 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #
 #include "routingdaemon.h"
 
-Q_IMPORT_PLUGIN( ContractionHierarchiesClient );
-Q_IMPORT_PLUGIN( GPSGridClient );
+Q_IMPORT_PLUGIN( ContractionHierarchiesClient )
+Q_IMPORT_PLUGIN( GPSGridClient )
 
 QtMessageHandler oldHandler = NULL;
 RoutingDaemon* servicePointer = NULL;

@@ -28,17 +28,17 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include <QSettings>
 #include <QtCore/QCoreApplication>
 
-Q_IMPORT_PLUGIN( MapnikRenderer );
-Q_IMPORT_PLUGIN( ContractionHierarchies );
-Q_IMPORT_PLUGIN( GPSGrid );
-Q_IMPORT_PLUGIN( UnicodeTournamentTrie );
-Q_IMPORT_PLUGIN( OSMRenderer );
-Q_IMPORT_PLUGIN( QtileRenderer );
-Q_IMPORT_PLUGIN( OSMImporter );
-Q_IMPORT_PLUGIN( TestImporter );
+Q_IMPORT_PLUGIN( MapnikRenderer )
+Q_IMPORT_PLUGIN( ContractionHierarchies )
+Q_IMPORT_PLUGIN( GPSGrid )
+Q_IMPORT_PLUGIN( UnicodeTournamentTrie )
+Q_IMPORT_PLUGIN( OSMRenderer )
+Q_IMPORT_PLUGIN( QtileRenderer )
+Q_IMPORT_PLUGIN( OSMImporter )
+Q_IMPORT_PLUGIN( TestImporter )
 
 class Commands : public IConsoleSettings {
-	Q_INTERFACES( IConsoleSettings );
+	Q_INTERFACES( IConsoleSettings )
 
 public:
 
