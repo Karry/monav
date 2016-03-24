@@ -57,6 +57,11 @@ set(client_UIS
 
 QT5_WRAP_UI( client_UIS_H ${client_UIS} )
 
+set(client_RCCS
+    images.qrc
+)
+QT5_ADD_RESOURCES(client_RCC_SRCS ${client_RCCS})
+
 set(client_SRCS
 
     addressdialog.cpp
@@ -111,6 +116,7 @@ set(client_SRCS
 add_executable (monav-client
 		${client_SRCS}
     ${client_UIS_H}
+    ${client_RCC_SRCS}
 )
 
 target_link_libraries(monav-client
