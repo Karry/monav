@@ -93,7 +93,7 @@ MapPackagesWidget::MapPackagesWidget( QWidget* parent ) :
 	connect( m_ui->addServer, SIGNAL(clicked()), this, SLOT(editServerList()) );
 	// BACK
 	// CLICK
-        connect( m_ui->server, SIGNAL(currentIndexChanged(int)), this, SLOT(serverIndexChanged(int)));
+	connect( m_ui->server, SIGNAL(currentIndexChanged(int)), this, SLOT(serverIndexChanged(int)));
 	connect( m_ui->installedList, SIGNAL(itemSelectionChanged()), this, SLOT(mapSelectionChanged()) );
 	connect( m_ui->updateList, SIGNAL(itemSelectionChanged()), this, SLOT(updateSelectionChanged()) );
 	connect( m_ui->downloadList, SIGNAL(itemSelectionChanged()), this, SLOT(downloadSelectionChanged()) );
