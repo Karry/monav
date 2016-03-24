@@ -293,7 +293,6 @@ bool QtileRendererClient::Paint( QPainter* painter, const PaintRequest& request 
 		}
 		i++;
 	}
-	place_cache.erase(NULL);
 
 	return true;
 }
