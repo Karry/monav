@@ -46,6 +46,33 @@ target_link_libraries(monav-daemon
 )
 
 # ==================================================================================================
+# daemon
+
+set(daemontest_SRCS
+
+    test.cpp
+
+    ${DAEMON_PROTO_SOURCES}
+)
+
+add_executable (monav-daemon-test
+		${daemontest_SRCS}
+)
+
+target_link_libraries(monav-daemon-test
+    contractionhierarchies
+    gpsgrid
+    lzma
+    directory
+    qtservice
+
+    Qt5::Core 
+    Qt5::Network
+    Qt5::Widgets
+    ${PROTOBUF_LIBRARIES}
+)
+
+# ==================================================================================================
 # server
 
 set(server_SRCS
