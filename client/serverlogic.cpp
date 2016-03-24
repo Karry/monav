@@ -217,7 +217,7 @@ void ServerLogic::finished( QNetworkReply* reply )
 {
 	if( reply->error() != QNetworkReply::NoError )
 	{
-		qDebug( "Error loading " + reply->url().toString().toUtf8() + " : " + reply->errorString().toUtf8() );
+		qDebug() << "Error loading " << reply->url().toString().toUtf8() << " : " << reply->errorString().toUtf8();
 
 		if( reply->url().path().endsWith( "packageList.xml" ) )
 		{
