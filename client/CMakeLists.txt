@@ -94,7 +94,6 @@ set(client_SRCS
     moc_generalsettingsdialog.cpp
     moc_gpsdialog.cpp
     moc_gpsdpositioninfosource.cpp
-    moc_json.cpp
     moc_logger.cpp
     moc_mainwindow.cpp
     moc_mapdata.cpp
