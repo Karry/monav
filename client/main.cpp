@@ -18,15 +18,18 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <QApplication>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QtPlugin>
+#include <QThread>
+
+#include <cstdio>
+#include <cstdlib>
+
 #include "mainwindow.h"
 #include "mapdata.h"
 #include "routinglogic.h"
 #include "logger.h"
-#include <QMessageBox>
-#include <QtPlugin>
-#include <QThread>
-#include <cstdio>
-#include <cstdlib>
 
 #ifdef Q_WS_MAEMO_5
 	#include <QMaemo5InformationBox>
@@ -63,16 +66,15 @@ void MessageBoxHandler(QtMsgType type, const QMessageLogContext &context, const 
 	#else
 			switch (type) {
 			case QtDebugMsg:
-				//QMessageBox::information(0, "Debug message", msg, QMessageBox::Ok);
 				break;
 			case QtWarningMsg:
-				QMessageBox::warning(0, "Warning", msg.toLocal8Bit().constData(), QMessageBox::Ok);
+				printf( "MoNav warning:        %s\n", msg.toLocal8Bit().constData() );
 				break;
 			case QtCriticalMsg:
-				QMessageBox::critical(0, "Critical error", msg.toLocal8Bit().constData(), QMessageBox::Ok);
+				printf( "MoNav critical error: %s\n", msg.toLocal8Bit().constData() );
 				break;
 			case QtFatalMsg:
-				QMessageBox::critical(0, "Fatal error", msg.toLocal8Bit().constData(), QMessageBox::Ok);
+				printf( "MoNav fatal error:    %s\n", msg.toLocal8Bit().constData() );
 				exit( -1 );
         break;
 			default:
@@ -82,7 +84,6 @@ void MessageBoxHandler(QtMsgType type, const QMessageLogContext &context, const 
 		}
 	}
 
-	printf( "%s\n", msg.toLocal8Bit().constData() );
 }
 
 int main(int argc, char *argv[])
